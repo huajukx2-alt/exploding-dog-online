@@ -22,9 +22,12 @@ window.Audio2 = (() => {
   }
   // Procedural Heartbeat Engine for high risk tension
   let heartbeatTimer = null;
+  let currentHeartbeatBpm = 0;
   function playHeartbeat(bpm = 75) {
-    stopHeartbeat();
     if (!opt.sound) return;
+    if (heartbeatTimer && Math.abs(currentHeartbeatBpm - bpm) < 4) return;
+    stopHeartbeat();
+    currentHeartbeatBpm = bpm;
     const interval = Math.max(300, (60 / Math.max(40, bpm)) * 1000);
     heartbeatTimer = setInterval(() => {
       try {
@@ -54,6 +57,7 @@ window.Audio2 = (() => {
   }
   function stopHeartbeat() {
     if (heartbeatTimer) { clearInterval(heartbeatTimer); heartbeatTimer = null; }
+    currentHeartbeatBpm = 0;
   }
 
   const SFX = {

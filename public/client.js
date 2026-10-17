@@ -248,13 +248,14 @@
   function confetti(coins) {
     const box = $('#confetti'); box.innerHTML = '';
     const items = coins ? ['🪙', '💰', '🦴', '✨'] : ['🎉', '🎊', '🦴', '🐶', '🐾'];
-    for (let i = 0; i < 70; i++) {
+    const count = window.innerWidth <= 860 ? 24 : 60;
+    for (let i = 0; i < count; i++) {
       const s = document.createElement('span'); s.textContent = items[i % items.length];
-      s.style.left = Math.random() * 100 + 'vw'; s.style.animationDelay = Math.random() * 1.5 + 's'; s.style.fontSize = (16 + Math.random() * 22) + 'px';
-      s.style.setProperty('--dx', (Math.random() * 200 - 100) + 'px');
+      s.style.left = Math.random() * 100 + 'vw'; s.style.animationDelay = Math.random() * 1.2 + 's'; s.style.fontSize = (16 + Math.random() * 20) + 'px';
+      s.style.setProperty('--dx', (Math.random() * 160 - 80) + 'px');
       box.appendChild(s);
     }
-    setTimeout(() => { box.innerHTML = ''; }, 5000);
+    setTimeout(() => { box.innerHTML = ''; }, 4500);
   }
   function seatEl(id) {
     if (id === S?.me?.id) {
@@ -1496,25 +1497,27 @@
     let startX = 0, startY = 0, startIdx = -1, mode = null;
     el.oncontextmenu = (e) => { e.preventDefault(); openCardDetail(el.dataset.id); };
 
-    // 3D Perspective Tilt on mouse move
-    el.addEventListener('mousemove', (e) => {
-      if (el.classList.contains('dragging') || el.classList.contains('sel')) return;
-      const rect = el.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      const cx = rect.width / 2;
-      const cy = rect.height / 2;
-      const rotX = ((y - cy) / cy) * -14;
-      const rotY = ((x - cx) / cx) * 14;
-      el.style.setProperty('--mx', `${((x / rect.width) * 100).toFixed(1)}%`);
-      el.style.setProperty('--my', `${((y / rect.height) * 100).toFixed(1)}%`);
-      el.style.transform = `perspective(600px) rotateX(${rotX.toFixed(1)}deg) rotateY(${rotY.toFixed(1)}deg) translateY(-12px) scale(1.06)`;
-    });
-    el.addEventListener('mouseleave', () => {
-      if (!el.classList.contains('sel') && !el.classList.contains('dragging')) {
-        el.style.transform = '';
-      }
-    });
+    // 3D Perspective Tilt on mouse move (desktop mouse only)
+    if (window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+      el.addEventListener('mousemove', (e) => {
+        if (el.classList.contains('dragging') || el.classList.contains('sel')) return;
+        const rect = el.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const cx = rect.width / 2;
+        const cy = rect.height / 2;
+        const rotX = ((y - cy) / cy) * -14;
+        const rotY = ((x - cx) / cx) * 14;
+        el.style.setProperty('--mx', `${((x / rect.width) * 100).toFixed(1)}%`);
+        el.style.setProperty('--my', `${((y / rect.height) * 100).toFixed(1)}%`);
+        el.style.transform = `perspective(600px) rotateX(${rotX.toFixed(1)}deg) rotateY(${rotY.toFixed(1)}deg) translateY(-12px) scale(1.06)`;
+      });
+      el.addEventListener('mouseleave', () => {
+        if (!el.classList.contains('sel') && !el.classList.contains('dragging')) {
+          el.style.transform = '';
+        }
+      });
+    }
 
     el.onpointerdown = (e) => {
       if (e.button && e.button !== 0) return;
@@ -1534,23 +1537,27 @@
         } else return;
       }
       if (mode === 'lift') {
-        el.style.transform = `translate(${dx * 0.35}px, ${Math.min(20, dy)}px) scale(1.08)`;
+        el.style.transform = `translate3d(${dx * 0.35}px, ${Math.min(20, dy)}px, 0) scale(1.08)`;
         el.classList.toggle('drop-ready', dy < -65);
       } else if (mode === 'reorder') {
-        el.style.transform = `translate(${dx}px, -14px) scale(1.06) rotate(${Math.max(-8, Math.min(8, dx * 0.08))}deg)`;
-        const box = $('#hand');
-        const siblings = $$('#hand .card');
-        const curIdx = siblings.indexOf(el);
-        for (let i = 0; i < siblings.length; i++) {
-          if (i === curIdx) continue;
-          const r = siblings[i].getBoundingClientRect();
-          const mid = r.left + r.width / 2;
-          if ((i < curIdx && e.clientX < mid) || (i > curIdx && e.clientX > mid)) {
-            box.insertBefore(el, i < curIdx ? siblings[i] : siblings[i].nextSibling);
-            startX = e.clientX;
-            el.style.transform = `translate(0px, -14px) scale(1.06)`;
-            A.sfx('click');
-            break;
+        el.style.transform = `translate3d(${dx}px, -14px, 0) scale(1.06) rotate(${Math.max(-8, Math.min(8, dx * 0.08))}deg)`;
+        const nowTs = Date.now();
+        if (nowTs - (el._lastReorderCheck || 0) > 40) {
+          el._lastReorderCheck = nowTs;
+          const box = $('#hand');
+          const siblings = $$('#hand .card');
+          const curIdx = siblings.indexOf(el);
+          for (let i = 0; i < siblings.length; i++) {
+            if (i === curIdx) continue;
+            const r = siblings[i].getBoundingClientRect();
+            const mid = r.left + r.width / 2;
+            if ((i < curIdx && e.clientX < mid) || (i > curIdx && e.clientX > mid)) {
+              box.insertBefore(el, i < curIdx ? siblings[i] : siblings[i].nextSibling);
+              startX = e.clientX;
+              el.style.transform = `translate3d(0px, -14px, 0) scale(1.06)`;
+              A.sfx('click');
+              break;
+            }
           }
         }
       }
@@ -2257,10 +2264,23 @@
   }
   function shakeDeck() { const d = $('#deckPile'); d.classList.remove('shuffling'); void d.offsetWidth; d.classList.add('shuffling'); }
 
-  // ------------------------------------------------------------ timers loop (60fps rAF)
+  // ------------------------------------------------------------ timers loop (cached DOM & dirty-check)
+  let _elArc = null, _elTxt = null, _elMySec = null, _elRing = null, _elBtnNope = null, _elNopeFill = null;
+  let _lastDash = -99, _lastLabel = '', _lastMySecText = '', _lastNopePct = -99, _lastNopeSec = -99;
+  let _lastPromptSec = -99, _lastSnoutSec = -99;
+
+  function initTimerDom() {
+    _elArc = $('#timerArc');
+    _elTxt = $('#timerText');
+    _elMySec = $('#myTurnSec');
+    _elRing = $('#timerRing');
+    _elBtnNope = $('#btnNope');
+    _elNopeFill = $('#nopeFill');
+  }
+
   function tickLoop() {
     if (S && S.state === 'PLAYING' && screen === 'game') {
-      const arc = $('#timerArc'); const txt = $('#timerText');
+      if (!_elArc) initTimerDom();
       let dl = 0, total = 1;
       const isTurnPhase = S.phase === 'turn' && !S.pending && !S.prompt && !!S.turnDeadline;
       const isPausedBySpotlight = isTurnPhase && spotlightActive;
@@ -2272,66 +2292,91 @@
         total = Math.max(1, (S.prompt.data?.timeoutMs || 15000));
       }
       const left = dl ? Math.max(0, dl - now()) : 0;
-      if (arc) arc.style.strokeDashoffset = dl ? 100 - (left / total) * 100 : (isPausedBySpotlight ? 0 : 100);
+      const dash = dl ? Math.round(100 - (left / total) * 100) : (isPausedBySpotlight ? 0 : 100);
+      if (_elArc && dash !== _lastDash) {
+        _lastDash = dash;
+        _elArc.style.strokeDashoffset = dash;
+      }
       const secs = Math.ceil(left / 1000);
       const isActionPaused = (!isTurnPhase && (S.pending || S.prompt || S.phase !== 'turn')) || isPausedBySpotlight;
       const label = dl ? String(secs) : (isActionPaused ? '⏸️' : '∞');
-      if (txt && txt.textContent !== label) txt.textContent = label;
-      const mySec = $('#myTurnSec');
-      if (mySec) {
-        if (isTurnPhase && dl && !isPausedBySpotlight) {
-          mySec.textContent = `(00:${String(secs).padStart(2, '0')})`;
-        } else if (isActionPaused) {
-          mySec.textContent = `(⏸️)`;
-        } else {
-          mySec.textContent = '';
+      if (_elTxt && label !== _lastLabel) {
+        _lastLabel = label;
+        _elTxt.textContent = label;
+      }
+      if (_elMySec) {
+        const mySecText = (isTurnPhase && dl && !isPausedBySpotlight)
+          ? `(00:${String(secs).padStart(2, '0')})`
+          : (isActionPaused ? `(⏸️)` : '');
+        if (mySecText !== _lastMySecText) {
+          _lastMySecText = mySecText;
+          _elMySec.textContent = mySecText;
         }
       }
-      $('#timerRing')?.classList.toggle('urgent', isTurnPhase && !isPausedBySpotlight && !!dl && left < 5000);
+      if (_elRing) {
+        _elRing.classList.toggle('urgent', isTurnPhase && !isPausedBySpotlight && !!dl && left < 5000);
+      }
       const myTurn = S.turnId === S.me?.id && isTurnPhase && !isPausedBySpotlight;
-      if (myTurn && dl && secs <= 5 && secs !== lastTick && secs > 0) { lastTick = secs; A.sfx('tick'); }
+      if (myTurn && dl && secs <= 5 && secs !== lastTick && secs > 0) {
+        lastTick = secs;
+        A.sfx('tick');
+      }
+
       if (S.pending) {
         const showUntil = S.pending.showUntil || 0;
         const nowMs = now();
-        const btnN = $('#btnNope');
         if (nowMs < showUntil) {
-          $('#nopeFill').style.width = '100%';
-          if (btnN) {
-            btnN.textContent = `🛑 ${t('nope') || 'NOPE'}`;
-            btnN.classList.remove('pulse-fast');
+          if (_elNopeFill && _lastNopePct !== 100) {
+            _lastNopePct = 100;
+            _elNopeFill.style.width = '100%';
+          }
+          if (_elBtnNope && _lastNopeSec !== -1) {
+            _lastNopeSec = -1;
+            _elBtnNope.textContent = `🛑 ${t('nope') || 'NOPE'}`;
+            _elBtnNope.classList.remove('pulse-fast');
           }
         } else {
           const duration = Math.max(1000, (S.pending.deadline - showUntil) || (S.settings.nopeSeconds * 1000));
           const pLeft = Math.max(0, S.pending.deadline - nowMs);
-          const pct = Math.min(100, Math.max(0, (pLeft / duration) * 100));
-          $('#nopeFill').style.width = pct + '%';
+          const pct = Math.round(Math.min(100, Math.max(0, (pLeft / duration) * 100)));
+          if (_elNopeFill && pct !== _lastNopePct) {
+            _lastNopePct = pct;
+            _elNopeFill.style.width = pct + '%';
+          }
           const pSec = Math.ceil(pLeft / 1000);
-          if (btnN) {
-            btnN.textContent = `🛑 ${t('nope') || 'NOPE'} (${pSec}s)`;
-            btnN.classList.toggle('pulse-fast', pSec <= 2);
+          if (_elBtnNope && pSec !== _lastNopeSec) {
+            _lastNopeSec = pSec;
+            _elBtnNope.textContent = `🛑 ${t('nope') || 'NOPE'} (${pSec}s)`;
+            _elBtnNope.classList.toggle('pulse-fast', pSec <= 2);
           }
         }
       }
 
-      // Update any active modal/prompt countdown text
-      const pWrap = $('#promptTimerWrap');
-      if (pWrap) {
-        const pdl = +pWrap.dataset.deadline;
-        if (pdl) {
-          const pLeft = Math.max(0, pdl - now());
+      // Check modal countdown only when a modal is open
+      const modalEl = $('#modal');
+      if (modalEl && !modalEl.classList.contains('hidden')) {
+        const pWrap = $('#promptTimerWrap');
+        if (pWrap && pWrap.dataset.deadline) {
+          const pLeft = Math.max(0, +pWrap.dataset.deadline - now());
           const pSec = Math.ceil(pLeft / 1000);
-          const pSecEl = $('#promptTimerSec');
-          if (pSecEl) {
-            pSecEl.textContent = pSec + 's';
-            pSecEl.classList.toggle('urgent', pSec <= 5);
+          if (pSec !== _lastPromptSec) {
+            _lastPromptSec = pSec;
+            const pSecEl = $('#promptTimerSec');
+            if (pSecEl) {
+              pSecEl.textContent = pSec + 's';
+              pSecEl.classList.toggle('urgent', pSec <= 5);
+            }
           }
         }
-      }
-      // Update Super Snout auto-close countdown
-      const sTimerEl = $('#snoutTimer');
-      if (sTimerEl && sTimerEl.dataset.dl) {
-        const sLeft = Math.max(0, +sTimerEl.dataset.dl - now());
-        sTimerEl.textContent = Math.ceil(sLeft / 1000) + 's';
+        const sTimerEl = $('#snoutTimer');
+        if (sTimerEl && sTimerEl.dataset.dl) {
+          const sLeft = Math.max(0, +sTimerEl.dataset.dl - now());
+          const sSec = Math.ceil(sLeft / 1000);
+          if (sSec !== _lastSnoutSec) {
+            _lastSnoutSec = sSec;
+            sTimerEl.textContent = sSec + 's';
+          }
+        }
       }
     }
     requestAnimationFrame(tickLoop);

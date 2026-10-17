@@ -851,6 +851,8 @@ label { font-size: 0.85rem; color: #cbd5e1; display: block; margin-top: 4px; }
   scrollbar-width: thin;
   scrollbar-color: rgba(251, 191, 36, 0.4) transparent;
   -webkit-overflow-scrolling: touch;
+  will-change: scroll-position;
+  transform: translateZ(0);
 }
 #hand.is-centered {
   justify-content: center;
@@ -867,6 +869,10 @@ label { font-size: 0.85rem; color: #cbd5e1; display: block; margin-top: 4px; }
   margin-left: -28px;
   flex-shrink: 0;
   transition: transform .2s cubic-bezier(0.2, 1, 0.3, 1), margin .2s, z-index .1s;
+  will-change: transform;
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 #hand .card:first-child {
   margin-left: 0 !important;
@@ -1024,7 +1030,7 @@ label { font-size: 0.85rem; color: #cbd5e1; display: block; margin-top: 4px; }
 .toast.out { opacity: 0; transform: translateX(30px); }
 
 #confetti { position: fixed; inset: 0; pointer-events: none; z-index: 55; overflow: hidden; }
-#confetti span { position: absolute; top: -30px; animation: fall 3.2s linear forwards; }
+#confetti span { position: absolute; top: -30px; animation: fall 3.2s linear forwards; will-change: transform; -webkit-backface-visibility: hidden; backface-visibility: hidden; }
 
 /* MODAL */
 #modal { position: fixed; inset: 0; z-index: 50; background: rgba(0,0,0,0.72); backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; padding: 14px; }
@@ -1060,11 +1066,12 @@ label { font-size: 0.85rem; color: #cbd5e1; display: block; margin-top: 4px; }
 /* ANIMATIONS */
 @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.04); } }
 .pulse-fast { animation: pulse .38s infinite alternate !important; }
+@keyframes mobileGlow { 0% { opacity: 0.84; } 100% { opacity: 1; } }
 @keyframes pop { 0% { transform: scale(0.7); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 @keyframes flashAnim { 0% { opacity: 0.85; } 100% { opacity: 0; } }
 @keyframes shrink { from { width: 100%; } to { width: 0%; } }
 @keyframes floatUp { 0% { opacity: 1; transform: translate(-50%, -60%); } 100% { opacity: 0; transform: translate(-50%, -180%); } }
-@keyframes fall { to { transform: translate(var(--dx, 0), 105vh) rotate(520deg); } }
+@keyframes fall { to { transform: translate3d(var(--dx, 0), 105vh, 0) rotate(520deg); } }
 @keyframes shake { 0%,100%{transform:translate(0,0)} 20%{transform:translate(-8px,4px)} 40%{transform:translate(8px,-6px)} 60%{transform:translate(-6px,-4px)} 80%{transform:translate(6px,5px)} }
 @keyframes hue { to { filter: hue-rotate(360deg); } }
 body.shake { animation: shake .45s; }
@@ -1173,6 +1180,30 @@ body.shake { animation: shake .45s; }
     pointer-events: auto !important;
   }
   #myHeroSeat { display: none; }
+
+  /* Mobile GPU Performance Enhancements */
+  #modal, .modal-box, .browser-hero, .room-card, .card-type {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  .pile.deck.can-draw {
+    filter: none !important;
+    box-shadow: 0 0 14px rgba(253, 224, 71, 0.75), 0 0 18px rgba(34, 197, 94, 0.6) !important;
+    animation: mobileGlow 1.6s infinite alternate !important;
+  }
+  .discard-zone.has-card .discard-burst {
+    filter: none !important;
+    animation: none !important;
+    opacity: 0.55 !important;
+  }
+  #riskMeter.risk-crit {
+    box-shadow: 0 0 16px #ef4444, inset 0 0 14px #ef4444 !important;
+    animation: none !important;
+  }
+  #arcadeBuzzer.mode-play .buzzer-top,
+  #arcadeBuzzer.mode-nope .buzzer-top {
+    animation: none !important;
+  }
 }
 
 /* ============================================================
@@ -1606,6 +1637,30 @@ body.shake { animation: shake .45s; }
   .room-code {
     font-size: 1.4rem !important;
     letter-spacing: 4px !important;
+  }
+
+  /* Mobile Landscape GPU Performance Enhancements */
+  #modal, .modal-box, .browser-hero, .room-card, .card-type {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  .pile.deck.can-draw {
+    filter: none !important;
+    box-shadow: 0 0 14px rgba(253, 224, 71, 0.75), 0 0 18px rgba(34, 197, 94, 0.6) !important;
+    animation: mobileGlow 1.6s infinite alternate !important;
+  }
+  .discard-zone.has-card .discard-burst {
+    filter: none !important;
+    animation: none !important;
+    opacity: 0.55 !important;
+  }
+  #riskMeter.risk-crit {
+    box-shadow: 0 0 16px #ef4444, inset 0 0 14px #ef4444 !important;
+    animation: none !important;
+  }
+  #arcadeBuzzer.mode-play .buzzer-top,
+  #arcadeBuzzer.mode-nope .buzzer-top {
+    animation: none !important;
   }
 }
 
