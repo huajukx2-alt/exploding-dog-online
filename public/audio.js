@@ -128,9 +128,100 @@ window.Audio2 = (() => {
     },
     cardGain: () => {
       [659, 880, 1046, 1318].forEach((f, i) => tone(f, 0.18, 'triangle', 0.16, i * 0.07));
+    },
+    wireCut: () => {
+      tone(2200, 0.04, 'highpass', 0.25);
+      noise(0.06, 0.35, 0, 5000);
+      setTimeout(() => tone(1760, 0.08, 'sine', 0.12), 40);
+    },
+    squeakToy: () => {
+      const c = ac(), t = c.currentTime;
+      const o = c.createOscillator(), g = c.createGain();
+      o.type = 'sine';
+      o.frequency.setValueAtTime(800, t);
+      o.frequency.exponentialRampToValueAtTime(1900, t + 0.09);
+      o.frequency.exponentialRampToValueAtTime(1200, t + 0.18);
+      g.gain.setValueAtTime(0.25, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
+      o.connect(g).connect(c.destination);
+      o.start(t); o.stop(t + 0.21);
+    },
+    heavyNope: () => {
+      tone(120, 0.22, 'triangle', 0.55, 0, 40);
+      noise(0.18, 0.45, 0, 3200);
+      tone(80, 0.35, 'sawtooth', 0.3, 0.02, 30);
+    },
+    tensionRiser: () => {
+      const c = ac(), t = c.currentTime;
+      const o = c.createOscillator(), g = c.createGain();
+      o.type = 'sine';
+      o.frequency.setValueAtTime(140, t);
+      o.frequency.exponentialRampToValueAtTime(720, t + 0.35);
+      g.gain.setValueAtTime(0.02, t);
+      g.gain.linearRampToValueAtTime(0.22, t + 0.32);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.36);
+      o.connect(g).connect(c.destination);
+      o.start(t); o.stop(t + 0.37);
     }
   };
   function sfx(name) { if (!opt.sound || !SFX[name]) return; try { SFX[name](); } catch (e) { /* audio blocked */ } }
+
+  // ---- procedural burning fuse sizzle
+  let fuseSource = null, fuseGain = null;
+  function startFuse() {
+    if (!opt.sound || fuseSource) return;
+    try {
+      const c = ac();
+      const buf = c.createBuffer(1, c.sampleRate * 2, c.sampleRate);
+      const d = buf.getChannelData(0);
+      for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * 0.15;
+      fuseSource = c.createBufferSource();
+      fuseSource.buffer = buf;
+      fuseSource.loop = true;
+      const filter = c.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.value = 4200;
+      filter.Q.value = 3.0;
+      fuseGain = c.createGain();
+      fuseGain.gain.setValueAtTime(0.01, c.currentTime);
+      fuseGain.gain.linearRampToValueAtTime(0.28, c.currentTime + 0.3);
+      fuseSource.connect(filter).connect(fuseGain).connect(c.destination);
+      fuseSource.start();
+    } catch (e) {}
+  }
+  function stopFuse() {
+    if (fuseGain) {
+      try {
+        const c = ac();
+        fuseGain.gain.linearRampToValueAtTime(0.001, c.currentTime + 0.15);
+        setTimeout(() => { if (fuseSource) { fuseSource.stop(); fuseSource = null; } fuseGain = null; }, 160);
+      } catch (e) { fuseSource = null; fuseGain = null; }
+    }
+  }
+
+  // ---- procedural ambient suspense bgm
+  let bgmTimer = null, bgmStep = 0;
+  function startBGM() {
+    if (!opt.sound || bgmTimer) return;
+    const notes = [55, 55, 65.4, 55, 73.4, 65.4, 55, 49];
+    bgmTimer = setInterval(() => {
+      try {
+        const c = ac(), t = c.currentTime;
+        const freq = notes[bgmStep % notes.length];
+        const osc = c.createOscillator(), g = c.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, t);
+        g.gain.setValueAtTime(0.035, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+        osc.connect(g).connect(c.destination);
+        osc.start(t); osc.stop(t + 0.38);
+        bgmStep++;
+      } catch (e) {}
+    }, 480);
+  }
+  function stopBGM() {
+    if (bgmTimer) { clearInterval(bgmTimer); bgmTimer = null; }
+  }
 
   // ---- announcer (speech synthesis) with Chrome GC protection
   let queue = [], speaking = false, voices = [], activeUtterance = null;
@@ -166,10 +257,10 @@ window.Audio2 = (() => {
     opt[key] = val;
     localStorage.setItem('ek_' + key, val ? '1' : '0');
     if (key === 'voice' && !val && window.speechSynthesis) { queue = []; activeUtterance = null; speechSynthesis.cancel(); }
-    if (key === 'sound' && !val) stopHeartbeat();
+    if (key === 'sound' && !val) { stopHeartbeat(); stopFuse(); stopBGM(); }
   }
   // unlock audio on first interaction (mobile)
   window.addEventListener('pointerdown', () => { try { ac(); } catch (e) { /* ignore */ } }, { once: true });
-  return { sfx, say, set, opt, playHeartbeat, stopHeartbeat };
+  return { sfx, say, set, opt, playHeartbeat, stopHeartbeat, startFuse, stopFuse, startBGM, stopBGM };
 })();
 

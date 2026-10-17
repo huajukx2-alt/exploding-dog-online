@@ -19,13 +19,13 @@ app.use(express.static(path.join(__dirname, 'public')));
 const auth = (req) => db.byToken(req.headers['x-token'] || '');
 const reply = (res, r) => res.status(r.error ? 400 : 200).json(r);
 
-app.post('/api/register', (req, res) => reply(res, db.register(req.body.username, req.body.password, req.body.displayName)));
-app.post('/api/login', (req, res) => reply(res, db.login(req.body.username, req.body.password)));
+app.post('/api/register', (req, res) => { const b = req.body || {}; reply(res, db.register(b.username, b.password, b.displayName)); });
+app.post('/api/login', (req, res) => { const b = req.body || {}; reply(res, db.login(b.username, b.password)); });
 app.post('/api/logout', (req, res) => { db.logout(req.headers['x-token']); res.json({ ok: true }); });
 app.get('/api/me', (req, res) => { const u = auth(req); u ? res.json({ user: db.publicUser(u) }) : res.status(401).json({ error: 'auth' }); });
-app.post('/api/profile', (req, res) => reply(res, db.updateProfile(req.headers['x-token'], req.body)));
-app.post('/api/buy', (req, res) => reply(res, db.buy(req.headers['x-token'], req.body.itemId)));
-app.post('/api/equip', (req, res) => reply(res, db.equip(req.headers['x-token'], req.body.itemId, req.body.type)));
+app.post('/api/profile', (req, res) => reply(res, db.updateProfile(req.headers['x-token'], req.body || {})));
+app.post('/api/buy', (req, res) => { const b = req.body || {}; reply(res, db.buy(req.headers['x-token'], b.itemId)); });
+app.post('/api/equip', (req, res) => { const b = req.body || {}; reply(res, db.equip(req.headers['x-token'], b.itemId, b.type)); });
 app.post('/api/daily', (req, res) => reply(res, db.dailyBonus(req.headers['x-token'])));
 app.get('/api/leaderboard', (req, res) => res.json({ list: db.leaderboard() }));
 app.get('/api/card-images', (req, res) => {
@@ -197,7 +197,24 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on('leaveRoom', () => { leave(socket); socket.emit('left'); });
+  const chatCooldown = new Map();
+  socket.on('leaveRoom', () => {
+    const code = socketRoom.get(socket.id);
+    if (code) {
+      const g = games.get(code);
+      socketRoom.delete(socket.id);
+      socket.leave(code);
+      if (g) {
+        g.explicitLeave(socket.id);
+        const empty = () => !g.players.some(p => !p.isBot && p.connected);
+        if (empty()) {
+          const delay = g.state === 'LOBBY' ? 15000 : 60000;
+          setTimeout(() => { if (empty() && games.get(code) === g) { g.clearAll(); games.delete(code); } }, delay);
+        }
+      }
+    }
+    socket.emit('left');
+  });
 
   const act = (event, fn) => socket.on(event, (data) => {
     try {
@@ -236,12 +253,20 @@ io.on('connection', (socket) => {
   });
   socket.on('chat', (data) => {
     try {
+      const now = Date.now();
+      const last = chatCooldown.get(socket.id) || 0;
+      if (now - last < 500) return;
+      chatCooldown.set(socket.id, now);
       const { text } = safeObj(data);
       const g = ctx(socket); if (g) g.chat(socket.id, text);
     } catch (e) { console.error('[chat error]', e); }
   });
   socket.on('sticker', (data) => {
     try {
+      const now = Date.now();
+      const last = chatCooldown.get(socket.id + '_stk') || 0;
+      if (now - last < 700) return;
+      chatCooldown.set(socket.id + '_stk', now);
       const { id } = safeObj(data);
       const g = ctx(socket); if (g) g.sticker(socket.id, id, FREE_STICKERS.map(s => s.id));
     } catch (e) { console.error('[sticker error]', e); }

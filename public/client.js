@@ -158,6 +158,22 @@
     renderHome(); if (S) render();
   }
 
+  // ------------------------------------------------------------ Haptics (Vibration Engine for Mobile)
+  const Haptics = {
+    vibrate(pattern) {
+      if ('vibrate' in navigator && typeof navigator.vibrate === 'function') {
+        try { navigator.vibrate(pattern); } catch (_) {}
+      }
+    },
+    tap() { this.vibrate(15); },
+    draw() { this.vibrate([25, 40, 30]); },
+    nopeSlam() { this.vibrate([60, 40, 120]); },
+    bombPanic() { this.vibrate([100, 50, 100, 50, 200]); },
+    defused() { this.vibrate([40, 60, 40, 60, 80]); },
+    explosion() { this.vibrate([200, 80, 400]); },
+    heartbeat() { this.vibrate([35, 70, 35]); }
+  };
+
   // ------------------------------------------------------------ toasts / overlays / FX
   function toast(msg, type = '') {
     const el = document.createElement('div'); el.className = 'toast ' + type; el.innerHTML = msg;
@@ -290,6 +306,11 @@
     clearModalAuto();
     $('#modal').className = 'hidden'; $('#modalBody').innerHTML = '';
     openPromptKey = null; const f = modalOnClose; modalOnClose = null; modalLocked = false; if (f) f();
+    if (!S || S.state !== 'PLAYING') {
+      A.stopHeartbeat();
+      A.stopFuse();
+      document.body.classList.remove('emergency-alarm');
+    }
   }
   $('.modal-x').onclick = () => closeModal();
   $('#modal').addEventListener('click', (e) => { if (e.target.id === 'modal') closeModal(); });
@@ -332,7 +353,15 @@
   socket.on('err', (e) => { toast('⚠️ ' + esc(terr(e)), 'err'); A.sfx('nope'); });
   socket.on('joined', ({ code, playerId, key }) => { sessionStorage.setItem('ek_room', JSON.stringify({ code, playerId, key })); history.replaceState(null, '', '?room=' + code); });
   socket.on('rejoinFailed', () => { sessionStorage.removeItem('ek_room'); });
-  socket.on('left', () => { sessionStorage.removeItem('ek_room'); S = null; history.replaceState(null, '', location.pathname); show('home'); });
+  socket.on('left', () => {
+    sessionStorage.removeItem('ek_room');
+    S = null;
+    A.stopHeartbeat();
+    A.stopFuse();
+    document.body.classList.remove('emergency-alarm');
+    history.replaceState(null, '', location.pathname);
+    show('home');
+  });
   socket.on('state', (st) => {
     const prev = S; S = st; timeOffset = st.serverNow - Date.now();
     if (st.phase === 'turn' || st.state !== 'PLAYING' || st.turnId !== prev?.turnId) {
@@ -1348,8 +1377,8 @@
     if (riskMeter) {
       riskMeter.className = risk >= 60 ? 'risk-crit' : risk >= 35 ? 'risk-high' : risk >= 18 ? 'risk-med' : 'risk-low';
     }
-    if (myTurn && S.phase === 'turn' && risk >= 40) {
-      A.playHeartbeat(Math.round(65 + (risk - 40) * 1.3));
+    if (myTurn && S.phase === 'turn' && risk >= 25) {
+      A.playHeartbeat(Math.round(60 + (risk - 25) * 1.2));
     } else if (!document.body.classList.contains('emergency-alarm')) {
       A.stopHeartbeat();
     }
@@ -1377,12 +1406,19 @@
 
     // prompt
     handlePrompt();
-    if (S.state === 'ENDED' && S.results && $('#modal').classList.contains('hidden')) showResults(S.results, false);
+    if (S.state === 'ENDED' && S.results) {
+      if ($('#modal').classList.contains('hidden')) {
+        showResults(S.results, false);
+      } else if (me()?.isHost && !$('#resLobby')) {
+        showResults(S.results, false);
+      }
+    }
   }
 
   function updateActionBar() {
     if (!S || !S.me) return;
     const m = me(); if (!m) return;
+    const tp = pl(S.turnId);
     const myTurn = S.state === 'PLAYING' && S.turnId === m.id && m.alive;
     $('#turnBadge').innerHTML = S.state !== 'PLAYING' ? '' : myTurn
       ? `⭐ ${t('yourTurn')} ${S.turnsLeft > 1 ? `<span class="badge-turns-alert">🔥 x${S.turnsLeft} ${t('turnsLeft')}</span>` : ''}`
@@ -1393,6 +1429,25 @@
     const pv = playValidity();
     const canPlay = pv.ok && (canAct || pv.nope);
     $('#spectate').className = m.alive || S.state !== 'PLAYING' ? 'hidden' : '';
+
+    const btnPlayAction = $('#btnPlayAction');
+    if (btnPlayAction) {
+      btnPlayAction.classList.toggle('hidden', !canPlay);
+      btnPlayAction.onclick = () => doPlay();
+    }
+
+    const hh = $('#handHint');
+    if (hh) {
+      if (!m.alive) {
+        hh.textContent = lang === 'th' ? '👻 คุณระเบิดแล้ว กำลังรับชมเพื่อนๆ เล่นอยู่' : '👻 You are eliminated. Spectating...';
+      } else if (canPlay) {
+        hh.textContent = lang === 'th' ? '🚀 กด "ลงไพ่" หรือปุ่มบัซเซอร์เพื่อเล่น' : '🚀 Tap "Play" or Buzzer to play';
+      } else if (canAct) {
+        hh.textContent = lang === 'th' ? '🐾 ตาคุณแล้ว! เลือกการ์ดหรือแตะกองเพื่อจั่ว' : '🐾 Your turn! Pick a card or tap deck to draw';
+      } else {
+        hh.textContent = lang === 'th' ? '⏳ รอตาผู้เล่นคนอื่น...' : '⏳ Waiting for other players...';
+      }
+    }
 
     const btnDetail = $('#btnCardDetail');
     if (btnDetail) {
@@ -1498,6 +1553,7 @@
 
   function bindCardGesture(el) {
     let startX = 0, startY = 0, startIdx = -1, mode = null;
+    let longPressTimer = null, isTouch = false;
     el.oncontextmenu = (e) => { e.preventDefault(); openCardDetail(el.dataset.id); };
 
     // 3D Perspective Tilt on mouse move (desktop mouse only)
@@ -1524,24 +1580,42 @@
 
     el.onpointerdown = (e) => {
       if (e.button && e.button !== 0) return;
-      el.setPointerCapture(e.pointerId);
+      isTouch = e.pointerType === 'touch';
       startX = e.clientX; startY = e.clientY; mode = null;
       const cards = $$('#hand .card');
       startIdx = cards.indexOf(el);
+
+      if (isTouch) {
+        longPressTimer = setTimeout(() => {
+          mode = 'reorder';
+          draggingUid = el.dataset.uid;
+          el.classList.add('dragging');
+          Haptics.tap();
+          try { el.setPointerCapture(e.pointerId); } catch (_) {}
+        }, 280);
+      } else {
+        try { el.setPointerCapture(e.pointerId); } catch (_) {}
+      }
     };
+
     el.onpointermove = (e) => {
-      if (!el.hasPointerCapture(e.pointerId)) return;
       const dx = e.clientX - startX, dy = e.clientY - startY;
+      if (longPressTimer && (Math.abs(dx) > 10 || Math.abs(dy) > 10)) {
+        clearTimeout(longPressTimer);
+        longPressTimer = null;
+      }
       if (!mode) {
-        if (Math.abs(dx) > 12 && Math.abs(dx) >= Math.abs(dy)) {
+        if (!isTouch && Math.abs(dx) > 12 && Math.abs(dx) >= Math.abs(dy)) {
           mode = 'reorder'; draggingUid = el.dataset.uid; el.classList.add('dragging');
         } else if (dy < -16 && Math.abs(dy) > Math.abs(dx)) {
           mode = 'lift'; draggingUid = el.dataset.uid; el.classList.add('dragging');
+          try { el.setPointerCapture(e.pointerId); } catch (_) {}
         } else return;
       }
+      const swipeThreshold = window.innerHeight < 540 ? -42 : -60;
       if (mode === 'lift') {
         el.style.transform = `translate3d(${dx * 0.35}px, ${Math.min(20, dy)}px, 0) scale(1.08)`;
-        el.classList.toggle('drop-ready', dy < -65);
+        el.classList.toggle('drop-ready', dy < swipeThreshold);
       } else if (mode === 'reorder') {
         el.style.transform = `translate3d(${dx}px, -14px, 0) scale(1.06) rotate(${Math.max(-8, Math.min(8, dx * 0.08))}deg)`;
         const nowTs = Date.now();
@@ -1559,33 +1633,33 @@
               startX = e.clientX;
               el.style.transform = `translate3d(0px, -14px, 0) scale(1.06)`;
               A.sfx('click');
+              Haptics.tap();
               break;
             }
           }
         }
       }
     };
+
     const finish = (e) => {
-      if (!el.hasPointerCapture(e.pointerId)) return;
-      el.releasePointerCapture(e.pointerId);
+      if (longPressTimer) {
+        clearTimeout(longPressTimer);
+        longPressTimer = null;
+      }
+      try { if (el.hasPointerCapture(e.pointerId)) el.releasePointerCapture(e.pointerId); } catch (_) {}
       const dy = e.clientY - startY;
       el.classList.remove('dragging', 'drop-ready');
       el.style.transform = '';
       const wasMode = mode; mode = null; draggingUid = null;
+      const swipeThreshold = window.innerHeight < 540 ? -42 : -60;
       if (!wasMode) {
         const u = el.dataset.uid;
-        const nowTs = Date.now();
-        const lastTap = el._lastTap || 0;
-        el._lastTap = nowTs;
-        if (nowTs - lastTap < 350 && sel.includes(u)) {
-          doPlay();
-          return;
-        }
         sel = sel.includes(u) ? sel.filter(x => x !== u) : [...sel, u];
         el.classList.toggle('sel', sel.includes(u));
         A.sfx('select');
+        Haptics.tap();
         updateActionBar();
-      } else if (wasMode === 'lift' && dy < -65) {
+      } else if (wasMode === 'lift' && dy < swipeThreshold) {
         const u = el.dataset.uid;
         if (!sel.includes(u)) {
           const curCards = selectedCards();
@@ -1737,7 +1811,7 @@
     modalAutoTimer = setTimeout(() => {
       if (!done && opts.length) {
         const pickT = opts[Math.floor(Math.random() * opts.length)];
-        toast(lang === 'th' ? `หมดเวลาเลือก! ระบบสุ่มเลือก ${pickT.name}` : `Time out! Auto-selected ${pickT.name}`, 'warn');
+        toast(lang === 'th' ? `หมดเวลาเลือก! ระบบสุ่มเลือก ${esc(pickT.name)}` : `Time out! Auto-selected ${esc(pickT.name)}`, 'warn');
         select(pickT.id);
       }
     }, Math.max(500, dl - now()));
@@ -1782,11 +1856,24 @@
         <div class="row"><button class="btn small" data-q="top">${t('top')}</button><button class="btn small" data-q="rand">🎲 ${t('random')}</button><button class="btn small" data-q="bottom">${t('bottom')}</button></div>
         <button class="btn big gold" id="posOk">${t('confirm')}</button></div>`, { locked: true, cls });
       const r = $('#posRange');
-      const upd = () => { $('#posVal').textContent = `${t('position')} ${+r.value + 1} / ${size + 1}`;
-        $('#deckPrev').innerHTML = Array.from({ length: Math.min(size + 1, 24) }, (_, i) => `<i class="${i === Math.min(+r.value, 23) ? 'here' : ''}"></i>`).join(''); };
-      r.oninput = upd; upd();
-      $$('[data-q]').forEach(b => b.onclick = () => { r.value = b.dataset.q === 'top' ? 0 : b.dataset.q === 'bottom' ? size : Math.floor(Math.random() * (size + 1)); upd(); });
-      $('#posOk').onclick = () => respond({ pos: +r.value });
+      const upd = (interactive) => {
+        $('#posVal').textContent = `${t('position')} ${+r.value + 1} / ${size + 1}`;
+        $('#deckPrev').innerHTML = Array.from({ length: Math.min(size + 1, 24) }, (_, i) => `<i class="${i === Math.min(+r.value, 23) ? 'here' : ''}"></i>`).join('');
+        if (interactive) {
+          A.sfx('tick');
+          Haptics.tap();
+        }
+      };
+      r.oninput = () => upd(true);
+      upd(false);
+      $$('[data-q]').forEach(b => b.onclick = () => {
+        r.value = b.dataset.q === 'top' ? 0 : b.dataset.q === 'bottom' ? size : Math.floor(Math.random() * (size + 1));
+        upd(true);
+      });
+      $('#posOk').onclick = () => {
+        A.sfx('slam');
+        respond({ pos: +r.value });
+      };
     };
     switch (pr.type) {
       case 'insert_bomb': slider(d.faceUp ? '🌀 ' + t('insertImploding') : '💣 ' + t('insertBomb'), d.deckSize, 'bomb-modal'); break;
@@ -1845,7 +1932,7 @@
           <div style="margin-top:16px;display:flex;justify-content:center;">
             <button class="btn big gold" id="btnSeeFutureDone">👁️ ${lang === 'th' ? 'เข้าใจแล้ว (ปิดเลย)' : 'Got it (Close)'}</button>
           </div>`, { locked: true, cls: 'wide' });
-        $('#btnSeeFutureDone').onclick = () => { A.sfx('click'); respond({}); };
+        $('#btnSeeFutureDone').onclick = () => { A.sfx('click'); respond({ done: true }); };
         break;
       }
       case 'revive':
@@ -1943,7 +2030,11 @@
         if (isMe) { A.sfx('myturn'); banner(`${ava}<div><h2>⭐ ${t('yourTurn')}</h2>${ev.turnsLeft > 1 ? `<p>x${ev.turnsLeft} ${t('turnsLeft')}</p>` : ''}</div>`, 'mine'); speak = fill(ANN[lang].yourTurn, ev); if (navigator.vibrate) navigator.vibrate(120); }
         else { A.sfx('turn'); banner(`${ava}<div><h3>${esc(text)}</h3></div>`, 'turn', 1300); }
         break;
-      case 'draw': A.sfx('draw'); animateDraw(ev.playerId); break;
+      case 'draw':
+        A.sfx('draw');
+        if (isMe) Haptics.draw();
+        animateDraw(ev.playerId);
+        break;
       case 'play':
         A.sfx(['attack', 'targeted_attack', 'personal_attack'].includes(ev.effect) ? (isTargetMe ? 'attacked' : 'attack') : ev.effect === 'shuffle' ? 'shuffle' : ev.effect === 'barking_kitten' ? 'bark' : 'play');
         showCardSpotlight(ev.cardIds ? ev.cardIds[0] : null, ev.effect, ev.pn, ev.tn, ev.namedId);
@@ -2007,7 +2098,7 @@
             tbl.classList.add('under-attack-active');
             setTimeout(() => tbl.classList.remove('under-attack-active'), 2800);
           }
-          if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+          Haptics.vibrate([200, 100, 200]);
           banner(`<div>
             <div style="font-size:3rem;animation:bounce .4s infinite alternate;">${targetIco}</div>
             <h2 style="color:${bannerType === 'danger' ? '#ef4444' : '#fde047'};font-size:1.8rem;text-shadow:0 0 20px rgba(0,0,0,0.8);">${esc(targetTitle)}</h2>
@@ -2019,16 +2110,19 @@
         pushCombatTicker(`<span>🃏</span> <b>${esc(ev.pn)}</b>: ${cname(ev.cardIds[0])}${ev.tn ? ' 🎯 ' + esc(ev.tn) : ''}`);
         break;
       case 'nope':
-        A.sfx('slam');
+        A.sfx('heavyNope');
         showCardSpotlight('nope', 'nope', ev.pn);
-        flyCards(['nope'], esc(ev.pn)); flash('rgba(239,68,68,.3)'); prio = true;
+        flyCards(['nope'], esc(ev.pn)); flash('rgba(239,68,68,.45)', true); prio = true;
         showNopeStamp(ev.pn);
+        Haptics.nopeSlam();
         pushCombatTicker(`<span>🛑</span> <b>${esc(ev.pn)}</b> NOPE!`, 'nope');
         break;
       case 'cancelled': A.sfx('nope'); banner(`<h2>🛑 NOPE!</h2><p>${esc(text)}</p>`, 'nope', 1400); break;
       case 'bomb_drawn':
         A.sfx('alarm');
-        A.playHeartbeat(140);
+        A.startFuse();
+        A.playHeartbeat(150);
+        Haptics.bombPanic();
         document.body.classList.add('emergency-alarm');
         flyCards([ev.cardId], esc(ev.pn)); flash('rgba(255,0,60,.45)', true); prio = true;
         banner(`<div class="dramatic-bomb-box"><div class="bomb-badge">⚠️ BOMB DRAWN!</div><div class="bomb-anim">${ev.cardId === 'imploding_kitten' ? '🌀' : '💣'}</div><h2>${esc(text)}</h2></div>`, 'danger', 2500);
@@ -2040,8 +2134,11 @@
         pushCombatTicker(`<span>💣</span> <b>${esc(ev.pn)}</b> ${ev.cardId === 'imploding_kitten' ? 'IMPLODING KITTEN!' : 'EXPLODING KITTEN!'}`, 'danger');
         break;
       case 'defused':
-        A.sfx('defuse');
+        A.stopFuse();
         A.stopHeartbeat();
+        A.sfx('wireCut');
+        setTimeout(() => A.sfx('squeakToy'), 250);
+        Haptics.defused();
         document.body.classList.remove('emergency-alarm');
         showCardSpotlight('defuse', 'defuse', ev.pn);
         flyCards(['defuse'], esc(ev.pn)); flash('rgba(34,197,94,.35)');
@@ -2049,8 +2146,12 @@
         pushCombatTicker(`<span>🔧</span> <b>${esc(ev.pn)}</b> DEFUSED!`, 'good');
         break;
       case 'eliminated':
+        A.stopFuse();
         A.stopHeartbeat();
         document.body.classList.remove('emergency-alarm');
+        Haptics.explosion();
+        document.body.classList.add('shake-heavy');
+        setTimeout(() => document.body.classList.remove('shake-heavy'), 600);
         A.sfx(ev.reason === 'imploded' ? 'implode' : 'boom'); flash(ev.reason === 'imploded' ? 'rgba(67,56,202,.6)' : 'rgba(255,120,0,.7)', true); prio = true;
         const tbl = $('#table');
         if (tbl) { tbl.classList.add('exploding-active'); setTimeout(() => tbl.classList.remove('exploding-active'), 1200); }
@@ -2272,11 +2373,21 @@
   function animateDraw(pid) {
     const deck = $('#deckPile'), target = seatEl(pid); if (!deck || !target || screen !== 'game') return;
     const a = deck.getBoundingClientRect(), b = target.getBoundingClientRect();
-    const c = document.createElement('div'); c.className = 'card back flying ' + (pl(pid)?.skin || '');
+    const c = document.createElement('div'); c.className = 'card back flying-arc ' + (pl(pid)?.skin || '');
     c.style.left = a.left + 'px'; c.style.top = a.top + 'px';
     document.body.appendChild(c);
-    requestAnimationFrame(() => { c.style.transform = `translate(${b.left + b.width / 2 - a.left - 30}px, ${b.top + 20 - a.top}px) rotate(20deg) scale(.6)`; c.style.opacity = '.2'; });
-    setTimeout(() => c.remove(), 700);
+    const tx = b.left + b.width / 2 - a.left - 30;
+    const ty = b.top + 20 - a.top;
+    const rot = Math.min(25, Math.max(-25, tx * 0.08));
+    requestAnimationFrame(() => {
+      c.style.transform = `translate(${tx}px, ${ty}px) rotate(${rot}deg) scale(.65)`;
+      c.style.opacity = '.25';
+    });
+    setTimeout(() => {
+      c.remove();
+      target.classList.add('seat-recoil');
+      setTimeout(() => target.classList.remove('seat-recoil'), 450);
+    }, 650);
   }
   function shakeDeck() { const d = $('#deckPile'); d.classList.remove('shuffling'); void d.offsetWidth; d.classList.add('shuffling'); }
 
@@ -2451,9 +2562,12 @@
       const code = room.trim().toUpperCase();
       const inp = $('#browserCodeInp') || $('#mbCode');
       if (inp) inp.value = code;
-      setTimeout(() => {
-        socket.emit('joinRoom', { code, name: myName() });
-      }, 350);
+      const saved = sessionStorage.getItem('ek_room');
+      if (!saved) {
+        setTimeout(() => {
+          socket.emit('joinRoom', { code, name: myName() });
+        }, 350);
+      }
     }
   })();
 })();

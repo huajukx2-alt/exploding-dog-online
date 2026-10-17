@@ -134,6 +134,35 @@ class Game {
     }
   }
 
+  explicitLeave(socketId) {
+    const p = this.bySocket(socketId); if (!p) return;
+    this.clear('dc_' + p.id);
+    const idx = this.players.indexOf(p);
+    const wasHost = p.isHost;
+
+    if (this.state === 'LOBBY') {
+      if (idx >= 0) this.players.splice(idx, 1);
+      this.fx('left', { name: p.name });
+      if (wasHost) {
+        const h = this.players.find(x => !x.isBot && x.connected);
+        if (h) { h.isHost = true; h.ready = true; }
+      }
+      this.sync();
+    } else {
+      p.connected = false;
+      p.socketId = null;
+      if (wasHost) {
+        const h = this.players.find(x => !x.isBot && x.connected);
+        if (h) { p.isHost = false; h.isHost = true; }
+      }
+      if (p.alive) {
+        this.eliminate(p, 'exploded');
+        this.afterElim(p, null);
+      }
+      this.sync();
+    }
+  }
+
   rejoin(socketId, playerId, key) {
     const p = this.byId(playerId);
     if (!p || p.isBot || p.key !== key) return { error: 'rejoin_failed' };
@@ -227,9 +256,12 @@ class Game {
 
   resumeTurnTimer() {
     if (this.state !== 'PLAYING') return;
+    if (this.alive().length <= 1) return this.endGame(this.alive()[0]);
+    let p = this.cur();
+    if (!p || !p.alive) {
+      return this.passTurnTo(this.nextAliveIdx(this.turnIdx), 1);
+    }
     this.phase = 'turn';
-    const p = this.cur();
-    if (!p || !p.alive) return;
     const defaultSecs = Math.max(15, this.settings.turnSeconds || 25);
     const remaining = Math.max(5000, this.turnRemainingMs || (defaultSecs * 1000));
     this.turnRemainingMs = remaining;
@@ -247,9 +279,14 @@ class Game {
 
   beginTurn(announce) {
     if (this.state !== 'PLAYING') return;
+    if (this.alive().length <= 1) return this.endGame(this.alive()[0]);
+    let p = this.cur();
+    if (!p || !p.alive) {
+      this.turnIdx = this.nextAliveIdx(this.turnIdx);
+      p = this.cur();
+      if (!p || !p.alive) return;
+    }
     this.phase = 'turn';
-    const p = this.cur();
-    if (!p || !p.alive) return;
     const secs = Math.max(15, this.settings.turnSeconds || 25);
     const durationMs = secs * 1000;
     if (announce) {
@@ -294,8 +331,9 @@ class Game {
     this.phase = 'drawing';
     this.pauseTurnTimer();
     if (!this.deck.length) {
+      const bombsInPlay = this.discard.some(c => isBomb(c.id)) || this.deck.some(c => isBomb(c.id));
       const safe = this.discard.filter(c => !isBomb(c.id) && c.id !== 'defuse');
-      if (safe.length) {
+      if (safe.length && bombsInPlay) {
         this.deck = shuffle(safe);
         this.discard = this.discard.filter(c => isBomb(c.id) || c.id === 'defuse');
         this.deckChanged('mut');
@@ -319,11 +357,14 @@ class Game {
         p.hand.push(card);
         this.priv(p, 'drawn', { cardId: card.id });
         this.priv(p, 'streak_hold', {});
-        this.endTurnOnce();
+        this.sync();
+        this.later('streak_delay', 900, () => this.endTurnOnce());
         return;
       }
       this.fx('bomb_drawn', { playerId: p.id, cardId: card.id });
-      return this.explodeOrDefuse(p, card, () => this.endTurnOnce());
+      return this.later('bomb_reveal', 900, () => {
+        this.explodeOrDefuse(p, card, () => this.endTurnOnce());
+      });
     }
     if (card.id === 'imploding_kitten') {
       this.fx('bomb_drawn', { playerId: p.id, cardId: card.id, faceUp: !!card.faceUp });
@@ -342,9 +383,10 @@ class Game {
         (pl) => {
           const t = this.byId(pl && dead.includes(pl.targetId) ? pl.targetId : pick(dead));
           t.alive = true; t.hand = [mk('defuse')]; this.elimOrder = this.elimOrder.filter(id => id !== t.id);
-          const bi = this.discard.findIndex(c => c.id === 'exploding_kitten');
+          const bi = this.discard.findIndex(c => isBomb(c.id));
           if (bi >= 0) {
             const b = this.discard.splice(bi, 1)[0];
+            if (b.id === 'imploding_kitten') b.faceUp = false;
             this.deck.splice(rand(this.deck.length + 1), 0, b);
             this.deckChanged('mut');
           }
@@ -429,7 +471,7 @@ class Game {
     if (cards.length >= 2) {
       if (cards.length === 5) {
         const distinct = new Set(cards.map(c => c.id));
-        if (distinct.size !== 5 || cards.some(c => isBomb(c.id))) return { error: 'bad_combo' };
+        if (distinct.size !== 5 || cards.some(c => isBomb(c.id) || c.id === 'streaking_kitten')) return { error: 'bad_combo' };
         effect = '5_cards';
       } else {
         if (cards.length > 3 || kinds.some(k => k !== 'cat')) return { error: 'bad_combo' };
@@ -523,10 +565,12 @@ class Game {
         this.fx('attack_pass', { playerId: p.id, targetId: targetPlayer.id, turns: owed, effect: pa.effect });
         return this.later('attack_pass_delay', 2200, () => this.passTurnTo(idx, owed));
       }
-      case 'personal_attack':
-        this.turnsLeft = 3;
-        this.fx('personal', { playerId: p.id, turns: 3 });
+      case 'personal_attack': {
+        const turns = Math.min(8, this.turnsLeft > 1 ? this.turnsLeft + 2 : 3);
+        this.turnsLeft = turns;
+        this.fx('personal', { playerId: p.id, turns });
         return this.later('personal_delay', 2200, () => this.beginTurn(true));
+      }
       case 'skip': return this.endTurnOnce();
       case 'super_skip': this.turnsLeft = 1; return this.endTurnOnce();
       case 'reverse': this.direction *= -1; this.fx('reverse', { playerId: p.id, direction: this.direction }); return this.endTurnOnce();
@@ -588,7 +632,7 @@ class Game {
       }
       case '5_cards': {
         const pickable = this.discard.filter(c => !isBomb(c.id));
-        if (!pickable.length) return this.backToTurn();
+        if (!pickable.length) return this.checkStreak(p, () => this.backToTurn());
         return this.setPrompt(p, 'discard_pick', { cards: pickable.map(c => ({ uid: c.uid, id: c.id })) },
           (pl) => {
             const idx = this.discard.findIndex(c => c.uid === (pl && pl.uid) && !isBomb(c.id));
@@ -598,7 +642,7 @@ class Game {
               this.fx('discard_picked', { playerId: p.id, cardId: card.id });
               this.priv(p, 'received', { cardId: card.id, fromId: null });
             }
-            this.backToTurn();
+            this.checkStreak(p, () => this.backToTurn());
           },
           () => ({ uid: pickable[pickable.length - 1]?.uid }));
       }

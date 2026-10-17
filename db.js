@@ -39,6 +39,8 @@ const hash = (pw, salt) => {
   return crypto.scryptSync(pw, salt, 32).toString('hex');
 };
 
+const FORBIDDEN_KEYS = new Set(['__proto__', 'constructor', 'prototype', 'tostring', 'valueof']);
+
 function publicUser(u) {
   if (!u) return null;
   return { username: u.username, displayName: u.displayName, avatar: u.avatar, coins: u.coins, rp: u.rp,
@@ -48,13 +50,15 @@ function publicUser(u) {
 function register(username, password, displayName) {
   username = String(username || '').trim();
   if (!/^[a-zA-Z0-9_]{3,16}$/.test(username)) return { error: 'bad_username' };
-  if (String(password || '').length < 4) return { error: 'bad_password' };
   const key = username.toLowerCase();
+  if (FORBIDDEN_KEYS.has(key)) return { error: 'bad_username' };
+  if (String(password || '').length < 4) return { error: 'bad_password' };
   if (Object.prototype.hasOwnProperty.call(db.users, key)) return { error: 'username_taken' };
   const salt = crypto.randomBytes(16).toString('hex');
   const token = crypto.randomBytes(24).toString('hex');
+  const cleanDisplay = String(displayName || username).replace(/[<>]/g, '').trim().slice(0, 16) || username;
   db.users[key] = {
-    username, displayName: String(displayName || username).slice(0, 16), avatar: '🐶',
+    username, displayName: cleanDisplay, avatar: '🐶',
     salt, pw: hash(password, salt), token, coins: 500, rp: 0,
     stats: { games: 0, wins: 0, explosions: 0, defuses: 0 },
     inventory: [], equipped: { frame: null, skin: null }, history: [], createdAt: Date.now()
@@ -80,9 +84,13 @@ function byToken(token) { const k = sessions.get(token); return k ? db.users[k] 
 
 function logout(token) { const u = byToken(token); if (u) { sessions.delete(token); u.token = null; save(); } }
 
-function updateProfile(token, { displayName, avatar }) {
+function updateProfile(token, body) {
+  const { displayName, avatar } = body || {};
   const u = byToken(token); if (!u) return { error: 'auth' };
-  if (displayName) u.displayName = String(displayName).trim().slice(0, 16) || u.displayName;
+  if (displayName) {
+    const clean = String(displayName).replace(/[<>]/g, '').trim().slice(0, 16);
+    if (clean) u.displayName = clean;
+  }
   if (avatar && [...String(avatar)].length <= 2) u.avatar = avatar;
   save(); return { user: publicUser(u) };
 }
