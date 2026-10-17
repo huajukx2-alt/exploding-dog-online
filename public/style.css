@@ -843,6 +843,7 @@ label { font-size: 0.85rem; color: #cbd5e1; display: block; margin-top: 4px; }
   display: flex;
   align-items: flex-end;
   justify-content: flex-start;
+  gap: 10px;
   overflow-x: auto;
   overflow-y: visible;
   scroll-behavior: smooth;
@@ -866,9 +867,9 @@ label { font-size: 0.85rem; color: #cbd5e1; display: block; margin-top: 4px; }
 #hand::-webkit-scrollbar-thumb:hover { background: var(--gold); }
 
 #hand .card {
-  margin-left: -28px;
+  margin: 0;
   flex-shrink: 0;
-  transition: transform .2s cubic-bezier(0.2, 1, 0.3, 1), margin .2s, z-index .1s;
+  transition: transform .2s cubic-bezier(0.2, 1, 0.3, 1), box-shadow .2s, border-color .2s;
   will-change: transform;
   transform: translateZ(0);
   -webkit-backface-visibility: hidden;
@@ -878,26 +879,26 @@ label { font-size: 0.85rem; color: #cbd5e1; display: block; margin-top: 4px; }
   margin-left: 0 !important;
 }
 #hand .card:last-child {
-  margin-right: 28px;
+  margin-right: 0;
 }
 #hand.many-cards .card {
-  margin-left: -38px;
+  margin: 0;
 }
 #hand.many-cards .card:first-child {
   margin-left: 0 !important;
 }
 #hand.many-cards .card:last-child {
-  margin-right: 36px;
+  margin-right: 0;
 }
 #hand .card:hover:not(.dragging) {
-  transform: translateY(-20px) scale(1.1);
+  transform: translateY(-20px) scale(1.08);
   z-index: 30 !important;
-  margin-right: 20px;
+  margin-right: 0;
 }
 #hand .card.sel {
-  transform: translateY(-28px) scale(1.14);
+  transform: translateY(-28px) scale(1.12);
   z-index: 35 !important;
-  margin-right: 18px;
+  margin-right: 0;
 }
 #hand .card .card-type {
   pointer-events: none !important;
@@ -1105,7 +1106,7 @@ body.shake { animation: shake .45s; }
 
   .lobby-grid { grid-template-columns: 1fr; }
   .card { width: 92px; height: 132px; }
-  #hand { min-height: 150px; }
+  #hand { min-height: 150px; gap: 8px; }
   .pile, #discardPile .card { width: 88px; height: 124px; }
   #riskMeter { width: 126px; height: 126px; }
   #riskPct { font-size: 1.5rem; }
@@ -1145,10 +1146,10 @@ body.shake { animation: shake .45s; }
     transform: translateX(-50%) scale(0.85);
   }
   #hand .card {
-    margin-left: -42px;
+    margin: 0 !important;
   }
   #hand .card:hover, #hand .card:active {
-    margin-right: 20px;
+    margin-right: 0 !important;
   }
   #hand .card .card-type {
     top: 3px !important;
@@ -1460,19 +1461,20 @@ body.shake { animation: shake .45s; }
   #hand {
     min-height: 98px !important;
     padding: 12px 14px 4px !important;
+    gap: 6px !important;
   }
   #hand .card {
     width: 68px !important;
     height: 96px !important;
-    margin-left: -26px !important;
+    margin: 0 !important;
     border-radius: 8px !important;
   }
   #hand .card:first-child { margin-left: 0 !important; }
-  #hand .card:last-child { margin-right: 22px !important; }
+  #hand .card:last-child { margin-right: 0 !important; }
   #hand.many-cards .card {
-    margin-left: -36px !important;
+    margin: 0 !important;
   }
-  #hand.many-cards .card:last-child { margin-right: 28px !important; }
+  #hand.many-cards .card:last-child { margin-right: 0 !important; }
 
   #hand .card .art {
     padding: 2px !important;
@@ -1522,11 +1524,11 @@ body.shake { animation: shake .45s; }
 
   #hand .card:hover:not(.dragging) {
     transform: translateY(-14px) scale(1.08) !important;
-    margin-right: 14px !important;
+    margin-right: 0 !important;
   }
   #hand .card.sel {
     transform: translateY(-18px) scale(1.12) !important;
-    margin-right: 12px !important;
+    margin-right: 0 !important;
   }
 
   /* ACTION BAR & CHAT */

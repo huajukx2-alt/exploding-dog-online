@@ -291,6 +291,7 @@ class Game {
   }
 
   drawCard(p, fromBottom, index) {
+    this.phase = 'drawing';
     this.pauseTurnTimer();
     if (!this.deck.length) {
       const safe = this.discard.filter(c => !isBomb(c.id) && c.id !== 'defuse');
@@ -353,6 +354,7 @@ class Game {
     }
     p.hand.push(card);
     this.priv(p, 'drawn', { cardId: card.id });
+    this.sync();
     this.later('draw_delay', 900, () => this.endTurnOnce());
   }
 
@@ -485,6 +487,9 @@ class Game {
 
   playNope(p, card) {
     if (this.phase !== 'nope' || !this.pending) return { error: 'nothing_to_nope' };
+    if (this.pending.playerId === p.id && this.pending.nopes % 2 === 0) {
+      return { error: 'cannot_nope_self' };
+    }
     p.hand.splice(p.hand.indexOf(card), 1); this.discard.push(card);
     this.pending.nopes++;
     this.fx('nope', { playerId: p.id, nopes: this.pending.nopes, targetId: this.pending.playerId });

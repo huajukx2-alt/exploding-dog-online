@@ -335,6 +335,9 @@
   socket.on('left', () => { sessionStorage.removeItem('ek_room'); S = null; history.replaceState(null, '', location.pathname); show('home'); });
   socket.on('state', (st) => {
     const prev = S; S = st; timeOffset = st.serverNow - Date.now();
+    if (st.phase === 'turn' || st.state !== 'PLAYING' || st.turnId !== prev?.turnId) {
+      drawActionLock = false;
+    }
     if (st.me) { const hand = st.me.hand.map(c => c.uid); sel = sel.filter(u => hand.includes(u)); }
     if (prev && ((prev.state === 'LOBBY' && st.state === 'PLAYING') || (prev.state === 'ENDED' && st.state === 'LOBBY'))) {
       closeModal(true);
@@ -1361,7 +1364,7 @@
       const label = pa.effect === 'pair' || pa.effect === 'triple' ? pa.cardIds.map(cname).join(' + ') : cname(pa.cardIds[0]) + (pa.cardIds[0] === 'clone' ? ' → ' + cname(pa.effect) : '');
       pb.className = pa.nopes % 2 ? 'noped' : '';
       $('#pendingText').innerHTML = `<b>${esc(actor?.name)}</b> ▶ ${esc(label)} ${tgt ? '🎯 <b>' + esc(tgt.name) + '</b>' : ''} ${pa.nopes ? `<span class="nope-count">🛑 x${pa.nopes}</span>` : ''}`;
-      const hasNope = m.alive && S.me.hand.some(c => c.id === 'nope');
+      const hasNope = canNopeNow();
       $('#btnNope').style.display = hasNope ? '' : 'none';
     } else pb.className = 'hidden';
 
@@ -1403,7 +1406,7 @@
     // 3D Arcade Buzzer state
     const buz = $('#arcadeBuzzer'), bIcon = $('#buzzerIcon');
     if (buz && bIcon) {
-      const hasNope = S.pending && m.alive && S.me.hand.some(c => c.id === 'nope');
+      const hasNope = canNopeNow();
       if (hasNope) { buz.className = 'mode-nope'; bIcon.textContent = '🛑'; buz.title = 'Quick Nope (🛑)'; }
       else if (canPlay) { buz.className = 'mode-play'; bIcon.textContent = '⚡'; buz.title = `${t('play')} (${sel.length || 1})`; }
       else if (canAct) { buz.className = 'mode-draw'; bIcon.textContent = '🐾'; buz.title = t('draw'); }
@@ -1475,7 +1478,7 @@
     const cs = selectedCards(); if (!cs.length) return { ok: false };
     if (cs.length === 1) {
       const c = CARDS[cs[0].id];
-      if (cs[0].id === 'nope') return { ok: !!S.pending, nope: true };
+      if (cs[0].id === 'nope') return { ok: canNopeNow(), nope: true };
       if (c.kind !== 'action') return { ok: false };
       if (cs[0].id === 'clone' && !S.lastActionId) return { ok: false };
       return { ok: true, effect: cs[0].id === 'clone' ? S.lastActionId : cs[0].id };
@@ -1652,23 +1655,36 @@
     updateHandNav();
   });
 
+  function canNopeNow() {
+    if (!S || !S.pending || S.phase !== 'nope') return false;
+    const m = me();
+    if (!m || !m.alive) return false;
+    const hasNopeCard = S.me?.hand?.some(c => c.id === 'nope');
+    if (!hasNopeCard) return false;
+    const isCaster = S.pending.playerId === m.id;
+    const nopes = S.pending.nopes || 0;
+    if (isCaster && nopes % 2 === 0) return false;
+    return true;
+  }
+
+  let drawActionLock = false;
   function canDrawNow() {
-    if (!S || !S.me) return false;
+    if (!S || !S.me || drawActionLock) return false;
     const m = me();
     return S.state === 'PLAYING' && S.turnId === m?.id && m?.alive && S.phase === 'turn';
   }
 
-  let drawActionLock = false;
   function doDraw() {
     if (!canDrawNow() || drawActionLock) return;
     drawActionLock = true;
-    setTimeout(() => { drawActionLock = false; }, 400);
+    setTimeout(() => { drawActionLock = false; }, 2500);
     A.sfx('draw');
     sel = [];
     socket.emit('draw');
   }
 
   function doQuickNope() {
+    if (!canNopeNow()) return;
     const c = S?.me?.hand?.find(x => x.id === 'nope');
     if (c) {
       socket.emit('play', { uids: [c.uid] });
@@ -2323,6 +2339,7 @@
       }
 
       if (S.pending) {
+        if (_elBtnNope) _elBtnNope.style.display = canNopeNow() ? '' : 'none';
         const showUntil = S.pending.showUntil || 0;
         const nowMs = now();
         if (nowMs < showUntil) {
@@ -2388,8 +2405,7 @@
   if (buzBtn) {
     buzBtn.onclick = () => {
       if (!S || !S.me) return;
-      const hasNope = S.pending && me()?.alive && S.me.hand.some(c => c.id === 'nope');
-      if (hasNope) return doQuickNope();
+      if (canNopeNow()) return doQuickNope();
       const pv = playValidity();
       const m = me();
       const canAct = S.state === 'PLAYING' && S.turnId === m?.id && m?.alive && S.phase === 'turn';
