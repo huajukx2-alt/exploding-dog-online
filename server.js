@@ -84,7 +84,7 @@ function leave(socket) {
   const g = games.get(code); socketRoom.delete(socket.id); socket.leave(code);
   if (!g) return;
   g.removeSocket(socket.id);
-  const empty = () => !g.players.some(p => !p.isBot && p.connected);
+  const empty = () => !g.players.some(p => !p.isBot && p.connected) && !(g.spectators && g.spectators.some(s => s.connected));
   if (empty()) {
     const delay = g.state === 'LOBBY' ? 15000 : 60000;
     setTimeout(() => { if (empty() && games.get(code) === g) { g.clearAll(); games.delete(code); } }, delay);
@@ -177,7 +177,14 @@ io.on('connection', (socket) => {
       const g = games.get(String(d.code || '').toUpperCase().trim());
       if (!g) return err('room_not_found');
       leave(socket);
-      const r = g.addHuman(socket.id, d.name, user()); if (r.error) return err(r.error);
+      let r;
+      if (g.state === 'LOBBY') {
+        r = g.addHuman(socket.id, d.name, user());
+      } else {
+        // Room is currently playing/ended: join as spectator
+        r = g.addSpectator(socket.id, d.name, user());
+      }
+      if (r.error) return err(r.error);
       enter(socket, g, r.player);
     } catch (e) {
       console.error('[joinRoom error]', e);
@@ -206,7 +213,7 @@ io.on('connection', (socket) => {
       socket.leave(code);
       if (g) {
         g.explicitLeave(socket.id);
-        const empty = () => !g.players.some(p => !p.isBot && p.connected);
+        const empty = () => !g.players.some(p => !p.isBot && p.connected) && !(g.spectators && g.spectators.some(s => s.connected));
         if (empty()) {
           const delay = g.state === 'LOBBY' ? 15000 : 60000;
           setTimeout(() => { if (empty() && games.get(code) === g) { g.clearAll(); games.delete(code); } }, delay);

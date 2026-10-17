@@ -1398,14 +1398,23 @@
     } else pb.className = 'hidden';
 
     // keyed hand update (preserves DOM nodes, scroll position, and active drag)
-    if (!draggingUid) syncHand(S.me.hand);
-    updateActionBar();
+    try {
+      if (!draggingUid) syncHand(S.me?.hand || []);
+    } catch (e) { console.error('syncHand error', e); }
+
+    try {
+      updateActionBar();
+    } catch (e) { console.error('updateActionBar error', e); }
 
     // log
-    $('#logBox').innerHTML = S.log.slice().reverse().map(ev => `<div class="log-item">${esc(annText(ev) || '')}</div>`).join('');
+    const logBox = $('#logBox');
+    if (logBox) logBox.innerHTML = S.log.slice().reverse().map(ev => `<div class="log-item">${esc(annText(ev) || '')}</div>`).join('');
 
     // prompt
-    handlePrompt();
+    try {
+      handlePrompt();
+    } catch (e) { console.error('handlePrompt error', e); }
+
     if (S.state === 'ENDED' && S.results) {
       if ($('#modal').classList.contains('hidden')) {
         showResults(S.results, false);
@@ -1419,16 +1428,45 @@
     if (!S || !S.me) return;
     const m = me(); if (!m) return;
     const tp = pl(S.turnId);
-    const myTurn = S.state === 'PLAYING' && S.turnId === m.id && m.alive;
-    $('#turnBadge').innerHTML = S.state !== 'PLAYING' ? '' : myTurn
-      ? `⭐ ${t('yourTurn')} ${S.turnsLeft > 1 ? `<span class="badge-turns-alert">🔥 x${S.turnsLeft} ${t('turnsLeft')}</span>` : ''}`
-      : tp ? `${esc(tp.avatar)} ${t('turnOf')} <b>${esc(tp.name)}</b> ${S.turnsLeft > 1 ? `<span class="badge-turns-alert">🔥 x${S.turnsLeft}</span>` : ''}` : '';
-    $('#turnBadge').className = myTurn ? 'mine' : '';
-    $('#handArea').classList.toggle('my-turn', myTurn);
+    const isSpectator = !!m.isSpectator;
+    const myTurn = S.state === 'PLAYING' && S.phase === 'turn' && S.turnId === m.id && m.alive && !isSpectator;
+
+    const badge = $('#turnBadge');
+    if (badge) {
+      if (S.state !== 'PLAYING') {
+        badge.innerHTML = '';
+        badge.className = '';
+      } else if (S.phase === 'intro') {
+        badge.innerHTML = `🎲 ${lang === 'th' ? 'กำลังสุ่มผู้เล่นคนแรก...' : 'Choosing first player...'}`;
+        badge.className = '';
+      } else if (myTurn) {
+        badge.innerHTML = `⭐ ${t('yourTurn')} ${S.turnsLeft > 1 ? `<span class="badge-turns-alert">🔥 x${S.turnsLeft} ${t('turnsLeft')}</span>` : ''}`;
+        badge.className = 'mine';
+      } else if (tp) {
+        badge.innerHTML = `${esc(tp.avatar)} ${t('turnOf')} <b>${esc(tp.name)}</b> ${S.turnsLeft > 1 ? `<span class="badge-turns-alert">🔥 x${S.turnsLeft}</span>` : ''}`;
+        badge.className = '';
+      } else {
+        badge.innerHTML = `⏳ ${lang === 'th' ? 'รอตาผู้เล่นคนอื่น...' : 'Waiting for turn...'}`;
+        badge.className = '';
+      }
+    }
+
+    const handArea = $('#handArea');
+    if (handArea) handArea.classList.toggle('my-turn', myTurn);
     const canAct = myTurn && S.phase === 'turn';
     const pv = playValidity();
-    const canPlay = pv.ok && (canAct || pv.nope);
-    $('#spectate').className = m.alive || S.state !== 'PLAYING' ? 'hidden' : '';
+    const canPlay = pv.ok && (canAct || pv.nope) && !isSpectator;
+
+    const specEl = $('#spectate');
+    if (specEl) {
+      if (isSpectator) {
+        specEl.className = '';
+        specEl.innerHTML = `👀 <b>${lang === 'th' ? 'โหมดผู้ชม (กำลังดูเพื่อนเล่น)' : 'Spectator Mode (Watching Match)'}</b>`;
+      } else {
+        specEl.className = m.alive || S.state !== 'PLAYING' ? 'hidden' : '';
+        specEl.textContent = t('spectating');
+      }
+    }
 
     const btnPlayAction = $('#btnPlayAction');
     if (btnPlayAction) {
@@ -1438,7 +1476,9 @@
 
     const hh = $('#handHint');
     if (hh) {
-      if (!m.alive) {
+      if (isSpectator) {
+        hh.textContent = lang === 'th' ? '👀 คุณกำลังรับชมการแข่งขัน' : '👀 You are spectating this match';
+      } else if (!m.alive) {
         hh.textContent = lang === 'th' ? '👻 คุณระเบิดแล้ว กำลังรับชมเพื่อนๆ เล่นอยู่' : '👻 You are eliminated. Spectating...';
       } else if (canPlay) {
         hh.textContent = lang === 'th' ? '🚀 กด "ลงไพ่" หรือปุ่มบัซเซอร์เพื่อเล่น' : '🚀 Tap "Play" or Buzzer to play';
@@ -1454,14 +1494,22 @@
       btnDetail.classList.toggle('hidden', sel.length !== 1);
     }
 
-    // Draw pile glow indicator
+    // Draw pile glow indicator & dynamic label
     const dp = $('#deckPile');
-    if (dp) dp.classList.toggle('can-draw', canAct);
+    if (dp) {
+      dp.classList.toggle('can-draw', canAct);
+      const drawLbl = dp.querySelector('.draw-label');
+      if (drawLbl) {
+        drawLbl.textContent = canAct
+          ? (lang === 'th' ? '🐾 แตะเพื่อจั่ว' : 'Tap to Draw')
+          : (lang === 'th' ? '🎴 กองจั่ว' : 'DRAW PILE');
+      }
+    }
 
     // 3D Arcade Buzzer state
     const buz = $('#arcadeBuzzer'), bIcon = $('#buzzerIcon');
     if (buz && bIcon) {
-      const hasNope = canNopeNow();
+      const hasNope = canNopeNow() && !isSpectator;
       if (hasNope) { buz.className = 'mode-nope'; bIcon.textContent = '🛑'; buz.title = 'Quick Nope (🛑)'; }
       else if (canPlay) { buz.className = 'mode-play'; bIcon.textContent = '⚡'; buz.title = `${t('play')} (${sel.length || 1})`; }
       else if (canAct) { buz.className = 'mode-draw'; bIcon.textContent = '🐾'; buz.title = t('draw'); }
@@ -1469,8 +1517,10 @@
     }
   }
 
-  function syncHand(hand) {
+  function syncHand(hand = []) {
+    hand = hand || [];
     const box = $('#hand');
+    if (!box) return;
     const existing = new Map($$('.card', box).map(el => [el.dataset.uid, el]));
     const wanted = new Set(hand.map(c => c.uid));
     // remove cards no longer in hand
@@ -1848,6 +1898,12 @@
     if (openPromptKey === key) return;
     openPromptKey = null;
     clearModalAuto();
+
+    // Clear any full-screen banner or action spotlight to let the prompt modal take center stage
+    const b = $('#banner'); if (b) b.className = '';
+    const sp = $('#actionSpotlight'); if (sp) { sp.className = ''; sp.innerHTML = ''; }
+    spotlightActive = false;
+
     const d = pr.data; const respond = (payload) => { clearModalAuto(); socket.emit('respond', payload); closeModal(true); };
     const timer = modalTimerHTML(pr.deadline, lang === 'th' ? 'หมดเวลาจะดำเนินการให้อัตโนมัติ' : 'Auto-resolves on timeout');
     const slider = (title, size, cls) => {
@@ -1880,8 +1936,10 @@
       case 'bury': slider('⛏️ ' + t('buryTitle'), d.deckSize); break;
       case 'favor_give': {
         const to = pl(d.toId);
-        const hasOther = S.me.hand.some(c => c.id !== 'exploding_kitten');
-        openModal(`<h2>🎁 ${t('giveCard')} ${esc(to?.name)}</h2>${timer}<div class="pick-grid">${S.me.hand.map(c => {
+        const hand = S.me?.hand || [];
+        const hasOther = hand.some(c => c.id !== 'exploding_kitten');
+        const toName = to ? to.name : (lang === 'th' ? 'เพื่อน' : 'Player');
+        openModal(`<h2>🎁 ${t('giveCard')} ${esc(toName)}</h2>${timer}<div class="pick-grid">${hand.map(c => {
           const isBombCard = c.id === 'exploding_kitten' && hasOther;
           return cardHTML(c.id, {
             uid: c.uid,
@@ -1889,8 +1947,23 @@
             attr: isBombCard ? 'data-disabled="true"' : 'data-g="true"'
           });
         }).join('')}</div>`, { locked: true, cls: 'wide' });
-        $$('[data-g]').forEach(b => b.onclick = () => respond({ uid: b.dataset.uid }));
-        $$('[data-disabled]').forEach(b => b.onclick = () => toast(lang === 'th' ? 'ห้ามส่งหมาระเบิดให้เพื่อนตามกฎ!' : 'Cannot give Exploding Puppy by rules!', 'err'));
+        $$('[data-g]').forEach(el => {
+          const pickCard = (e) => {
+            if (e) e.preventDefault();
+            A.sfx('play');
+            respond({ uid: el.dataset.uid });
+          };
+          el.onclick = pickCard;
+          el.onpointerup = pickCard;
+        });
+        $$('[data-disabled]').forEach(el => {
+          const warnBomb = (e) => {
+            if (e) e.preventDefault();
+            toast(lang === 'th' ? 'ห้ามส่งหมาระเบิดให้เพื่อนตามกฎ!' : 'Cannot give Exploding Puppy by rules!', 'err');
+          };
+          el.onclick = warnBomb;
+          el.onpointerup = warnBomb;
+        });
         break;
       }
       case 'discard_pick': {
@@ -2111,8 +2184,7 @@
         break;
       case 'nope':
         A.sfx('heavyNope');
-        showCardSpotlight('nope', 'nope', ev.pn);
-        flyCards(['nope'], esc(ev.pn)); flash('rgba(239,68,68,.45)', true); prio = true;
+        flash('rgba(239,68,68,.45)', true); prio = true;
         showNopeStamp(ev.pn);
         Haptics.nopeSlam();
         pushCombatTicker(`<span>🛑</span> <b>${esc(ev.pn)}</b> NOPE!`, 'nope');
@@ -2255,7 +2327,9 @@
 
   function onPrivate(ev) {
     switch (ev.type) {
-      case 'drawn': flyCards([ev.cardId], `${t('youDrew')} ${esc(cname(ev.cardId))}`); break;
+      case 'drawn':
+        // Card is placed directly at the end of the hand, no center popup needed
+        break;
       case 'future': {
         const from = ev.fromId ? pl(ev.fromId) : null;
         clearModalAuto();

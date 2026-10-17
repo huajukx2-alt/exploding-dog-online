@@ -20,7 +20,7 @@ const valueOf = (c) => CARD_VALUE[c.id] ?? (CARDS[c.id]?.kind === 'cat' ? 5 : 15
 class Game {
   constructor(code, io, onEnd) {
     this.code = code; this.io = io; this.onEnd = onEnd;
-    this.players = []; this.state = 'LOBBY'; this.phase = 'idle';
+    this.players = []; this.spectators = []; this.state = 'LOBBY'; this.phase = 'idle';
     this.settings = { version: 'original', custom: false, counts: { ...VERSIONS.original.counts }, turnSeconds: 25, nopeSeconds: 4, botLevel: 'normal', maxPlayers: 8 };
     this.deck = []; this.discard = []; this.log = [];
     this.timers = {}; this.seq = 1; this.deckRev = 0;
@@ -35,8 +35,8 @@ class Game {
   }
 
   // ---------------------------------------------------------------- helpers
-  byId(id) { return this.players.find(p => p.id === id); }
-  bySocket(sid) { return this.players.find(p => p.socketId === sid && !p.isBot); }
+  byId(id) { return this.players.find(p => p.id === id) || this.spectators.find(s => s.id === id); }
+  bySocket(sid) { return this.players.find(p => p.socketId === sid && !p.isBot) || this.spectators.find(s => s.socketId === sid); }
   cur() { return this.players[this.turnIdx]; }
   alive() { return this.players.filter(p => p.alive); }
   humans() { return this.players.filter(p => !p.isBot); }
@@ -87,6 +87,32 @@ class Game {
     return { player: p };
   }
 
+  addSpectator(socketId, name, user) {
+    const p = {
+      id: 'spec_' + (this.seq++),
+      key: crypto.randomBytes(8).toString('hex'),
+      hand: [],
+      alive: false,
+      isSpectator: true,
+      ready: true,
+      isHost: false,
+      connected: true,
+      auto: false,
+      socketId,
+      isBot: false,
+      name: String((user && user.displayName) || name || 'Spectator').trim().slice(0, 16) || 'Spectator',
+      userId: user ? user.username : null,
+      avatar: user ? user.avatar : '👀',
+      frame: user ? user.equipped.frame : null,
+      skin: user ? user.equipped.skin : null,
+      rp: user ? user.rp : 0,
+      inventory: user ? user.inventory : []
+    };
+    this.spectators.push(p);
+    this.fx('joined', { playerId: p.id, name: p.name, spectator: true });
+    return { player: p };
+  }
+
   addBot(socketId) {
     const host = this.bySocket(socketId);
     if (socketId && (!host || !host.isHost)) return { error: 'host_only' };
@@ -109,6 +135,11 @@ class Game {
   }
 
   removeSocket(socketId) {
+    const specIdx = this.spectators.findIndex(s => s.socketId === socketId);
+    if (specIdx >= 0) {
+      this.spectators.splice(specIdx, 1);
+      return;
+    }
     const p = this.bySocket(socketId); if (!p) return;
     p.connected = false; p.socketId = null;
     if (this.state === 'LOBBY') {
@@ -135,6 +166,12 @@ class Game {
   }
 
   explicitLeave(socketId) {
+    const specIdx = this.spectators.findIndex(s => s.socketId === socketId);
+    if (specIdx >= 0) {
+      const s = this.spectators.splice(specIdx, 1)[0];
+      this.fx('left', { name: s.name });
+      return;
+    }
     const p = this.bySocket(socketId); if (!p) return;
     this.clear('dc_' + p.id);
     const idx = this.players.indexOf(p);
@@ -950,6 +987,16 @@ class Game {
     const p = this.bySocket(socketId);
     if (!p || !p.isHost || this.state !== 'ENDED') return { error: 'host_only' };
     this.players = this.players.filter(x => x.isBot || x.connected);
+    // Promote connected spectators into players if lobby has open slots
+    for (const s of this.spectators) {
+      if (s.connected && this.players.length < this.settings.maxPlayers) {
+        s.isSpectator = false;
+        s.alive = true;
+        s.ready = true;
+        this.players.push(s);
+      }
+    }
+    this.spectators = [];
     for (const x of this.players) { x.hand = []; x.alive = true; x.ready = x.isBot || x.isHost; x.auto = false; }
     this.state = 'LOBBY'; this.phase = 'idle'; this.deck = []; this.discard = []; this.resetRound();
     this.fx('lobby', {});
@@ -984,13 +1031,15 @@ class Game {
       pending: pa ? { playerId: pa.playerId, effect: pa.effect, cardIds: pa.cardIds, targetId: pa.targetId, namedId: pa.namedId, nopes: pa.nopes, deadline: pa.deadline } : null,
       prompt: pr ? { playerId: pr.playerId, type: pr.type, deadline: pr.deadline, data: pr.playerId === me?.id ? pr.data : null } : null,
       winnerId: this.winnerId, results: this.lastResults, log: this.log.slice(-30),
-      me: me ? { id: me.id, key: me.key, hand: me.hand, isHost: me.isHost } : null,
+      me: me ? { id: me.id, key: me.key, hand: me.hand || [], isHost: !!me.isHost, isSpectator: !!me.isSpectator } : null,
+      spectatorCount: this.spectators.length,
       serverNow: Date.now()
     };
   }
 
   sync() {
     for (const p of this.players) if (!p.isBot && p.socketId) this.io.to(p.socketId).emit('state', this.getState(p));
+    for (const s of this.spectators) if (s.socketId) this.io.to(s.socketId).emit('state', this.getState(s));
   }
 }
 
