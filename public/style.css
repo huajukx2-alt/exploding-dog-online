@@ -1057,7 +1057,7 @@ label { font-size: 0.85rem; color: #cbd5e1; display: block; margin-top: 4px; }
 @keyframes hue { to { filter: hue-rotate(360deg); } }
 body.shake { animation: shake .45s; }
 
-@media (max-width: 860px) {
+@media (max-width: 860px) and (orientation: portrait), (max-width: 600px) and (orientation: portrait), (max-width: 600px) and (min-height: 541px) {
   #topbar { padding: 0 10px; height: 56px; }
   .p-info { display: none; }
   .currency-group { gap: 6px; }
@@ -1132,6 +1132,423 @@ body.shake { animation: shake .45s; }
     margin-right: 20px;
   }
   #myHeroSeat { display: none; }
+}
+
+/* ============================================================
+   MOBILE LANDSCAPE MODE (แนวนอนบนมือถือ)
+   Optimal layout for phones rotated horizontally (height <= 540px)
+   ============================================================ */
+@media (orientation: landscape) and (max-height: 540px), (max-height: 500px) {
+  :root {
+    --card-w: 68px;
+    --card-h: 96px;
+  }
+
+  body {
+    overflow: hidden !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+  }
+
+  /* TOPBAR / CASINO HEADER (Lobby) */
+  #topbar {
+    height: 42px !important;
+    padding: 0 12px !important;
+  }
+  .p-avatar { width: 32px !important; height: 32px !important; font-size: 1.1rem !important; }
+  .vip-badge { font-size: 0.5rem !important; padding: 1px 4px !important; }
+  .top-icon-btn, .lang-toggle-btn {
+    width: 32px !important; height: 32px !important; font-size: 0.95rem !important; padding: 2px !important;
+  }
+  .curr-badge { font-size: 0.76rem !important; padding: 2px 6px !important; }
+  .curr-icon { font-size: 0.9rem !important; }
+
+  /* HOME LOBBY STAGE IN LANDSCAPE */
+  #screen-home.active {
+    height: 100vh !important;
+    height: 100dvh !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    padding: 0 !important;
+  }
+  .lobby-stage-layout {
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 24px !important;
+    padding: 2px 14px !important;
+    flex: 1 !important;
+    min-height: 0 !important;
+  }
+  .stage-mascot-podium {
+    transform: scale(0.68) !important;
+    margin: -35px 0 !important;
+  }
+  .lobby-action-column {
+    width: 280px !important;
+    max-width: 48vw !important;
+    gap: 10px !important;
+  }
+  .big-hero-btn {
+    height: 58px !important;
+    border-radius: 16px !important;
+    padding: 6px 14px !important;
+  }
+  .big-hero-btn .btn-th {
+    font-size: 1.05rem !important;
+  }
+  .big-hero-btn .btn-en {
+    font-size: 0.65rem !important;
+  }
+  .btn-badge-alert {
+    width: 22px !important; height: 22px !important; font-size: 0.7rem !important;
+  }
+  .bottom-dock-nav {
+    height: 44px !important;
+    padding: 2px 8px !important;
+    gap: 8px !important;
+  }
+  .dock-btn {
+    height: 40px !important;
+    max-width: 140px !important;
+    padding: 2px 8px !important;
+    gap: 6px !important;
+    border-radius: 12px !important;
+  }
+  .dock-icon { font-size: 1.15rem !important; }
+  .dock-th { font-size: 0.8rem !important; }
+  .dock-en { display: none !important; }
+
+  /* GAMEPLAY SCREEN IN LANDSCAPE */
+  #screen-game.active {
+    height: 100vh !important;
+    height: 100dvh !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    padding: 2px 10px 0 !important;
+  }
+
+  #table {
+    flex: 1 !important;
+    min-height: 0 !important;
+    padding-top: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    position: relative !important;
+  }
+
+  /* OPPONENTS SEATS IN LANDSCAPE */
+  #seats {
+    position: absolute !important;
+    inset: 0 !important;
+    pointer-events: none !important;
+    display: block !important;
+    z-index: 6 !important;
+    margin: 0 !important;
+  }
+  .seat {
+    position: absolute !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+  }
+  .seat-portrait {
+    width: 60px !important;
+    padding: 2px 4px !important;
+    border-radius: 10px !important;
+    border-width: 2px !important;
+  }
+  .seat-dog { width: 30px !important; height: 30px !important; border-radius: 6px !important; }
+  .seat-plate { font-size: 0.58rem !important; padding: 0 2px !important; }
+  .seat-stars { display: none !important; }
+  .seat-tag { font-size: 0.48rem !important; padding: 0 4px !important; top: -6px !important; }
+  .seat-fan { width: 40px !important; height: 34px !important; display: flex !important; }
+  .fan-card { width: 16px !important; height: 26px !important; }
+  .fan-count { font-size: 0.62rem !important; padding: 0 4px !important; }
+
+  /* PERIMETER ANCHOR POSITIONS IN LANDSCAPE */
+  .seat.seat-top-center { top: 2px !important; left: 50% !important; transform: translateX(-50%) !important; }
+  .seat.seat-top-left { top: 2px !important; left: 14% !important; }
+  .seat.seat-top-right { top: 2px !important; right: 14% !important; }
+  .seat.seat-mid-left { top: 46% !important; left: 4px !important; transform: translateY(-50%) !important; }
+  .seat.seat-mid-right { top: 46% !important; right: 4px !important; transform: translateY(-50%) !important; }
+
+  /* TABLE & ARENA IN LANDSCAPE */
+  #boardArena {
+    height: 132px !important;
+    width: min(560px, 78vw) !important;
+    margin: 0 auto !important;
+  }
+  #boardRim {
+    padding: 5px !important;
+    border-radius: 26px !important;
+    border-width: 2.5px !important;
+  }
+  .corner-star, .corner-trophy { display: none !important; }
+  #boardSurface {
+    border-radius: 20px !important;
+    padding: 4px 16px 12px !important;
+    border-width: 2px !important;
+  }
+
+  /* PILES & GAUGE IN LANDSCAPE */
+  .pile-wrap small { font-size: 0.65rem !important; }
+  .pile, #discardPile .card {
+    width: 60px !important;
+    height: 86px !important;
+    border-radius: 8px !important;
+  }
+  .pile.deck .draw-label {
+    font-size: 0.52rem !important;
+    padding: 1px 2px !important;
+    top: 6px !important;
+  }
+  .pile-count {
+    font-size: 0.68rem !important;
+    padding: 0 6px !important;
+    bottom: -5px !important;
+    right: -5px !important;
+  }
+  .discard-burst {
+    width: 110px !important;
+    height: 120px !important;
+    top: -12px !important;
+    left: -20px !important;
+  }
+  #riskMeter {
+    width: 86px !important;
+    height: 86px !important;
+    border-width: 3px !important;
+  }
+  .risk-title { font-size: 0.48rem !important; }
+  #riskPct { font-size: 1.05rem !important; }
+  #bombInfo { font-size: 0.52rem !important; }
+  #timerRing {
+    width: 30px !important;
+    height: 30px !important;
+    top: -8px !important;
+    right: -8px !important;
+    font-size: 0.72rem !important;
+    border-width: 1.5px !important;
+  }
+  #dirIcon {
+    width: 18px !important;
+    height: 18px !important;
+    top: -6px !important;
+    left: -6px !important;
+    font-size: 0.65rem !important;
+  }
+
+  /* 3D ARCADE BUZZER */
+  #arcadeBuzzer {
+    bottom: -18px !important;
+    transform: translateX(-50%) scale(0.62) !important;
+  }
+
+  /* PLAYER HAND HUD IN LANDSCAPE */
+  #bottomHud {
+    min-height: 0 !important;
+    padding: 0 4px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  #myHeroSeat { display: none !important; }
+  #handArea {
+    width: 100% !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+  }
+  .hand-top {
+    height: 18px !important;
+    margin-bottom: 0 !important;
+  }
+  #turnBadge {
+    font-size: 0.72rem !important;
+    padding: 1px 8px !important;
+    border-radius: 99px !important;
+  }
+  #handHint { display: none !important; }
+
+  .hand-wrap {
+    height: 104px !important;
+  }
+  .hand-nav {
+    width: 26px !important;
+    height: 52px !important;
+    font-size: 0.8rem !important;
+  }
+  #hand {
+    min-height: 98px !important;
+    padding: 12px 14px 4px !important;
+  }
+  #hand .card {
+    width: 68px !important;
+    height: 96px !important;
+    margin-left: -26px !important;
+    border-radius: 8px !important;
+  }
+  #hand .card:first-child { margin-left: 0 !important; }
+  #hand .card:last-child { margin-right: 22px !important; }
+  #hand.many-cards .card {
+    margin-left: -36px !important;
+  }
+  #hand.many-cards .card:last-child { margin-right: 28px !important; }
+
+  #hand .card .c-top {
+    font-size: 0.52rem !important;
+    padding: 2px 4px !important;
+  }
+  #hand .card .c-top span { font-size: 0.65rem !important; }
+  #hand .card .c-art {
+    font-size: 1.6rem !important;
+  }
+  #hand .card .c-art .card-img {
+    max-width: 82% !important;
+    max-height: 82% !important;
+  }
+  #hand .card .c-bot {
+    font-size: 0.52rem !important;
+    padding: 2px 4px !important;
+  }
+  #hand .card .card-info {
+    width: 16px !important;
+    height: 16px !important;
+    font-size: 0.6rem !important;
+    top: 2px !important;
+    left: 2px !important;
+  }
+  #hand .card .card-type {
+    font-size: 0.48rem !important;
+    padding: 0 4px !important;
+    bottom: 2px !important;
+  }
+
+  #hand .card:hover:not(.dragging) {
+    transform: translateY(-14px) scale(1.08) !important;
+    margin-right: 14px !important;
+  }
+  #hand .card.sel {
+    transform: translateY(-18px) scale(1.12) !important;
+    margin-right: 12px !important;
+  }
+
+  /* ACTION BAR & CHAT */
+  #actionBar {
+    padding: 2px 0 3px !important;
+    gap: 6px !important;
+  }
+  #actionBar .btn {
+    height: 26px !important;
+    font-size: 0.72rem !important;
+    padding: 2px 8px !important;
+  }
+  .quick-chat {
+    height: 26px !important;
+    max-width: 210px !important;
+    padding: 1px 4px 1px 8px !important;
+  }
+  .quick-chat input {
+    font-size: 0.7rem !important;
+  }
+  .quick-chat .qc-send {
+    width: 20px !important;
+    height: 20px !important;
+    font-size: 0.75rem !important;
+  }
+
+  /* SIDE DOCK & FLOATING CONTROLS */
+  #sideDock {
+    top: 6px !important;
+    right: 8px !important;
+    flex-direction: row !important;
+    gap: 4px !important;
+  }
+  .chip.arcade-chip {
+    padding: 2px 6px !important;
+    font-size: 0.65rem !important;
+    height: 26px !important;
+  }
+  .chip.arcade-chip small { display: none !important; }
+
+  /* OVERLAYS & MODALS */
+  .modal-box {
+    max-height: 94vh !important;
+    max-height: 94dvh !important;
+    padding: 12px 18px !important;
+  }
+  .modal-box h2 {
+    font-size: 1.15rem !important;
+    margin: 2px 0 6px !important;
+  }
+  .modal-box .card {
+    width: 64px !important;
+    height: 90px !important;
+  }
+  .modal-box .card.xl {
+    width: 80px !important;
+    height: 112px !important;
+  }
+  .spotlight-card-wrap .card.xl {
+    width: 100px !important;
+    height: 140px !important;
+  }
+  .spotlight-title {
+    font-size: 1.05rem !important;
+  }
+  .spotlight-desc-badge {
+    font-size: 0.75rem !important;
+    padding: 4px 12px !important;
+  }
+  #banner .banner-inner {
+    padding: 10px 18px !important;
+    border-radius: 16px !important;
+  }
+  #banner h2 { font-size: 1.3rem !important; }
+  #banner p { font-size: 0.88rem !important; }
+
+  /* ROOM BROWSER IN LANDSCAPE */
+  #screen-browser {
+    padding: 8px 14px !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    overflow-y: auto !important;
+  }
+  .browser-container {
+    grid-template-columns: 280px 1fr !important;
+    gap: 12px !important;
+  }
+  .browser-card {
+    padding: 12px !important;
+  }
+  .code-box-xl {
+    height: 48px !important;
+    font-size: 1.6rem !important;
+    letter-spacing: 6px !important;
+  }
+
+  /* WAITING LOBBY IN LANDSCAPE */
+  #screen-lobby.active {
+    height: 100vh !important;
+    height: 100dvh !important;
+    overflow-y: auto !important;
+    padding: 10px 14px !important;
+  }
+  .lobby-grid {
+    grid-template-columns: 1fr 1fr 1fr !important;
+    gap: 8px !important;
+  }
+  .room-code {
+    font-size: 1.4rem !important;
+    letter-spacing: 4px !important;
+  }
 }
 
 /* NOPE! GIANT RUBBER STAMP SLAM */

@@ -686,6 +686,23 @@
   const bMail = $('#btnMail'); if (bMail) bMail.onclick = handleMailClick;
   const bSettings = $('#btnSettings'); if (bSettings) bSettings.onclick = openSettingsModal;
 
+  function toggleFullscreen() {
+    A.sfx('click');
+    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+      const el = document.documentElement;
+      if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
+      else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+      if (screen.orientation && screen.orientation.lock) {
+        screen.orientation.lock('landscape').catch(() => {});
+      }
+    } else {
+      if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
+      else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+    }
+  }
+  const bFull = $('#btnFullscreen'); if (bFull) bFull.onclick = toggleFullscreen;
+  const bFullGame = $('#btnFullscreenGame'); if (bFullGame) bFullGame.onclick = toggleFullscreen;
+
   const bMatch = $('#btnMatchBrowser'); if (bMatch) bMatch.onclick = openMatchBrowser;
   const bTutorial = $('#btnTutorial'); if (bTutorial) bTutorial.onclick = () => openTutorialModal(0);
   const bFriends = $('#btnPlayFriends'); if (bFriends) bFriends.onclick = openPlayFriendsModal;
@@ -1603,6 +1620,16 @@
       if (h) h.scrollTo({ left: 0, behavior: 'smooth' });
     }, 120);
   };
+  window.addEventListener('orientationchange', () => {
+    setTimeout(() => {
+      window.scrollTo(0, 0);
+      updateHandNav();
+      if (S && S.me) syncHand(S.me.hand);
+    }, 200);
+  });
+  window.addEventListener('resize', () => {
+    updateHandNav();
+  });
 
   function canDrawNow() {
     if (!S || !S.me) return false;

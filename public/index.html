@@ -2,7 +2,11 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#0f0728">
   <title>หมาระเบิด Online · Exploding Puppies</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600&family=Fredoka:wght@500;700&display=swap" rel="stylesheet">
@@ -44,6 +48,9 @@
 
       <!-- Right: Utility Actions -->
       <div class="top-actions">
+        <button class="top-icon-btn" id="btnFullscreen" title="Fullscreen / โหมดแนวนอนเต็มจอ">
+          <span class="ti-icon">⛶</span>
+        </button>
         <button class="top-icon-btn" id="btnMail" title="Daily Rewards / กล่องของขวัญ">
           <span class="ti-icon">✉️</span>
           <span class="ti-dot"></span>
@@ -370,6 +377,7 @@
     </div>
 
     <div id="sideDock">
+      <button class="chip arcade-chip" id="btnFullscreenGame" title="Fullscreen / แนวนอน"><span>⛶</span><small>FULL</small></button>
       <button class="chip arcade-chip" id="btnSticker"><span>💬</span><small>EMOTE</small></button>
       <button class="chip arcade-chip" id="btnLog"><span>📜</span><small>LOG</small></button>
       <button class="chip arcade-chip" id="btnGameMenu"><span>⚙️</span><small>MENU</small></button>
