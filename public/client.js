@@ -1602,107 +1602,69 @@
   }
 
   function bindCardGesture(el) {
-    let startX = 0, startY = 0, startIdx = -1, mode = null;
-    let longPressTimer = null, isTouch = false;
-    el.oncontextmenu = (e) => { e.preventDefault(); openCardDetail(el.dataset.id); };
+    let startX = 0, startY = 0, mode = null;
+    // Disable native contextmenu completely so long-press on mobile does NOT trigger card detail or browser menu
+    el.oncontextmenu = (e) => { e.preventDefault(); };
 
-    // 3D Perspective Tilt on mouse move (desktop mouse only)
+    // 3D Perspective Light Sheen on mouse move (desktop mouse only)
     if (window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
       el.addEventListener('mousemove', (e) => {
-        if (el.classList.contains('dragging') || el.classList.contains('sel')) return;
+        if (el.classList.contains('dragging')) return;
         const rect = el.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
-        const cx = rect.width / 2;
-        const cy = rect.height / 2;
-        const rotX = ((y - cy) / cy) * -14;
-        const rotY = ((x - cx) / cx) * 14;
         el.style.setProperty('--mx', `${((x / rect.width) * 100).toFixed(1)}%`);
         el.style.setProperty('--my', `${((y / rect.height) * 100).toFixed(1)}%`);
-        el.style.transform = `perspective(600px) rotateX(${rotX.toFixed(1)}deg) rotateY(${rotY.toFixed(1)}deg) translateY(-12px) scale(1.06)`;
       });
       el.addEventListener('mouseleave', () => {
-        if (!el.classList.contains('sel') && !el.classList.contains('dragging')) {
-          el.style.transform = '';
-        }
+        el.style.removeProperty('--mx');
+        el.style.removeProperty('--my');
       });
     }
 
     el.onpointerdown = (e) => {
       if (e.button && e.button !== 0) return;
-      isTouch = e.pointerType === 'touch';
-      startX = e.clientX; startY = e.clientY; mode = null;
-      const cards = $$('#hand .card');
-      startIdx = cards.indexOf(el);
-
-      if (isTouch) {
-        longPressTimer = setTimeout(() => {
-          mode = 'reorder';
-          draggingUid = el.dataset.uid;
-          el.classList.add('dragging');
-          Haptics.tap();
-          try { el.setPointerCapture(e.pointerId); } catch (_) {}
-        }, 280);
-      } else {
-        try { el.setPointerCapture(e.pointerId); } catch (_) {}
-      }
+      startX = e.clientX;
+      startY = e.clientY;
+      mode = null;
     };
 
     el.onpointermove = (e) => {
-      const dx = e.clientX - startX, dy = e.clientY - startY;
-      if (longPressTimer && (Math.abs(dx) > 10 || Math.abs(dy) > 10)) {
-        clearTimeout(longPressTimer);
-        longPressTimer = null;
-      }
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+
+      // Only enter drag mode if dragged deliberately UPWARDS toward the game table arena
       if (!mode) {
-        if (!isTouch && Math.abs(dx) > 12 && Math.abs(dx) >= Math.abs(dy)) {
-          mode = 'reorder'; draggingUid = el.dataset.uid; el.classList.add('dragging');
-        } else if (dy < -16 && Math.abs(dy) > Math.abs(dx)) {
-          mode = 'lift'; draggingUid = el.dataset.uid; el.classList.add('dragging');
+        if (dy < -25 && Math.abs(dy) > Math.abs(dx) * 1.25) {
+          mode = 'lift';
+          draggingUid = el.dataset.uid;
+          el.classList.add('dragging');
           try { el.setPointerCapture(e.pointerId); } catch (_) {}
-        } else return;
-      }
-      const swipeThreshold = window.innerHeight < 540 ? -42 : -60;
-      if (mode === 'lift') {
-        el.style.transform = `translate3d(${dx * 0.35}px, ${Math.min(20, dy)}px, 0) scale(1.08)`;
-        el.classList.toggle('drop-ready', dy < swipeThreshold);
-      } else if (mode === 'reorder') {
-        el.style.transform = `translate3d(${dx}px, -14px, 0) scale(1.06) rotate(${Math.max(-8, Math.min(8, dx * 0.08))}deg)`;
-        const nowTs = Date.now();
-        if (nowTs - (el._lastReorderCheck || 0) > 40) {
-          el._lastReorderCheck = nowTs;
-          const box = $('#hand');
-          const siblings = $$('#hand .card');
-          const curIdx = siblings.indexOf(el);
-          for (let i = 0; i < siblings.length; i++) {
-            if (i === curIdx) continue;
-            const r = siblings[i].getBoundingClientRect();
-            const mid = r.left + r.width / 2;
-            if ((i < curIdx && e.clientX < mid) || (i > curIdx && e.clientX > mid)) {
-              box.insertBefore(el, i < curIdx ? siblings[i] : siblings[i].nextSibling);
-              startX = e.clientX;
-              el.style.transform = `translate3d(0px, -14px, 0) scale(1.06)`;
-              A.sfx('click');
-              Haptics.tap();
-              break;
-            }
-          }
+        } else {
+          return;
         }
+      }
+
+      if (mode === 'lift') {
+        const swipeThreshold = window.innerHeight < 540 ? -42 : -60;
+        // Dampen horizontal movement so card lifts smoothly upward without wandering
+        el.style.transform = `translate3d(${dx * 0.3}px, ${Math.min(10, dy)}px, 0) scale(1.08)`;
+        el.classList.toggle('drop-ready', dy < swipeThreshold);
       }
     };
 
     const finish = (e) => {
-      if (longPressTimer) {
-        clearTimeout(longPressTimer);
-        longPressTimer = null;
-      }
       try { if (el.hasPointerCapture(e.pointerId)) el.releasePointerCapture(e.pointerId); } catch (_) {}
       const dy = e.clientY - startY;
       el.classList.remove('dragging', 'drop-ready');
       el.style.transform = '';
-      const wasMode = mode; mode = null; draggingUid = null;
+      const wasMode = mode;
+      mode = null;
+      draggingUid = null;
       const swipeThreshold = window.innerHeight < 540 ? -42 : -60;
+
       if (!wasMode) {
+        // Clean tap / click: toggle selection instantly without erratic sliding
         const u = el.dataset.uid;
         sel = sel.includes(u) ? sel.filter(x => x !== u) : [...sel, u];
         el.classList.toggle('sel', sel.includes(u));
@@ -1710,6 +1672,7 @@
         Haptics.tap();
         updateActionBar();
       } else if (wasMode === 'lift' && dy < swipeThreshold) {
+        // Dragged up into play area: play card
         const u = el.dataset.uid;
         if (!sel.includes(u)) {
           const curCards = selectedCards();
@@ -1723,17 +1686,12 @@
           updateActionBar();
         }
         doPlay();
-      } else if (wasMode === 'reorder') {
-        const toIdx = $$('#hand .card').indexOf(el);
-        if (startIdx >= 0 && toIdx >= 0 && startIdx !== toIdx) {
-          const item = S.me.hand.splice(startIdx, 1)[0];
-          if (item) S.me.hand.splice(toIdx, 0, item);
-          socket.emit('reorder', { from: startIdx, to: toIdx });
-        }
       } else {
+        // Cancelled drag, reset hand state cleanly
         if (S && S.me) syncHand(S.me.hand);
       }
     };
+
     el.onpointerup = finish;
     el.onpointercancel = finish;
   }
