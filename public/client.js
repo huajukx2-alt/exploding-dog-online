@@ -1390,6 +1390,11 @@
     const canPlay = pv.ok && (canAct || pv.nope);
     $('#spectate').className = m.alive || S.state !== 'PLAYING' ? 'hidden' : '';
 
+    const btnDetail = $('#btnCardDetail');
+    if (btnDetail) {
+      btnDetail.classList.toggle('hidden', sel.length !== 1);
+    }
+
     // Draw pile glow indicator
     const dp = $('#deckPile');
     if (dp) dp.classList.toggle('can-draw', canAct);
@@ -1421,15 +1426,12 @@
         wrap.innerHTML = cardHTML(c.id, { uid: c.uid, selected: sel.includes(c.uid), cls: 'hand-card card-enter' });
         el = wrap.firstElementChild;
         const info = document.createElement('button');
+        info.type = 'button';
         info.className = 'card-info'; info.textContent = 'ⓘ'; info.title = cname(c.id);
         info.onpointerdown = (e) => e.stopPropagation();
         info.onclick = (e) => { e.stopPropagation(); openCardDetail(c.id); };
         el.appendChild(info);
-        const typeEl = $('.card-type', el);
-        if (typeEl) {
-          typeEl.onpointerdown = (e) => e.stopPropagation();
-          typeEl.onclick = (e) => { e.stopPropagation(); openCardDetail(c.id); };
-        }
+        // Note: card-type is purely informative label/badge, does not intercept clicks
         bindCardGesture(el);
         setTimeout(() => el.classList.remove('card-enter'), 320);
       } else {
@@ -1620,6 +1622,18 @@
       if (h) h.scrollTo({ left: 0, behavior: 'smooth' });
     }, 120);
   };
+  const btnCardDetail = $('#btnCardDetail');
+  if (btnCardDetail) {
+    btnCardDetail.onclick = () => {
+      if (sel.length === 1 && S?.me?.hand) {
+        const c = S.me.hand.find(x => x.uid === sel[0]);
+        if (c) {
+          A.sfx('click');
+          openCardDetail(c.id);
+        }
+      }
+    };
+  }
   window.addEventListener('orientationchange', () => {
     setTimeout(() => {
       window.scrollTo(0, 0);

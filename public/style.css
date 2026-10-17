@@ -477,12 +477,10 @@ label { font-size: 0.85rem; color: #cbd5e1; display: block; margin-top: 4px; }
   border: 1.5px solid var(--c, #fff);
   color: #fff; font-size: 0.68rem; font-weight: 700; line-height: 1;
   box-shadow: 0 2px 8px rgba(0,0,0,0.65);
-  pointer-events: auto; cursor: pointer;
+  pointer-events: none; cursor: default;
   user-select: none; -webkit-user-select: none;
   backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
-  transition: transform .15s, background .15s;
 }
-.card-type:hover { transform: scale(1.08); background: rgba(15, 23, 42, 0.98); }
 .card-type .type-icon { font-size: 0.72rem; }
 .card-type .type-text { letter-spacing: 0.2px; white-space: nowrap; }
 .card-type.type-bomb { border-color: #ff2a5f; color: #fecdd3; }
@@ -895,6 +893,20 @@ label { font-size: 0.85rem; color: #cbd5e1; display: block; margin-top: 4px; }
   z-index: 35 !important;
   margin-right: 18px;
 }
+#hand .card .card-type {
+  pointer-events: none !important;
+  cursor: default !important;
+}
+#hand .card .card-info {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .15s ease, transform .15s ease;
+}
+#hand .card:hover .card-info,
+#hand .card.sel .card-info {
+  opacity: 0.95;
+  pointer-events: auto;
+}
 #actionBar { width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; }
 #actionBar .btn:not(.small) { min-width: 122px; }
 
@@ -1130,6 +1142,35 @@ body.shake { animation: shake .45s; }
   }
   #hand .card:hover, #hand .card:active {
     margin-right: 20px;
+  }
+  #hand .card .card-type {
+    top: 3px !important;
+    right: 3px !important;
+    bottom: auto !important;
+    padding: 1px 5px !important;
+    font-size: 0.62rem !important;
+    pointer-events: none !important;
+  }
+  #hand .card .card-type .type-text {
+    display: none !important;
+  }
+  #hand .card .cname {
+    font-size: 0.66rem !important;
+    padding: 3px 4px !important;
+    pointer-events: none !important;
+  }
+  #hand .card:not(.sel) .card-info {
+    display: none !important;
+  }
+  #hand .card.sel .card-info {
+    display: flex !important;
+    width: 20px !important;
+    height: 20px !important;
+    top: 4px !important;
+    left: 4px !important;
+    font-size: 0.7rem !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
   }
   #myHeroSeat { display: none; }
 }
@@ -1402,33 +1443,50 @@ body.shake { animation: shake .45s; }
   }
   #hand.many-cards .card:last-child { margin-right: 28px !important; }
 
-  #hand .card .c-top {
-    font-size: 0.52rem !important;
-    padding: 2px 4px !important;
+  #hand .card .art {
+    padding: 2px !important;
   }
-  #hand .card .c-top span { font-size: 0.65rem !important; }
-  #hand .card .c-art {
+  #hand .card .art .emoji {
     font-size: 1.6rem !important;
   }
-  #hand .card .c-art .card-img {
-    max-width: 82% !important;
-    max-height: 82% !important;
+  #hand .card .cname {
+    font-size: 0.54rem !important;
+    padding: 2px 3px !important;
+    line-height: 1.1 !important;
+    border-top-width: 1.5px !important;
+    pointer-events: none !important;
   }
-  #hand .card .c-bot {
-    font-size: 0.52rem !important;
-    padding: 2px 4px !important;
-  }
-  #hand .card .card-info {
-    width: 16px !important;
-    height: 16px !important;
-    font-size: 0.6rem !important;
-    top: 2px !important;
-    left: 2px !important;
+  #hand .card .cname span {
+    font-size: 0.58rem !important;
   }
   #hand .card .card-type {
-    font-size: 0.48rem !important;
-    padding: 0 4px !important;
-    bottom: 2px !important;
+    top: 2px !important;
+    right: 2px !important;
+    bottom: auto !important;
+    font-size: 0.54rem !important;
+    padding: 1px 4px !important;
+    border-radius: 999px !important;
+    pointer-events: none !important;
+  }
+  #hand .card .card-type .type-text {
+    display: none !important;
+  }
+  #hand .card .card-type .type-icon {
+    font-size: 0.58rem !important;
+  }
+  #hand .card:not(.sel) .card-info {
+    display: none !important;
+  }
+  #hand .card.sel .card-info {
+    display: flex !important;
+    width: 18px !important;
+    height: 18px !important;
+    font-size: 0.62rem !important;
+    top: 2px !important;
+    left: 2px !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    z-index: 40 !important;
   }
 
   #hand .card:hover:not(.dragging) {
