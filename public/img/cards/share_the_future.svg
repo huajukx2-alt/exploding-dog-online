@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="42%" r="65%">
+      <stop offset="0%" stop-color="#2dd4bf"/>
+      <stop offset="100%" stop-color="#134e4a"/>
+    </radialGradient>
+  </defs>
+  <rect width="400" height="400" rx="44" fill="url(#bg)"/>
+  <circle cx="200" cy="195" r="148" fill="#ffffff" fill-opacity="0.14"/>
+  
+      <g transform="translate(35, 51.800000000000004) scale(0.72)">
+    
+      <ellipse cx="53" cy="177" rx="28" ry="56" transform="rotate(18 53 177)" fill="#b45309" stroke="#1c1208" stroke-width="6"/>
+      <ellipse cx="197" cy="177" rx="28" ry="56" transform="rotate(-18 197 177)" fill="#b45309" stroke="#1c1208" stroke-width="6"/>
+    <!-- Body/Shoulders -->
+    <path d="M65,235 Q50,310 80,320 L170,320 Q200,310 185,235 Z" fill="#fbbf24" stroke="#1c1208" stroke-width="6"/>
+    <ellipse cx="125" cy="280" rx="34" ry="38" fill="#fef3c7"/>
+    <!-- Collar -->
+    <rect x="79" y="237" width="92" height="14" rx="7" fill="#dc2626" stroke="#1c1208" stroke-width="4"/>
+    <circle cx="125" cy="253" r="10" fill="#fbbf24" stroke="#1c1208" stroke-width="3"/>
+    <!-- Head -->
+    <ellipse cx="125" cy="185" rx="68" ry="62" fill="#fbbf24" stroke="#1c1208" stroke-width="6"/>
+    <!-- Forehead patch -->
+    <ellipse cx="103" cy="163" rx="22" ry="26" fill="#b45309" opacity="0.45"/>
+    <!-- Snout -->
+    <ellipse cx="125" cy="201" rx="36" ry="26" fill="#fef3c7" stroke="#1c1208" stroke-width="4"/>
+    
+      <path d="M125,211 C115,243 143,243 137,209 Z" fill="#fb7185" stroke="#1c1208" stroke-width="4"/>
+      <path d="M105,205 Q115,217 125,205 Q135,217 145,205" fill="none" stroke="#1c1208" stroke-width="5" stroke-linecap="round"/>
+    <!-- Nose -->
+    <ellipse cx="125" cy="191" rx="15" ry="10" fill="#1c1208"/>
+    <ellipse cx="121" cy="188" rx="5" ry="3" fill="#fff" opacity="0.7"/>
+    
+      <circle cx="95" cy="169" r="14" fill="#1c1208"/>
+      <circle cx="155" cy="169" r="14" fill="#1c1208"/>
+      <circle cx="91" cy="164" r="5" fill="#fff"/>
+      <circle cx="151" cy="164" r="5" fill="#fff"/>
+    
+    
+  </g>
+      <g transform="translate(77.00000000000001, 51.800000000000004) scale(0.72)">
+    
+      <polygon points="205,155 227,77 263,130" fill="#38bdf8" stroke="#1c1208" stroke-width="6" stroke-linejoin="round"/>
+      <polygon points="215,145 229,93 253,130" fill="#fda4af"/>
+      <polygon points="345,155 323,77 287,130" fill="#38bdf8" stroke="#1c1208" stroke-width="6" stroke-linejoin="round"/>
+      <polygon points="335,145 321,93 297,130" fill="#fda4af"/>
+    <!-- Body/Shoulders -->
+    <path d="M215,235 Q200,310 230,320 L320,320 Q350,310 335,235 Z" fill="#38bdf8" stroke="#1c1208" stroke-width="6"/>
+    <ellipse cx="275" cy="280" rx="34" ry="38" fill="#fef3c7"/>
+    <!-- Collar -->
+    <rect x="229" y="237" width="92" height="14" rx="7" fill="#dc2626" stroke="#1c1208" stroke-width="4"/>
+    <circle cx="275" cy="253" r="10" fill="#fbbf24" stroke="#1c1208" stroke-width="3"/>
+    <!-- Head -->
+    <ellipse cx="275" cy="185" rx="68" ry="62" fill="#38bdf8" stroke="#1c1208" stroke-width="6"/>
+    <!-- Forehead patch -->
+    <ellipse cx="253" cy="163" rx="22" ry="26" fill="#0369a1" opacity="0.45"/>
+    <!-- Snout -->
+    <ellipse cx="275" cy="201" rx="36" ry="26" fill="#fef3c7" stroke="#1c1208" stroke-width="4"/>
+    
+      <path d="M275,211 C265,243 293,243 287,209 Z" fill="#fb7185" stroke="#1c1208" stroke-width="4"/>
+      <path d="M255,205 Q265,217 275,205 Q285,217 295,205" fill="none" stroke="#1c1208" stroke-width="5" stroke-linecap="round"/>
+    <!-- Nose -->
+    <ellipse cx="275" cy="191" rx="15" ry="10" fill="#1c1208"/>
+    <ellipse cx="271" cy="188" rx="5" ry="3" fill="#fff" opacity="0.7"/>
+    
+      <circle cx="245" cy="169" r="14" fill="#1c1208"/>
+      <circle cx="305" cy="169" r="14" fill="#1c1208"/>
+      <circle cx="241" cy="164" r="5" fill="#fff"/>
+      <circle cx="301" cy="164" r="5" fill="#fff"/>
+    
+    
+  </g>
+      <!-- Shared Crystal Ball in middle -->
+      <circle cx="200" cy="305" r="56" fill="#67e8f9" stroke="#fff" stroke-width="6"/>
+      <g transform="translate(185,305) rotate(-10)">
+    <rect x="-26" y="-36" width="52" height="72" rx="8" fill="#fff" stroke="#1c1208" stroke-width="4"/>
+    <rect x="-20" y="-30" width="40" height="60" rx="5" fill="#ef4444"/>
+    <text x="0" y="8" font-size="26" text-anchor="middle">💣</text>
+  </g>
+      <g transform="translate(215,305) rotate(10)">
+    <rect x="-26" y="-36" width="52" height="72" rx="8" fill="#fff" stroke="#1c1208" stroke-width="4"/>
+    <rect x="-20" y="-30" width="40" height="60" rx="5" fill="#22c55e"/>
+    <text x="0" y="8" font-size="26" text-anchor="middle">🦴</text>
+  </g>
+    
+</svg>

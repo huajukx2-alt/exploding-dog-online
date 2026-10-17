@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="42%" r="65%">
+      <stop offset="0%" stop-color="#fde047"/>
+      <stop offset="100%" stop-color="#ca8a04"/>
+    </radialGradient>
+  </defs>
+  <rect width="400" height="400" rx="44" fill="url(#bg)"/>
+  <circle cx="200" cy="195" r="148" fill="#ffffff" fill-opacity="0.14"/>
+  
+      <!-- Tornado swirl -->
+      <path d="M70,120 Q200,40 330,120 Q200,200 70,120" fill="none" stroke="#fff" stroke-width="8" stroke-dasharray="18 10" opacity="0.7"/>
+      <path d="M55,240 Q200,330 345,240" fill="none" stroke="#fff" stroke-width="8" stroke-dasharray="18 10" opacity="0.7"/>
+      <g transform="translate(75,110) rotate(-28)">
+    <rect x="-26" y="-36" width="52" height="72" rx="8" fill="#fff" stroke="#1c1208" stroke-width="4"/>
+    <rect x="-20" y="-30" width="40" height="60" rx="5" fill="#f97316"/>
+    <text x="0" y="8" font-size="26" text-anchor="middle">🦴</text>
+  </g>
+      <g transform="translate(325,105) rotate(25)">
+    <rect x="-26" y="-36" width="52" height="72" rx="8" fill="#fff" stroke="#1c1208" stroke-width="4"/>
+    <rect x="-20" y="-30" width="40" height="60" rx="5" fill="#38bdf8"/>
+    <text x="0" y="8" font-size="26" text-anchor="middle">🐶</text>
+  </g>
+      <g transform="translate(68,260) rotate(-18)">
+    <rect x="-26" y="-36" width="52" height="72" rx="8" fill="#fff" stroke="#1c1208" stroke-width="4"/>
+    <rect x="-20" y="-30" width="40" height="60" rx="5" fill="#a855f7"/>
+    <text x="0" y="8" font-size="26" text-anchor="middle">💣</text>
+  </g>
+      <g transform="translate(332,265) rotate(22)">
+    <rect x="-26" y="-36" width="52" height="72" rx="8" fill="#fff" stroke="#1c1208" stroke-width="4"/>
+    <rect x="-20" y="-30" width="40" height="60" rx="5" fill="#22c55e"/>
+    <text x="0" y="8" font-size="26" text-anchor="middle">🐾</text>
+  </g>
+      <g transform="translate(0, 0) scale(1)">
+    
+      <polygon points="130,175 152,97 188,150" fill="#fb923c" stroke="#1c1208" stroke-width="6" stroke-linejoin="round"/>
+      <polygon points="140,165 154,113 178,150" fill="#fda4af"/>
+      <polygon points="270,175 248,97 212,150" fill="#fb923c" stroke="#1c1208" stroke-width="6" stroke-linejoin="round"/>
+      <polygon points="260,165 246,113 222,150" fill="#fda4af"/>
+    <!-- Body/Shoulders -->
+    <path d="M140,255 Q125,330 155,340 L245,340 Q275,330 260,255 Z" fill="#fb923c" stroke="#1c1208" stroke-width="6"/>
+    <ellipse cx="200" cy="300" rx="34" ry="38" fill="#fef3c7"/>
+    <!-- Collar -->
+    <rect x="154" y="257" width="92" height="14" rx="7" fill="#dc2626" stroke="#1c1208" stroke-width="4"/>
+    <circle cx="200" cy="273" r="10" fill="#fbbf24" stroke="#1c1208" stroke-width="3"/>
+    <!-- Head -->
+    <ellipse cx="200" cy="205" rx="68" ry="62" fill="#fb923c" stroke="#1c1208" stroke-width="6"/>
+    <!-- Forehead patch -->
+    <ellipse cx="178" cy="183" rx="22" ry="26" fill="#9a3412" opacity="0.45"/>
+    <!-- Snout -->
+    <ellipse cx="200" cy="221" rx="36" ry="26" fill="#fef3c7" stroke="#1c1208" stroke-width="4"/>
+    
+      <path d="M200,231 C190,263 218,263 212,229 Z" fill="#fb7185" stroke="#1c1208" stroke-width="4"/>
+      <path d="M180,225 Q190,237 200,225 Q210,237 220,225" fill="none" stroke="#1c1208" stroke-width="5" stroke-linecap="round"/>
+    <!-- Nose -->
+    <ellipse cx="200" cy="211" rx="15" ry="10" fill="#1c1208"/>
+    <ellipse cx="196" cy="208" rx="5" ry="3" fill="#fff" opacity="0.7"/>
+    
+      <circle cx="170" cy="189" r="14" fill="#1c1208"/>
+      <circle cx="230" cy="189" r="14" fill="#1c1208"/>
+      <circle cx="166" cy="184" r="5" fill="#fff"/>
+      <circle cx="226" cy="184" r="5" fill="#fff"/>
+    
+    
+  </g>
+    
+</svg>

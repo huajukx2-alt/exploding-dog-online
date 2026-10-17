@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="42%" r="65%">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#78350f"/>
+    </radialGradient>
+  </defs>
+  <rect width="400" height="400" rx="44" fill="url(#bg)"/>
+  <circle cx="200" cy="195" r="148" fill="#ffffff" fill-opacity="0.14"/>
+  
+      <!-- Giant Fluffy Potato Puppy -->
+      <ellipse cx="200" cy="225" rx="118" ry="132" fill="#d97706" stroke="#1c1208" stroke-width="6"/>
+      <!-- Potato spots -->
+      <circle cx="130" cy="145" r="10" fill="#92400e" opacity="0.5"/>
+      <circle cx="275" cy="160" r="14" fill="#92400e" opacity="0.5"/>
+      <circle cx="120" cy="290" r="12" fill="#92400e" opacity="0.5"/>
+      <circle cx="265" cy="300" r="9" fill="#92400e" opacity="0.5"/>
+      <!-- Sprout on top -->
+      <path d="M200,92 Q185,55 155,65 Q175,90 200,92 Z" fill="#22c55e" stroke="#1c1208" stroke-width="4"/>
+      <path d="M200,92 Q215,50 245,62 Q225,88 200,92 Z" fill="#4ade80" stroke="#1c1208" stroke-width="4"/>
+      <g transform="translate(10.000000000000009, 10.750000000000009) scale(0.95)">
+    
+      <ellipse cx="128" cy="207" rx="28" ry="56" transform="rotate(18 128 207)" fill="#92400e" stroke="#1c1208" stroke-width="6"/>
+      <ellipse cx="272" cy="207" rx="28" ry="56" transform="rotate(-18 272 207)" fill="#92400e" stroke="#1c1208" stroke-width="6"/>
+    <!-- Body/Shoulders -->
+    <path d="M140,265 Q125,340 155,350 L245,350 Q275,340 260,265 Z" fill="#d97706" stroke="#1c1208" stroke-width="6"/>
+    <ellipse cx="200" cy="310" rx="34" ry="38" fill="#fef3c7"/>
+    <!-- Collar -->
+    <rect x="154" y="267" width="92" height="14" rx="7" fill="#dc2626" stroke="#1c1208" stroke-width="4"/>
+    <circle cx="200" cy="283" r="10" fill="#fbbf24" stroke="#1c1208" stroke-width="3"/>
+    <!-- Head -->
+    <ellipse cx="200" cy="215" rx="68" ry="62" fill="#d97706" stroke="#1c1208" stroke-width="6"/>
+    <!-- Forehead patch -->
+    <ellipse cx="178" cy="193" rx="22" ry="26" fill="#92400e" opacity="0.45"/>
+    <!-- Snout -->
+    <ellipse cx="200" cy="231" rx="36" ry="26" fill="#fef3c7" stroke="#1c1208" stroke-width="4"/>
+    
+      <path d="M200,241 C190,273 218,273 212,239 Z" fill="#fb7185" stroke="#1c1208" stroke-width="4"/>
+      <path d="M180,235 Q190,247 200,235 Q210,247 220,235" fill="none" stroke="#1c1208" stroke-width="5" stroke-linecap="round"/>
+    <!-- Nose -->
+    <ellipse cx="200" cy="221" rx="15" ry="10" fill="#1c1208"/>
+    <ellipse cx="196" cy="218" rx="5" ry="3" fill="#fff" opacity="0.7"/>
+    
+      <circle cx="170" cy="199" r="14" fill="#1c1208"/>
+      <circle cx="230" cy="199" r="14" fill="#1c1208"/>
+      <circle cx="166" cy="194" r="5" fill="#fff"/>
+      <circle cx="226" cy="194" r="5" fill="#fff"/>
+    
+    
+  </g>
+    
+</svg>

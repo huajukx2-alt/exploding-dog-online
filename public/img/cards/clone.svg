@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="42%" r="65%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </radialGradient>
+  </defs>
+  <rect width="400" height="400" rx="44" fill="url(#bg)"/>
+  <circle cx="200" cy="195" r="148" fill="#ffffff" fill-opacity="0.14"/>
+  
+      <!-- Electric Clone Pod Rays -->
+      <circle cx="200" cy="200" r="155" fill="none" stroke="#38bdf8" stroke-width="6" stroke-dasharray="14 8"/>
+      <g transform="translate(36.96, 58.800000000000004) scale(0.72)">
+    
+      <polygon points="62,180 84,102 120,155" fill="#60a5fa" stroke="#1c1208" stroke-width="6" stroke-linejoin="round"/>
+      <polygon points="72,170 86,118 110,155" fill="#fda4af"/>
+      <polygon points="202,180 180,102 144,155" fill="#60a5fa" stroke="#1c1208" stroke-width="6" stroke-linejoin="round"/>
+      <polygon points="192,170 178,118 154,155" fill="#fda4af"/>
+    <!-- Body/Shoulders -->
+    <path d="M72,260 Q57,335 87,345 L177,345 Q207,335 192,260 Z" fill="#60a5fa" stroke="#1c1208" stroke-width="6"/>
+    <ellipse cx="132" cy="305" rx="34" ry="38" fill="#fef3c7"/>
+    <!-- Collar -->
+    <rect x="86" y="262" width="92" height="14" rx="7" fill="#dc2626" stroke="#1c1208" stroke-width="4"/>
+    <circle cx="132" cy="278" r="10" fill="#fbbf24" stroke="#1c1208" stroke-width="3"/>
+    <!-- Head -->
+    <ellipse cx="132" cy="210" rx="68" ry="62" fill="#60a5fa" stroke="#1c1208" stroke-width="6"/>
+    <!-- Forehead patch -->
+    <ellipse cx="110" cy="188" rx="22" ry="26" fill="#1d4ed8" opacity="0.45"/>
+    <!-- Snout -->
+    <ellipse cx="132" cy="226" rx="36" ry="26" fill="#fef3c7" stroke="#1c1208" stroke-width="4"/>
+    
+      <path d="M132,236 C122,268 150,268 144,234 Z" fill="#fb7185" stroke="#1c1208" stroke-width="4"/>
+      <path d="M112,230 Q122,242 132,230 Q142,242 152,230" fill="none" stroke="#1c1208" stroke-width="5" stroke-linecap="round"/>
+    <!-- Nose -->
+    <ellipse cx="132" cy="216" rx="15" ry="10" fill="#1c1208"/>
+    <ellipse cx="128" cy="213" rx="5" ry="3" fill="#fff" opacity="0.7"/>
+    
+      <circle cx="102" cy="194" r="14" fill="#1c1208"/>
+      <circle cx="162" cy="194" r="14" fill="#1c1208"/>
+      <circle cx="98" cy="189" r="5" fill="#fff"/>
+      <circle cx="158" cy="189" r="5" fill="#fff"/>
+    
+    
+  </g>
+      <g transform="translate(75.04, 58.800000000000004) scale(0.72)">
+    
+      <polygon points="198,180 220,102 256,155" fill="#60a5fa" stroke="#1c1208" stroke-width="6" stroke-linejoin="round"/>
+      <polygon points="208,170 222,118 246,155" fill="#fda4af"/>
+      <polygon points="338,180 316,102 280,155" fill="#60a5fa" stroke="#1c1208" stroke-width="6" stroke-linejoin="round"/>
+      <polygon points="328,170 314,118 290,155" fill="#fda4af"/>
+    <!-- Body/Shoulders -->
+    <path d="M208,260 Q193,335 223,345 L313,345 Q343,335 328,260 Z" fill="#60a5fa" stroke="#1c1208" stroke-width="6"/>
+    <ellipse cx="268" cy="305" rx="34" ry="38" fill="#fef3c7"/>
+    <!-- Collar -->
+    <rect x="222" y="262" width="92" height="14" rx="7" fill="#dc2626" stroke="#1c1208" stroke-width="4"/>
+    <circle cx="268" cy="278" r="10" fill="#fbbf24" stroke="#1c1208" stroke-width="3"/>
+    <!-- Head -->
+    <ellipse cx="268" cy="210" rx="68" ry="62" fill="#60a5fa" stroke="#1c1208" stroke-width="6"/>
+    <!-- Forehead patch -->
+    <ellipse cx="246" cy="188" rx="22" ry="26" fill="#1d4ed8" opacity="0.45"/>
+    <!-- Snout -->
+    <ellipse cx="268" cy="226" rx="36" ry="26" fill="#fef3c7" stroke="#1c1208" stroke-width="4"/>
+    
+      <path d="M268,236 C258,268 286,268 280,234 Z" fill="#fb7185" stroke="#1c1208" stroke-width="4"/>
+      <path d="M248,230 Q258,242 268,230 Q278,242 288,230" fill="none" stroke="#1c1208" stroke-width="5" stroke-linecap="round"/>
+    <!-- Nose -->
+    <ellipse cx="268" cy="216" rx="15" ry="10" fill="#1c1208"/>
+    <ellipse cx="264" cy="213" rx="5" ry="3" fill="#fff" opacity="0.7"/>
+    
+      <circle cx="238" cy="194" r="14" fill="#1c1208"/>
+      <circle cx="298" cy="194" r="14" fill="#1c1208"/>
+      <circle cx="234" cy="189" r="5" fill="#fff"/>
+      <circle cx="294" cy="189" r="5" fill="#fff"/>
+    
+    
+  </g>
+    
+</svg>

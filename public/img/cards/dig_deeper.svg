@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="42%" r="65%">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#713f12"/>
+    </radialGradient>
+  </defs>
+  <rect width="400" height="400" rx="44" fill="url(#bg)"/>
+  <circle cx="200" cy="195" r="148" fill="#ffffff" fill-opacity="0.14"/>
+  
+      <g transform="translate(0, 0) scale(1)">
+    
+      <path d="M140,155 C90,175 95,260 132,253 C150,250 148,185 140,155 Z" fill="#92400e" stroke="#1c1208" stroke-width="6"/>
+      <path d="M260,155 C310,175 305,260 268,253 C250,250 252,185 260,155 Z" fill="#92400e" stroke="#1c1208" stroke-width="6"/>
+    <!-- Body/Shoulders -->
+    <path d="M140,245 Q125,320 155,330 L245,330 Q275,320 260,245 Z" fill="#f59e0b" stroke="#1c1208" stroke-width="6"/>
+    <ellipse cx="200" cy="290" rx="34" ry="38" fill="#fef3c7"/>
+    <!-- Collar -->
+    <rect x="154" y="247" width="92" height="14" rx="7" fill="#dc2626" stroke="#1c1208" stroke-width="4"/>
+    <circle cx="200" cy="263" r="10" fill="#fbbf24" stroke="#1c1208" stroke-width="3"/>
+    <!-- Head -->
+    <ellipse cx="200" cy="195" rx="68" ry="62" fill="#f59e0b" stroke="#1c1208" stroke-width="6"/>
+    <!-- Forehead patch -->
+    <ellipse cx="178" cy="173" rx="22" ry="26" fill="#92400e" opacity="0.45"/>
+    <!-- Snout -->
+    <ellipse cx="200" cy="211" rx="36" ry="26" fill="#fef3c7" stroke="#1c1208" stroke-width="4"/>
+    
+      <path d="M200,221 C190,253 218,253 212,219 Z" fill="#fb7185" stroke="#1c1208" stroke-width="4"/>
+      <path d="M180,215 Q190,227 200,215 Q210,227 220,215" fill="none" stroke="#1c1208" stroke-width="5" stroke-linecap="round"/>
+    <!-- Nose -->
+    <ellipse cx="200" cy="201" rx="15" ry="10" fill="#1c1208"/>
+    <ellipse cx="196" cy="198" rx="5" ry="3" fill="#fff" opacity="0.7"/>
+    
+      <circle cx="170" cy="179" r="14" fill="#1c1208"/>
+      <circle cx="230" cy="179" r="14" fill="#1c1208"/>
+      <circle cx="166" cy="174" r="5" fill="#fff"/>
+      <circle cx="226" cy="174" r="5" fill="#fff"/>
+    <path d="M125,148 A75,65 0 0,1 275,148 Z" fill="#facc15" stroke="#1c1208" stroke-width="5"/>
+              <rect x="115" y="142" width="170" height="14" rx="6" fill="#eab308" stroke="#1c1208" stroke-width="4"/>
+              <circle cx="200" cy="118" r="16" fill="#fef08a" stroke="#1c1208" stroke-width="4"/>
+    
+  </g>
+      <!-- Treasure Chest / Cards -->
+      <g transform="translate(125,320) rotate(-15)">
+    <rect x="-26" y="-36" width="52" height="72" rx="8" fill="#fff" stroke="#1c1208" stroke-width="4"/>
+    <rect x="-20" y="-30" width="40" height="60" rx="5" fill="#fde047"/>
+    <text x="0" y="8" font-size="26" text-anchor="middle">🦴</text>
+  </g>
+      <g transform="translate(275,320) rotate(15)">
+    <rect x="-26" y="-36" width="52" height="72" rx="8" fill="#fff" stroke="#1c1208" stroke-width="4"/>
+    <rect x="-20" y="-30" width="40" height="60" rx="5" fill="#38bdf8"/>
+    <text x="0" y="8" font-size="26" text-anchor="middle">💎</text>
+  </g>
+    
+</svg>

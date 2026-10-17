@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="42%" r="65%">
+      <stop offset="0%" stop-color="#fb7185"/>
+      <stop offset="100%" stop-color="#9f1239"/>
+    </radialGradient>
+  </defs>
+  <rect width="400" height="400" rx="44" fill="url(#bg)"/>
+  <circle cx="200" cy="195" r="148" fill="#ffffff" fill-opacity="0.14"/>
+  
+      <!-- Hotdog Bun Back -->
+      <ellipse cx="200" cy="265" rx="145" ry="62" fill="#d97706" stroke="#1c1208" stroke-width="6"/>
+      <!-- Dachshund Sausage Body -->
+      <rect x="65" y="220" width="270" height="65" rx="32" fill="#991b1b" stroke="#1c1208" stroke-width="6"/>
+      <!-- Mustard & Ketchup Zigzag -->
+      <path d="M90,248 Q115,222 140,248 T190,248 T240,248 T290,248" fill="none" stroke="#fde047" stroke-width="10" stroke-linecap="round"/>
+      <path d="M100,262 Q125,284 150,262 T200,262 T250,262 T300,262" fill="none" stroke="#ef4444" stroke-width="7" stroke-linecap="round"/>
+      <!-- Hotdog Bun Front Lip -->
+      <path d="M62,272 Q200,345 338,272 Q325,335 200,340 Q75,335 62,272 Z" fill="#f59e0b" stroke="#1c1208" stroke-width="6"/>
+      <g transform="translate(19.999999999999996, 15.499999999999996) scale(0.9)">
+    
+      <path d="M140,115 C90,135 95,220 132,213 C150,210 148,145 140,115 Z" fill="#78350f" stroke="#1c1208" stroke-width="6"/>
+      <path d="M260,115 C310,135 305,220 268,213 C250,210 252,145 260,115 Z" fill="#78350f" stroke="#1c1208" stroke-width="6"/>
+    <!-- Body/Shoulders -->
+    <path d="M140,205 Q125,280 155,290 L245,290 Q275,280 260,205 Z" fill="#b45309" stroke="#1c1208" stroke-width="6"/>
+    <ellipse cx="200" cy="250" rx="34" ry="38" fill="#fef3c7"/>
+    <!-- Collar -->
+    <rect x="154" y="207" width="92" height="14" rx="7" fill="#dc2626" stroke="#1c1208" stroke-width="4"/>
+    <circle cx="200" cy="223" r="10" fill="#fbbf24" stroke="#1c1208" stroke-width="3"/>
+    <!-- Head -->
+    <ellipse cx="200" cy="155" rx="68" ry="62" fill="#b45309" stroke="#1c1208" stroke-width="6"/>
+    <!-- Forehead patch -->
+    <ellipse cx="178" cy="133" rx="22" ry="26" fill="#78350f" opacity="0.45"/>
+    <!-- Snout -->
+    <ellipse cx="200" cy="171" rx="36" ry="26" fill="#fef3c7" stroke="#1c1208" stroke-width="4"/>
+    
+      <path d="M200,181 C190,213 218,213 212,179 Z" fill="#fb7185" stroke="#1c1208" stroke-width="4"/>
+      <path d="M180,175 Q190,187 200,175 Q210,187 220,175" fill="none" stroke="#1c1208" stroke-width="5" stroke-linecap="round"/>
+    <!-- Nose -->
+    <ellipse cx="200" cy="161" rx="15" ry="10" fill="#1c1208"/>
+    <ellipse cx="196" cy="158" rx="5" ry="3" fill="#fff" opacity="0.7"/>
+    
+      <circle cx="170" cy="139" r="14" fill="#1c1208"/>
+      <circle cx="230" cy="139" r="14" fill="#1c1208"/>
+      <circle cx="166" cy="134" r="5" fill="#fff"/>
+      <circle cx="226" cy="134" r="5" fill="#fff"/>
+    
+    
+  </g>
+    
+</svg>

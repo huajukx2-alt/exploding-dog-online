@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="42%" r="65%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#0c4a6e"/>
+    </radialGradient>
+  </defs>
+  <rect width="400" height="400" rx="44" fill="url(#bg)"/>
+  <circle cx="200" cy="195" r="148" fill="#ffffff" fill-opacity="0.14"/>
+  
+      <g transform="translate(58,95) rotate(-30)">
+    <rect x="-26" y="-36" width="52" height="72" rx="8" fill="#fff" stroke="#1c1208" stroke-width="4"/>
+    <rect x="-20" y="-30" width="40" height="60" rx="5" fill="#ef4444"/>
+    <text x="0" y="8" font-size="26" text-anchor="middle">1</text>
+  </g>
+      <g transform="translate(125,72) rotate(-15)">
+    <rect x="-26" y="-36" width="52" height="72" rx="8" fill="#fff" stroke="#1c1208" stroke-width="4"/>
+    <rect x="-20" y="-30" width="40" height="60" rx="5" fill="#f97316"/>
+    <text x="0" y="8" font-size="26" text-anchor="middle">2</text>
+  </g>
+      <g transform="translate(200,62) rotate(0)">
+    <rect x="-26" y="-36" width="52" height="72" rx="8" fill="#fff" stroke="#1c1208" stroke-width="4"/>
+    <rect x="-20" y="-30" width="40" height="60" rx="5" fill="#eab308"/>
+    <text x="0" y="8" font-size="26" text-anchor="middle">3</text>
+  </g>
+      <g transform="translate(275,72) rotate(15)">
+    <rect x="-26" y="-36" width="52" height="72" rx="8" fill="#fff" stroke="#1c1208" stroke-width="4"/>
+    <rect x="-20" y="-30" width="40" height="60" rx="5" fill="#22c55e"/>
+    <text x="0" y="8" font-size="26" text-anchor="middle">4</text>
+  </g>
+      <g transform="translate(342,95) rotate(30)">
+    <rect x="-26" y="-36" width="52" height="72" rx="8" fill="#fff" stroke="#1c1208" stroke-width="4"/>
+    <rect x="-20" y="-30" width="40" height="60" rx="5" fill="#a855f7"/>
+    <text x="0" y="8" font-size="26" text-anchor="middle">5</text>
+  </g>
+      <g transform="translate(19.999999999999996, 23.499999999999996) scale(0.9)">
+    
+      <ellipse cx="128" cy="227" rx="28" ry="56" transform="rotate(18 128 227)" fill="#0369a1" stroke="#1c1208" stroke-width="6"/>
+      <ellipse cx="272" cy="227" rx="28" ry="56" transform="rotate(-18 272 227)" fill="#0369a1" stroke="#1c1208" stroke-width="6"/>
+    <!-- Body/Shoulders -->
+    <path d="M140,285 Q125,360 155,370 L245,370 Q275,360 260,285 Z" fill="#38bdf8" stroke="#1c1208" stroke-width="6"/>
+    <ellipse cx="200" cy="330" rx="34" ry="38" fill="#fef3c7"/>
+    <!-- Collar -->
+    <rect x="154" y="287" width="92" height="14" rx="7" fill="#dc2626" stroke="#1c1208" stroke-width="4"/>
+    <circle cx="200" cy="303" r="10" fill="#fbbf24" stroke="#1c1208" stroke-width="3"/>
+    <!-- Head -->
+    <ellipse cx="200" cy="235" rx="68" ry="62" fill="#38bdf8" stroke="#1c1208" stroke-width="6"/>
+    <!-- Forehead patch -->
+    <ellipse cx="178" cy="213" rx="22" ry="26" fill="#0369a1" opacity="0.45"/>
+    <!-- Snout -->
+    <ellipse cx="200" cy="251" rx="36" ry="26" fill="#fef3c7" stroke="#1c1208" stroke-width="4"/>
+    
+      <path d="M200,261 C190,293 218,293 212,259 Z" fill="#fb7185" stroke="#1c1208" stroke-width="4"/>
+      <path d="M180,255 Q190,267 200,255 Q210,267 220,255" fill="none" stroke="#1c1208" stroke-width="5" stroke-linecap="round"/>
+    <!-- Nose -->
+    <ellipse cx="200" cy="241" rx="15" ry="10" fill="#1c1208"/>
+    <ellipse cx="196" cy="238" rx="5" ry="3" fill="#fff" opacity="0.7"/>
+    
+      <circle cx="170" cy="219" r="14" fill="#38bdf8" stroke="#1c1208" stroke-width="4"/>
+      <circle cx="230" cy="219" r="14" fill="#38bdf8" stroke="#1c1208" stroke-width="4"/>
+      <ellipse cx="200" cy="187" rx="16" ry="10" fill="#fef08a" stroke="#1c1208" stroke-width="4"/>
+      <circle cx="200" cy="187" r="5" fill="#9333ea"/>
+    
+    
+  </g>
+    
+</svg>

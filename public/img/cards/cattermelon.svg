@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="42%" r="65%">
+      <stop offset="0%" stop-color="#4ade80"/>
+      <stop offset="100%" stop-color="#14532d"/>
+    </radialGradient>
+  </defs>
+  <rect width="400" height="400" rx="44" fill="url(#bg)"/>
+  <circle cx="200" cy="195" r="148" fill="#ffffff" fill-opacity="0.14"/>
+  
+      <g transform="translate(0, 0) scale(1)">
+    
+      <path d="M150,117 Q105,100 122,160 Z" fill="#292524" stroke="#1c1208" stroke-width="6" stroke-linejoin="round"/>
+      <path d="M250,117 Q295,100 278,160 Z" fill="#292524" stroke="#1c1208" stroke-width="6" stroke-linejoin="round"/>
+    <!-- Body/Shoulders -->
+    <path d="M140,225 Q125,300 155,310 L245,310 Q275,300 260,225 Z" fill="#fde047" stroke="#1c1208" stroke-width="6"/>
+    <ellipse cx="200" cy="270" rx="34" ry="38" fill="#fef3c7"/>
+    <!-- Collar -->
+    <rect x="154" y="227" width="92" height="14" rx="7" fill="#dc2626" stroke="#1c1208" stroke-width="4"/>
+    <circle cx="200" cy="243" r="10" fill="#fbbf24" stroke="#1c1208" stroke-width="3"/>
+    <!-- Head -->
+    <ellipse cx="200" cy="175" rx="68" ry="62" fill="#fde047" stroke="#1c1208" stroke-width="6"/>
+    <!-- Forehead patch -->
+    <ellipse cx="178" cy="153" rx="22" ry="26" fill="#ca8a04" opacity="0.45"/>
+    <!-- Snout -->
+    <ellipse cx="200" cy="191" rx="36" ry="26" fill="#fef3c7" stroke="#1c1208" stroke-width="4"/>
+    
+      <path d="M200,201 C190,233 218,233 212,199 Z" fill="#fb7185" stroke="#1c1208" stroke-width="4"/>
+      <path d="M180,195 Q190,207 200,195 Q210,207 220,195" fill="none" stroke="#1c1208" stroke-width="5" stroke-linecap="round"/>
+    <!-- Nose -->
+    <ellipse cx="200" cy="181" rx="15" ry="10" fill="#1c1208"/>
+    <ellipse cx="196" cy="178" rx="5" ry="3" fill="#fff" opacity="0.7"/>
+    
+      <circle cx="170" cy="159" r="14" fill="#1c1208"/>
+      <circle cx="230" cy="159" r="14" fill="#1c1208"/>
+      <circle cx="166" cy="154" r="5" fill="#fff"/>
+      <circle cx="226" cy="154" r="5" fill="#fff"/>
+    
+    
+  </g>
+      <!-- Giant Watermelon Slice Body -->
+      <path d="M55,220 A145,145 0 0,0 345,220 Z" fill="#16a34a" stroke="#1c1208" stroke-width="6"/>
+      <path d="M72,220 A128,128 0 0,0 328,220 Z" fill="#bbf7d0"/>
+      <path d="M84,220 A116,116 0 0,0 316,220 Z" fill="#f43f5e"/>
+      <!-- Watermelon Seeds -->
+      <ellipse cx="145" cy="265" rx="5" ry="9" fill="#1c1208"/>
+      <ellipse cx="200" cy="285" rx="5" ry="9" fill="#1c1208"/>
+      <ellipse cx="255" cy="265" rx="5" ry="9" fill="#1c1208"/>
+      <ellipse cx="175" cy="310" rx="5" ry="9" fill="#1c1208"/>
+      <ellipse cx="225" cy="310" rx="5" ry="9" fill="#1c1208"/>
+    
+</svg>

@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="42%" r="65%">
+      <stop offset="0%" stop-color="#f87171"/>
+      <stop offset="100%" stop-color="#450a0a"/>
+    </radialGradient>
+  </defs>
+  <rect width="400" height="400" rx="44" fill="url(#bg)"/>
+  <circle cx="200" cy="195" r="148" fill="#ffffff" fill-opacity="0.14"/>
+  
+      <!-- Boomerang / Self-punch -->
+      <circle cx="115" cy="95" r="10" fill="#fde047"/><circle cx="285" cy="95" r="10" fill="#fde047"/><circle cx="200" cy="70" r="12" fill="#fde047"/>
+      <g transform="translate(0, 0) scale(1)">
+    
+      <ellipse cx="128" cy="197" rx="28" ry="56" transform="rotate(18 128 197)" fill="#991b1b" stroke="#1c1208" stroke-width="6"/>
+      <ellipse cx="272" cy="197" rx="28" ry="56" transform="rotate(-18 272 197)" fill="#991b1b" stroke="#1c1208" stroke-width="6"/>
+    <!-- Body/Shoulders -->
+    <path d="M140,255 Q125,330 155,340 L245,340 Q275,330 260,255 Z" fill="#f87171" stroke="#1c1208" stroke-width="6"/>
+    <ellipse cx="200" cy="300" rx="34" ry="38" fill="#fef3c7"/>
+    <!-- Collar -->
+    <rect x="154" y="257" width="92" height="14" rx="7" fill="#dc2626" stroke="#1c1208" stroke-width="4"/>
+    <circle cx="200" cy="273" r="10" fill="#fbbf24" stroke="#1c1208" stroke-width="3"/>
+    <!-- Head -->
+    <ellipse cx="200" cy="205" rx="68" ry="62" fill="#f87171" stroke="#1c1208" stroke-width="6"/>
+    <!-- Forehead patch -->
+    <ellipse cx="178" cy="183" rx="22" ry="26" fill="#991b1b" opacity="0.45"/>
+    <!-- Snout -->
+    <ellipse cx="200" cy="221" rx="36" ry="26" fill="#fef3c7" stroke="#1c1208" stroke-width="4"/>
+    
+      <ellipse cx="200" cy="235" rx="24" ry="20" fill="#881337" stroke="#1c1208" stroke-width="5"/>
+      <path d="M184,221 L190,230 L196,221 M204,221 L210,230 L216,221" fill="#fff"/>
+      <ellipse cx="200" cy="243" rx="14" ry="8" fill="#fb7185"/>
+    <!-- Nose -->
+    <ellipse cx="200" cy="211" rx="15" ry="10" fill="#1c1208"/>
+    <ellipse cx="196" cy="208" rx="5" ry="3" fill="#fff" opacity="0.7"/>
+    
+      <circle cx="170" cy="189" r="16" fill="#fff" stroke="#1c1208" stroke-width="4"/>
+      <circle cx="230" cy="189" r="16" fill="#fff" stroke="#1c1208" stroke-width="4"/>
+      <path d="M170,189 m-8,0 a8,8 0 1,0 16,0 a5,5 0 1,0 -10,0" fill="none" stroke="#1c1208" stroke-width="3.5"/>
+      <path d="M230,189 m-8,0 a8,8 0 1,0 16,0 a5,5 0 1,0 -10,0" fill="none" stroke="#1c1208" stroke-width="3.5"/>
+    
+    
+  </g>
+      <!-- Red Boxing Glove hitting own cheek -->
+      <circle cx="285" cy="215" r="42" fill="#dc2626" stroke="#1c1208" stroke-width="6"/>
+      <rect x="310" y="235" width="42" height="28" rx="6" fill="#fff" stroke="#1c1208" stroke-width="5"/>
+    
+</svg>

@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="42%" r="65%">
+      <stop offset="0%" stop-color="#d97706"/>
+      <stop offset="100%" stop-color="#451a03"/>
+    </radialGradient>
+  </defs>
+  <rect width="400" height="400" rx="44" fill="url(#bg)"/>
+  <circle cx="200" cy="195" r="148" fill="#ffffff" fill-opacity="0.14"/>
+  
+      <g transform="translate(24, 19.8) scale(0.88)">
+    
+      <path d="M140,125 C90,145 95,230 132,223 C150,220 148,155 140,125 Z" fill="#78350f" stroke="#1c1208" stroke-width="6"/>
+      <path d="M260,125 C310,145 305,230 268,223 C250,220 252,155 260,125 Z" fill="#78350f" stroke="#1c1208" stroke-width="6"/>
+    <!-- Body/Shoulders -->
+    <path d="M140,215 Q125,290 155,300 L245,300 Q275,290 260,215 Z" fill="#f59e0b" stroke="#1c1208" stroke-width="6"/>
+    <ellipse cx="200" cy="260" rx="34" ry="38" fill="#fef3c7"/>
+    <!-- Collar -->
+    <rect x="154" y="217" width="92" height="14" rx="7" fill="#dc2626" stroke="#1c1208" stroke-width="4"/>
+    <circle cx="200" cy="233" r="10" fill="#fbbf24" stroke="#1c1208" stroke-width="3"/>
+    <!-- Head -->
+    <ellipse cx="200" cy="165" rx="68" ry="62" fill="#f59e0b" stroke="#1c1208" stroke-width="6"/>
+    <!-- Forehead patch -->
+    <ellipse cx="178" cy="143" rx="22" ry="26" fill="#78350f" opacity="0.45"/>
+    <!-- Snout -->
+    <ellipse cx="200" cy="181" rx="36" ry="26" fill="#fef3c7" stroke="#1c1208" stroke-width="4"/>
+    
+      <path d="M200,191 C190,223 218,223 212,189 Z" fill="#fb7185" stroke="#1c1208" stroke-width="4"/>
+      <path d="M180,185 Q190,197 200,185 Q210,197 220,185" fill="none" stroke="#1c1208" stroke-width="5" stroke-linecap="round"/>
+    <!-- Nose -->
+    <ellipse cx="200" cy="171" rx="15" ry="10" fill="#1c1208"/>
+    <ellipse cx="196" cy="168" rx="5" ry="3" fill="#fff" opacity="0.7"/>
+    
+      <circle cx="170" cy="149" r="14" fill="#1c1208"/>
+      <circle cx="230" cy="149" r="14" fill="#1c1208"/>
+      <circle cx="166" cy="144" r="5" fill="#fff"/>
+      <circle cx="226" cy="144" r="5" fill="#fff"/>
+    
+    
+  </g>
+      <!-- Dirt Mound at Bottom -->
+      <path d="M45,365 Q200,225 355,365 Z" fill="#78350f" stroke="#1c1208" stroke-width="6"/>
+      <!-- Bone & Card sticking out of dirt -->
+      <g transform="translate(165,295) rotate(-18)">
+    <rect x="-26" y="-36" width="52" height="72" rx="8" fill="#fff" stroke="#1c1208" stroke-width="4"/>
+    <rect x="-20" y="-30" width="40" height="60" rx="5" fill="#fbbf24"/>
+    <text x="0" y="8" font-size="26" text-anchor="middle">🐾</text>
+  </g>
+      <rect x="235" y="255" width="18" height="85" rx="6" transform="rotate(25 244 295)" fill="#94a3b8" stroke="#1c1208" stroke-width="4"/>
+    
+</svg>

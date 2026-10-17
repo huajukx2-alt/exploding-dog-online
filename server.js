@@ -1,0 +1,258 @@
+const express = require('express');
+const http = require('http');
+const fs = require('fs');
+const path = require('path');
+const { Server } = require('socket.io');
+const Game = require('./game');
+const db = require('./db');
+const { FREE_STICKERS } = require('./public/shared/cards');
+
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server, { cors: { origin: '*' } });
+const PORT = process.env.PORT || 3000;
+
+app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
+
+// ------------------------------------------------------------------ REST: auth / profile / shop
+const auth = (req) => db.byToken(req.headers['x-token'] || '');
+const reply = (res, r) => res.status(r.error ? 400 : 200).json(r);
+
+app.post('/api/register', (req, res) => reply(res, db.register(req.body.username, req.body.password, req.body.displayName)));
+app.post('/api/login', (req, res) => reply(res, db.login(req.body.username, req.body.password)));
+app.post('/api/logout', (req, res) => { db.logout(req.headers['x-token']); res.json({ ok: true }); });
+app.get('/api/me', (req, res) => { const u = auth(req); u ? res.json({ user: db.publicUser(u) }) : res.status(401).json({ error: 'auth' }); });
+app.post('/api/profile', (req, res) => reply(res, db.updateProfile(req.headers['x-token'], req.body)));
+app.post('/api/buy', (req, res) => reply(res, db.buy(req.headers['x-token'], req.body.itemId)));
+app.post('/api/equip', (req, res) => reply(res, db.equip(req.headers['x-token'], req.body.itemId, req.body.type)));
+app.post('/api/daily', (req, res) => reply(res, db.dailyBonus(req.headers['x-token'])));
+app.get('/api/leaderboard', (req, res) => res.json({ list: db.leaderboard() }));
+app.get('/api/card-images', (req, res) => {
+  const dir = path.join(__dirname, 'public', 'img', 'cards');
+  const map = {};
+  try {
+    for (const f of fs.readdirSync(dir)) {
+      const m = f.match(/^(.+)\.(svg|png|jpe?g|webp)$/i);
+      if (m) {
+        const id = m[1];
+        const isSvg = /\.svg$/i.test(f);
+        // Prioritize SVG: only replace if we don't have this card yet, or if current file is SVG
+        if (!map[id] || isSvg) {
+          const v = Math.floor(fs.statSync(path.join(dir, f)).mtimeMs / 1000);
+          map[id] = `/img/cards/${f}?v=${v}`;
+        }
+      }
+    }
+  } catch (e) { /* no folder yet */ }
+  res.json(map);
+});
+
+// ------------------------------------------------------------------ rooms
+const games = new Map();        // code -> Game
+const socketRoom = new Map();   // socketId -> code
+
+function newCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let c; do { c = Array.from({ length: 4 }, () => chars[Math.floor(Math.random() * chars.length)]).join(''); } while (games.has(c));
+  return c;
+}
+
+function onGameEnd(game, results) {
+  const humans = game.players.filter(p => !p.isBot).length;
+  const rewards = {};
+  for (const r of results) {
+    const p = r.player;
+    if (p.isBot || !p.userId) continue;
+    const rec = db.recordGame(p.userId, {
+      place: r.place, total: results.length, won: r.place === 1, exploded: !!p.elimReason, defuses: p.defuses,
+      vsBotsOnly: humans === 1, version: game.settings.version
+    });
+    if (rec) {
+      rewards[p.id] = { coins: rec.coins, rp: rec.rp };
+      p.rp = rec.user.rp; p.inventory = rec.user.inventory;
+      if (p.socketId) io.to(p.socketId).emit('profile', rec.user);
+    }
+  }
+  return rewards;
+}
+
+const ctx = (socket) => { const code = socketRoom.get(socket.id); return code ? games.get(code) : null; };
+
+function leave(socket) {
+  const code = socketRoom.get(socket.id); if (!code) return;
+  const g = games.get(code); socketRoom.delete(socket.id); socket.leave(code);
+  if (!g) return;
+  g.removeSocket(socket.id);
+  const empty = () => !g.players.some(p => !p.isBot && p.connected);
+  if (empty()) {
+    const delay = g.state === 'LOBBY' ? 15000 : 60000;
+    setTimeout(() => { if (empty() && games.get(code) === g) { g.clearAll(); games.delete(code); } }, delay);
+  } else g.sync();
+}
+
+function enter(socket, g, player) {
+  socketRoom.set(socket.id, g.code); socket.join(g.code);
+  socket.emit('joined', { code: g.code, playerId: player.id, key: player.key });
+  g.sync();
+}
+
+io.on('connection', (socket) => {
+  const err = (e) => socket.emit('err', e);
+  const user = () => db.byToken(socket.handshake.auth?.token || socket.data.token || '');
+  const safeObj = (d) => (d && typeof d === 'object') ? d : {};
+
+  socket.on('auth', (token) => {
+    socket.data.token = token;
+    const u = db.byToken(token);
+    if (u) {
+      const g = ctx(socket);
+      const p = g && g.bySocket(socket.id);
+      if (p && !p.userId) {
+        p.userId = u.username;
+        p.rp = u.rp;
+        p.inventory = u.inventory;
+        g.sync();
+      }
+    }
+  });
+
+  socket.on('createRoom', (data) => {
+    try {
+      const d = safeObj(data);
+      leave(socket);
+      const g = new Game(newCode(), io, onGameEnd);
+      const r = g.addHuman(socket.id, d.name, user()); if (r.error) return err(r.error);
+      games.set(g.code, g);
+      if (d.settings) g.updateSettings(socket.id, d.settings);
+      for (let i = 0; i < Math.min(7, d.bots || 0); i++) g.addBot();
+      enter(socket, g, r.player);
+    } catch (e) {
+      console.error('[createRoom error]', e);
+    }
+  });
+
+  socket.on('quickSolo', (data) => {
+    try {
+      const d = safeObj(data);
+      leave(socket);
+      const g = new Game(newCode(), io, onGameEnd);
+      const r = g.addHuman(socket.id, d.name, user()); if (r.error) return err(r.error);
+      games.set(g.code, g);
+      if (d.settings) g.updateSettings(socket.id, d.settings);
+      for (let i = 0; i < Math.max(1, Math.min(7, d.bots ?? 3)); i++) g.addBot();
+      enter(socket, g, r.player);
+      g.start(socket.id);
+    } catch (e) {
+      console.error('[quickSolo error]', e);
+    }
+  });
+
+  socket.on('listRooms', () => {
+    try {
+      const list = [];
+      for (const [code, g] of games.entries()) {
+        const host = g.players.find(p => p.isHost);
+        const humans = g.players.filter(p => !p.isBot).length;
+        list.push({
+          code,
+          state: g.state,
+          version: g.settings.version,
+          playerCount: g.players.length,
+          maxPlayers: g.settings.maxPlayers || 5,
+          hostName: host ? host.name : 'Doggo',
+          hostAvatar: host ? host.avatar : '🐶',
+          humans
+        });
+      }
+      socket.emit('roomsList', list);
+    } catch (e) {
+      console.error('[listRooms error]', e);
+    }
+  });
+
+  socket.on('joinRoom', (data) => {
+    try {
+      const d = safeObj(data);
+      const g = games.get(String(d.code || '').toUpperCase().trim());
+      if (!g) return err('room_not_found');
+      leave(socket);
+      const r = g.addHuman(socket.id, d.name, user()); if (r.error) return err(r.error);
+      enter(socket, g, r.player);
+    } catch (e) {
+      console.error('[joinRoom error]', e);
+    }
+  });
+
+  socket.on('rejoin', (data) => {
+    try {
+      const d = safeObj(data);
+      const g = games.get(d.code); if (!g) return socket.emit('rejoinFailed');
+      leave(socket);
+      const r = g.rejoin(socket.id, d.playerId, d.key); if (r.error) return socket.emit('rejoinFailed');
+      enter(socket, g, r.player);
+    } catch (e) {
+      console.error('[rejoin error]', e);
+      socket.emit('rejoinFailed');
+    }
+  });
+
+  socket.on('leaveRoom', () => { leave(socket); socket.emit('left'); });
+
+  const act = (event, fn) => socket.on(event, (data) => {
+    try {
+      const g = ctx(socket); if (!g) return;
+      const d = safeObj(data);
+      const r = fn(g, d) || {};
+      if (r.error) err(r.error);
+      g.sync();
+    } catch (e) {
+      console.error(`[socket act error: ${event}]`, e);
+    }
+  });
+  act('addBot', (g) => g.addBot(socket.id));
+  act('removeBot', (g, d) => g.removeBot(socket.id, d.botId));
+  act('setReady', (g, d) => g.setReady(socket.id, d.ready));
+  act('settings', (g, d) => g.updateSettings(socket.id, d));
+  act('start', (g) => g.start(socket.id));
+  act('draw', (g) => g.drawAction(socket.id));
+  act('play', (g, d) => g.play(socket.id, d.uids, d.targetId, d.namedId));
+  act('respond', (g, d) => g.respond(socket.id, d));
+  act('backToLobby', (g) => g.backToLobby(socket.id));
+  socket.on('reorder', (data) => {
+    try {
+      const { from, to } = safeObj(data);
+      const g = ctx(socket); const p = g && g.bySocket(socket.id); if (!p) return;
+      if (from >= 0 && to >= 0 && from < p.hand.length && to < p.hand.length) { p.hand.splice(to, 0, p.hand.splice(from, 1)[0]); }
+      socket.emit('state', g.getState(p));
+    } catch (e) { console.error('[reorder error]', e); }
+  });
+  socket.on('sortHand', () => {
+    try {
+      const g = ctx(socket); const p = g && g.bySocket(socket.id); if (!p) return;
+      p.hand.sort((a, b) => a.id.localeCompare(b.id));
+      socket.emit('state', g.getState(p));
+    } catch (e) { console.error('[sortHand error]', e); }
+  });
+  socket.on('chat', (data) => {
+    try {
+      const { text } = safeObj(data);
+      const g = ctx(socket); if (g) g.chat(socket.id, text);
+    } catch (e) { console.error('[chat error]', e); }
+  });
+  socket.on('sticker', (data) => {
+    try {
+      const { id } = safeObj(data);
+      const g = ctx(socket); if (g) g.sticker(socket.id, id, FREE_STICKERS.map(s => s.id));
+    } catch (e) { console.error('[sticker error]', e); }
+  });
+
+  socket.on('disconnect', () => leave(socket));
+});
+
+server.listen(PORT, '0.0.0.0', () => {
+  console.log('===============================================');
+  console.log('🐱💣 Exploding Kittens Online is RUNNING');
+  console.log(`🔗 http://localhost:${PORT}`);
+  console.log('===============================================');
+});

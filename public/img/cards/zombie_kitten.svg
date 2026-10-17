@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="42%" r="65%">
+      <stop offset="0%" stop-color="#a3e635"/>
+      <stop offset="100%" stop-color="#14532d"/>
+    </radialGradient>
+  </defs>
+  <rect width="400" height="400" rx="44" fill="url(#bg)"/>
+  <circle cx="200" cy="195" r="148" fill="#ffffff" fill-opacity="0.14"/>
+  
+      <!-- Spooky Full Moon & Tombstone -->
+      <circle cx="310" cy="85" r="40" fill="#fef08a" opacity="0.8"/>
+      <g transform="translate(0, 0) scale(1)">
+    
+      <ellipse cx="128" cy="197" rx="28" ry="56" transform="rotate(18 128 197)" fill="#3f6212" stroke="#1c1208" stroke-width="6"/>
+      <ellipse cx="272" cy="197" rx="28" ry="56" transform="rotate(-18 272 197)" fill="#3f6212" stroke="#1c1208" stroke-width="6"/>
+    <!-- Body/Shoulders -->
+    <path d="M140,255 Q125,330 155,340 L245,340 Q275,330 260,255 Z" fill="#84cc16" stroke="#1c1208" stroke-width="6"/>
+    <ellipse cx="200" cy="300" rx="34" ry="38" fill="#d9f99d"/>
+    <!-- Collar -->
+    <rect x="154" y="257" width="92" height="14" rx="7" fill="#dc2626" stroke="#1c1208" stroke-width="4"/>
+    <circle cx="200" cy="273" r="10" fill="#fbbf24" stroke="#1c1208" stroke-width="3"/>
+    <!-- Head -->
+    <ellipse cx="200" cy="205" rx="68" ry="62" fill="#84cc16" stroke="#1c1208" stroke-width="6"/>
+    <!-- Forehead patch -->
+    <ellipse cx="178" cy="183" rx="22" ry="26" fill="#3f6212" opacity="0.45"/>
+    <!-- Snout -->
+    <ellipse cx="200" cy="221" rx="36" ry="26" fill="#d9f99d" stroke="#1c1208" stroke-width="4"/>
+    
+      <path d="M174,229 Q200,239 226,229" fill="none" stroke="#1c1208" stroke-width="5"/>
+      <line x1="186" y1="223" x2="186" y2="237" stroke="#1c1208" stroke-width="4"/>
+      <line x1="200" y1="225" x2="200" y2="239" stroke="#1c1208" stroke-width="4"/>
+      <line x1="214" y1="223" x2="214" y2="237" stroke="#1c1208" stroke-width="4"/>
+    <!-- Nose -->
+    <ellipse cx="200" cy="211" rx="15" ry="10" fill="#1c1208"/>
+    <ellipse cx="196" cy="208" rx="5" ry="3" fill="#fff" opacity="0.7"/>
+    
+      <circle cx="170" cy="189" r="16" fill="#bef264" stroke="#1c1208" stroke-width="5"/>
+      <circle cx="230" cy="189" r="16" fill="#fef08a" stroke="#1c1208" stroke-width="5"/>
+      <line x1="163" y1="182" x2="177" y2="196" stroke="#1c1208" stroke-width="4"/>
+      <line x1="177" y1="182" x2="163" y2="196" stroke="#1c1208" stroke-width="4"/>
+      <circle cx="230" cy="189" r="5" fill="#dc2626"/>
+    
+    <line x1="155" y1="155" x2="195" y2="165" stroke="#1c1208" stroke-width="5"/>
+                <line x1="168" y1="148" x2="164" y2="168" stroke="#1c1208" stroke-width="4"/>
+                <line x1="184" y1="152" x2="180" y2="172" stroke="#1c1208" stroke-width="4"/>
+  </g>
+    
+</svg>

@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="42%" r="65%">
+      <stop offset="0%" stop-color="#94a3b8"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </radialGradient>
+  </defs>
+  <rect width="400" height="400" rx="44" fill="url(#bg)"/>
+  <circle cx="200" cy="195" r="148" fill="#ffffff" fill-opacity="0.14"/>
+  
+      <g transform="translate(0, 0) scale(1)">
+    
+      <path d="M140,125 C90,145 95,230 132,223 C150,220 148,155 140,125 Z" fill="#475569" stroke="#1c1208" stroke-width="6"/>
+      <path d="M260,125 C310,145 305,230 268,223 C250,220 252,155 260,125 Z" fill="#475569" stroke="#1c1208" stroke-width="6"/>
+    <!-- Body/Shoulders -->
+    <path d="M140,215 Q125,290 155,300 L245,300 Q275,290 260,215 Z" fill="#cbd5e1" stroke="#1c1208" stroke-width="6"/>
+    <ellipse cx="200" cy="260" rx="34" ry="38" fill="#fef3c7"/>
+    <!-- Collar -->
+    <rect x="154" y="217" width="92" height="14" rx="7" fill="#dc2626" stroke="#1c1208" stroke-width="4"/>
+    <circle cx="200" cy="233" r="10" fill="#fbbf24" stroke="#1c1208" stroke-width="3"/>
+    <!-- Head -->
+    <ellipse cx="200" cy="165" rx="68" ry="62" fill="#cbd5e1" stroke="#1c1208" stroke-width="6"/>
+    <!-- Forehead patch -->
+    <ellipse cx="178" cy="143" rx="22" ry="26" fill="#475569" opacity="0.45"/>
+    <!-- Snout -->
+    <ellipse cx="200" cy="181" rx="36" ry="26" fill="#fef3c7" stroke="#1c1208" stroke-width="4"/>
+    
+      <path d="M186,189 Q204,199 224,181" fill="none" stroke="#1c1208" stroke-width="5" stroke-linecap="round"/>
+    <!-- Nose -->
+    <ellipse cx="200" cy="171" rx="15" ry="10" fill="#1c1208"/>
+    <ellipse cx="196" cy="168" rx="5" ry="3" fill="#fff" opacity="0.7"/>
+    
+      <rect x="138" y="135" width="54" height="28" rx="6" fill="#0f172a" stroke="#fff" stroke-width="3"/>
+      <rect x="208" y="135" width="54" height="28" rx="6" fill="#0f172a" stroke="#fff" stroke-width="3"/>
+      <line x1="192" y1="145" x2="208" y2="145" stroke="#fff" stroke-width="4"/>
+      <line x1="148" y1="141" x2="164" y2="155" stroke="#38bdf8" stroke-width="4" stroke-linecap="round"/>
+      <line x1="218" y1="141" x2="234" y2="155" stroke="#38bdf8" stroke-width="4" stroke-linecap="round"/>
+    
+    
+  </g>
+      <!-- Epic Giant Bushy Beard -->
+      <path d="M110,185 C75,235 95,355 200,368 C305,355 325,235 290,185 C265,205 235,215 200,215 C165,215 135,205 110,185 Z" fill="#f8fafc" stroke="#1c1208" stroke-width="6"/>
+      <path d="M135,235 Q200,268 265,235 M145,285 Q200,315 255,285 M165,330 Q200,350 235,330" fill="none" stroke="#94a3b8" stroke-width="5" stroke-linecap="round"/>
+      <!-- Mustache -->
+      <path d="M200,192 C165,172 115,195 105,220 C135,232 175,215 200,202 C225,215 265,232 295,220 C285,195 235,172 200,192 Z" fill="#e2e8f0" stroke="#1c1208" stroke-width="5"/>
+    
+</svg>

@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="42%" r="65%">
+      <stop offset="0%" stop-color="#a855f7"/>
+      <stop offset="100%" stop-color="#3b0764"/>
+    </radialGradient>
+  </defs>
+  <rect width="400" height="400" rx="44" fill="url(#bg)"/>
+  <circle cx="200" cy="195" r="148" fill="#ffffff" fill-opacity="0.14"/>
+  
+      <!-- Rainbow Arch -->
+      <path d="M30,350 Q200,40 370,350" fill="none" stroke="#ef4444" stroke-width="22"/>
+      <path d="M48,350 Q200,72 352,350" fill="none" stroke="#f59e0b" stroke-width="22"/>
+      <path d="M66,350 Q200,104 334,350" fill="none" stroke="#fde047" stroke-width="22"/>
+      <path d="M84,350 Q200,136 316,350" fill="none" stroke="#22c55e" stroke-width="22"/>
+      <path d="M102,350 Q200,168 298,350" fill="none" stroke="#38bdf8" stroke-width="22"/>
+      <g transform="translate(0, 0) scale(1)">
+    
+      <polygon points="130,175 152,97 188,150" fill="#fb923c" stroke="#1c1208" stroke-width="6" stroke-linejoin="round"/>
+      <polygon points="140,165 154,113 178,150" fill="#fda4af"/>
+      <polygon points="270,175 248,97 212,150" fill="#fb923c" stroke="#1c1208" stroke-width="6" stroke-linejoin="round"/>
+      <polygon points="260,165 246,113 222,150" fill="#fda4af"/>
+    <!-- Body/Shoulders -->
+    <path d="M140,255 Q125,330 155,340 L245,340 Q275,330 260,255 Z" fill="#fb923c" stroke="#1c1208" stroke-width="6"/>
+    <ellipse cx="200" cy="300" rx="34" ry="38" fill="#fef3c7"/>
+    <!-- Collar -->
+    <rect x="154" y="257" width="92" height="14" rx="7" fill="#dc2626" stroke="#1c1208" stroke-width="4"/>
+    <circle cx="200" cy="273" r="10" fill="#fbbf24" stroke="#1c1208" stroke-width="3"/>
+    <!-- Head -->
+    <ellipse cx="200" cy="205" rx="68" ry="62" fill="#fb923c" stroke="#1c1208" stroke-width="6"/>
+    <!-- Forehead patch -->
+    <ellipse cx="178" cy="183" rx="22" ry="26" fill="#ea580c" opacity="0.45"/>
+    <!-- Snout -->
+    <ellipse cx="200" cy="221" rx="36" ry="26" fill="#fef3c7" stroke="#1c1208" stroke-width="4"/>
+    
+      <path d="M200,231 C190,263 218,263 212,229 Z" fill="#fb7185" stroke="#1c1208" stroke-width="4"/>
+      <path d="M180,225 Q190,237 200,225 Q210,237 220,225" fill="none" stroke="#1c1208" stroke-width="5" stroke-linecap="round"/>
+    <!-- Nose -->
+    <ellipse cx="200" cy="211" rx="15" ry="10" fill="#1c1208"/>
+    <ellipse cx="196" cy="208" rx="5" ry="3" fill="#fff" opacity="0.7"/>
+    
+      <circle cx="170" cy="189" r="14" fill="#1c1208"/>
+      <circle cx="230" cy="189" r="14" fill="#1c1208"/>
+      <circle cx="166" cy="184" r="5" fill="#fff"/>
+      <circle cx="226" cy="184" r="5" fill="#fff"/>
+    
+    
+  </g>
+    
+</svg>

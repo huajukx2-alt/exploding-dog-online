@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="42%" r="65%">
+      <stop offset="0%" stop-color="#22d3ee"/>
+      <stop offset="100%" stop-color="#0e7490"/>
+    </radialGradient>
+  </defs>
+  <rect width="400" height="400" rx="44" fill="url(#bg)"/>
+  <circle cx="200" cy="195" r="148" fill="#ffffff" fill-opacity="0.14"/>
+  
+      <!-- Stars -->
+      <circle cx="70" cy="80" r="6" fill="#fef08a"/><circle cx="330" cy="70" r="8" fill="#fef08a"/><circle cx="60" cy="190" r="5" fill="#fef08a"/>
+      <g transform="translate(0, 0) scale(1)">
+    
+      <ellipse cx="128" cy="162" rx="28" ry="56" transform="rotate(18 128 162)" fill="#6b21a8" stroke="#1c1208" stroke-width="6"/>
+      <ellipse cx="272" cy="162" rx="28" ry="56" transform="rotate(-18 272 162)" fill="#6b21a8" stroke="#1c1208" stroke-width="6"/>
+    <!-- Body/Shoulders -->
+    <path d="M140,220 Q125,295 155,305 L245,305 Q275,295 260,220 Z" fill="#c084fc" stroke="#1c1208" stroke-width="6"/>
+    <ellipse cx="200" cy="265" rx="34" ry="38" fill="#fef3c7"/>
+    <!-- Collar -->
+    <rect x="154" y="222" width="92" height="14" rx="7" fill="#dc2626" stroke="#1c1208" stroke-width="4"/>
+    <circle cx="200" cy="238" r="10" fill="#fbbf24" stroke="#1c1208" stroke-width="3"/>
+    <!-- Head -->
+    <ellipse cx="200" cy="170" rx="68" ry="62" fill="#c084fc" stroke="#1c1208" stroke-width="6"/>
+    <!-- Forehead patch -->
+    <ellipse cx="178" cy="148" rx="22" ry="26" fill="#6b21a8" opacity="0.45"/>
+    <!-- Snout -->
+    <ellipse cx="200" cy="186" rx="36" ry="26" fill="#fef3c7" stroke="#1c1208" stroke-width="4"/>
+    
+      <path d="M186,194 Q204,204 224,186" fill="none" stroke="#1c1208" stroke-width="5" stroke-linecap="round"/>
+    <!-- Nose -->
+    <ellipse cx="200" cy="176" rx="15" ry="10" fill="#1c1208"/>
+    <ellipse cx="196" cy="173" rx="5" ry="3" fill="#fff" opacity="0.7"/>
+    
+      <circle cx="170" cy="154" r="14" fill="#38bdf8" stroke="#1c1208" stroke-width="4"/>
+      <circle cx="230" cy="154" r="14" fill="#38bdf8" stroke="#1c1208" stroke-width="4"/>
+      <ellipse cx="200" cy="122" rx="16" ry="10" fill="#fef08a" stroke="#1c1208" stroke-width="4"/>
+      <circle cx="200" cy="122" r="5" fill="#9333ea"/>
+    <path d="M125,135 Q200,70 275,135 Q240,165 160,165 Z" fill="#4f46e5" stroke="#1c1208" stroke-width="5"/>
+              <circle cx="200" cy="122" r="14" fill="#fde047" stroke="#1c1208" stroke-width="4"/>
+    
+  </g>
+      <!-- Glowing Crystal Ball -->
+      <ellipse cx="200" cy="355" rx="68" ry="18" fill="#fbbf24" stroke="#1c1208" stroke-width="5"/>
+      <circle cx="200" cy="295" r="64" fill="#67e8f9" fill-opacity="0.85" stroke="#fff" stroke-width="6"/>
+      <g transform="translate(178,295) rotate(-15)">
+    <rect x="-26" y="-36" width="52" height="72" rx="8" fill="#fff" stroke="#1c1208" stroke-width="4"/>
+    <rect x="-20" y="-30" width="40" height="60" rx="5" fill="#ef4444"/>
+    <text x="0" y="8" font-size="26" text-anchor="middle">💣</text>
+  </g>
+      <g transform="translate(200,288) rotate(0)">
+    <rect x="-26" y="-36" width="52" height="72" rx="8" fill="#fff" stroke="#1c1208" stroke-width="4"/>
+    <rect x="-20" y="-30" width="40" height="60" rx="5" fill="#22c55e"/>
+    <text x="0" y="8" font-size="26" text-anchor="middle">🦴</text>
+  </g>
+      <g transform="translate(222,295) rotate(15)">
+    <rect x="-26" y="-36" width="52" height="72" rx="8" fill="#fff" stroke="#1c1208" stroke-width="4"/>
+    <rect x="-20" y="-30" width="40" height="60" rx="5" fill="#3b82f6"/>
+    <text x="0" y="8" font-size="26" text-anchor="middle">🐾</text>
+  </g>
+    
+</svg>

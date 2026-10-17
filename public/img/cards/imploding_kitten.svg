@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="42%" r="65%">
+      <stop offset="0%" stop-color="#818cf8"/>
+      <stop offset="100%" stop-color="#1e1b4b"/>
+    </radialGradient>
+  </defs>
+  <rect width="400" height="400" rx="44" fill="url(#bg)"/>
+  <circle cx="200" cy="195" r="148" fill="#ffffff" fill-opacity="0.14"/>
+  
+      <!-- Cosmic Vortex Swirl -->
+      <circle cx="200" cy="200" r="155" fill="none" stroke="#c084fc" stroke-width="10" stroke-dasharray="35 18"/>
+      <circle cx="200" cy="200" r="120" fill="none" stroke="#38bdf8" stroke-width="8" stroke-dasharray="24 14"/>
+      <circle cx="200" cy="200" r="85" fill="#090d16" stroke="#a855f7" stroke-width="6"/>
+      <g transform="translate(30.000000000000004, 30.750000000000004) scale(0.85)">
+    
+      <polygon points="130,175 152,97 188,150" fill="#a78bfa" stroke="#1c1208" stroke-width="6" stroke-linejoin="round"/>
+      <polygon points="140,165 154,113 178,150" fill="#fda4af"/>
+      <polygon points="270,175 248,97 212,150" fill="#a78bfa" stroke="#1c1208" stroke-width="6" stroke-linejoin="round"/>
+      <polygon points="260,165 246,113 222,150" fill="#fda4af"/>
+    <!-- Body/Shoulders -->
+    <path d="M140,255 Q125,330 155,340 L245,340 Q275,330 260,255 Z" fill="#a78bfa" stroke="#1c1208" stroke-width="6"/>
+    <ellipse cx="200" cy="300" rx="34" ry="38" fill="#fef3c7"/>
+    <!-- Collar -->
+    <rect x="154" y="257" width="92" height="14" rx="7" fill="#dc2626" stroke="#1c1208" stroke-width="4"/>
+    <circle cx="200" cy="273" r="10" fill="#fbbf24" stroke="#1c1208" stroke-width="3"/>
+    <!-- Head -->
+    <ellipse cx="200" cy="205" rx="68" ry="62" fill="#a78bfa" stroke="#1c1208" stroke-width="6"/>
+    <!-- Forehead patch -->
+    <ellipse cx="178" cy="183" rx="22" ry="26" fill="#5b21b6" opacity="0.45"/>
+    <!-- Snout -->
+    <ellipse cx="200" cy="221" rx="36" ry="26" fill="#fef3c7" stroke="#1c1208" stroke-width="4"/>
+    
+      <ellipse cx="200" cy="235" rx="24" ry="20" fill="#881337" stroke="#1c1208" stroke-width="5"/>
+      <path d="M184,221 L190,230 L196,221 M204,221 L210,230 L216,221" fill="#fff"/>
+      <ellipse cx="200" cy="243" rx="14" ry="8" fill="#fb7185"/>
+    <!-- Nose -->
+    <ellipse cx="200" cy="211" rx="15" ry="10" fill="#1c1208"/>
+    <ellipse cx="196" cy="208" rx="5" ry="3" fill="#fff" opacity="0.7"/>
+    
+      <circle cx="170" cy="189" r="16" fill="#fff" stroke="#1c1208" stroke-width="4"/>
+      <circle cx="230" cy="189" r="16" fill="#fff" stroke="#1c1208" stroke-width="4"/>
+      <path d="M170,189 m-8,0 a8,8 0 1,0 16,0 a5,5 0 1,0 -10,0" fill="none" stroke="#1c1208" stroke-width="3.5"/>
+      <path d="M230,189 m-8,0 a8,8 0 1,0 16,0 a5,5 0 1,0 -10,0" fill="none" stroke="#1c1208" stroke-width="3.5"/>
+    
+    
+  </g>
+    
+</svg>

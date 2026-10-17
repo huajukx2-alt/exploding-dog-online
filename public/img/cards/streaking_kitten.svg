@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="42%" r="65%">
+      <stop offset="0%" stop-color="#fb7185"/>
+      <stop offset="100%" stop-color="#881337"/>
+    </radialGradient>
+  </defs>
+  <rect width="400" height="400" rx="44" fill="url(#bg)"/>
+  <circle cx="200" cy="195" r="148" fill="#ffffff" fill-opacity="0.14"/>
+  
+      <!-- Speed lines -->
+      <line x1="30" y1="120" x2="110" y2="120" stroke="#fff" stroke-width="7" stroke-linecap="round"/>
+      <line x1="20" y1="200" x2="95" y2="200" stroke="#fff" stroke-width="7" stroke-linecap="round"/>
+      <line x1="35" y1="280" x2="115" y2="280" stroke="#fff" stroke-width="7" stroke-linecap="round"/>
+      <g transform="translate(24, 22.8) scale(0.88)">
+    
+      <path d="M150,132 Q105,115 122,175 Z" fill="#292524" stroke="#1c1208" stroke-width="6" stroke-linejoin="round"/>
+      <path d="M250,132 Q295,115 278,175 Z" fill="#292524" stroke="#1c1208" stroke-width="6" stroke-linejoin="round"/>
+    <!-- Body/Shoulders -->
+    <path d="M140,240 Q125,315 155,325 L245,325 Q275,315 260,240 Z" fill="#fda4af" stroke="#1c1208" stroke-width="6"/>
+    <ellipse cx="200" cy="285" rx="34" ry="38" fill="#fef3c7"/>
+    <!-- Collar -->
+    <rect x="154" y="242" width="92" height="14" rx="7" fill="#dc2626" stroke="#1c1208" stroke-width="4"/>
+    <circle cx="200" cy="258" r="10" fill="#fbbf24" stroke="#1c1208" stroke-width="3"/>
+    <!-- Head -->
+    <ellipse cx="200" cy="190" rx="68" ry="62" fill="#fda4af" stroke="#1c1208" stroke-width="6"/>
+    <!-- Forehead patch -->
+    <ellipse cx="178" cy="168" rx="22" ry="26" fill="#e11d48" opacity="0.45"/>
+    <!-- Snout -->
+    <ellipse cx="200" cy="206" rx="36" ry="26" fill="#fef3c7" stroke="#1c1208" stroke-width="4"/>
+    
+      <path d="M200,216 C190,248 218,248 212,214 Z" fill="#fb7185" stroke="#1c1208" stroke-width="4"/>
+      <path d="M180,210 Q190,222 200,210 Q210,222 220,210" fill="none" stroke="#1c1208" stroke-width="5" stroke-linecap="round"/>
+    <!-- Nose -->
+    <ellipse cx="200" cy="196" rx="15" ry="10" fill="#1c1208"/>
+    <ellipse cx="196" cy="193" rx="5" ry="3" fill="#fff" opacity="0.7"/>
+    
+      <circle cx="170" cy="174" r="14" fill="#1c1208"/>
+      <circle cx="230" cy="174" r="14" fill="#1c1208"/>
+      <circle cx="166" cy="169" r="5" fill="#fff"/>
+      <circle cx="226" cy="169" r="5" fill="#fff"/>
+    
+    
+  </g>
+      <!-- Holding Bomb Safely with Shield -->
+      <circle cx="295" cy="295" r="46" fill="#1e293b" stroke="#1c1208" stroke-width="5"/>
+      <path d="M295,249 Q315,220 335,230" fill="none" stroke="#fde047" stroke-width="6"/>
+      <circle cx="338" cy="230" r="10" fill="#ef4444"/>
+    
+</svg>

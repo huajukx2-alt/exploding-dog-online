@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>หมาระเบิด Online · Exploding Puppies</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600&family=Fredoka:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="bg-fx"></div>
+
+  <!-- HOME / CASINO LOBBY -->
+  <section id="screen-home" class="screen active">
+    <!-- TOPBAR / CASINO HEADER (Only shown on Home Lobby) -->
+    <header id="topbar">
+      <!-- Left: Player Profile Badge -->
+      <div id="playerProfileCard" class="profile-card" data-modal="profile" title="View Profile / ดูโปรไฟล์">
+        <div class="p-avatar-wrap">
+          <div id="pAvatar" class="p-avatar">🐶</div>
+          <span class="vip-badge">VIP</span>
+        </div>
+        <div class="p-info">
+          <div class="p-name-row">
+            <span class="lvl-badge" id="pLevel">LV.99</span>
+            <span class="p-name" id="pName">Guest</span>
+          </div>
+          <div class="xp-bar"><div class="xp-fill" id="pXpFill" style="width: 75%"></div></div>
+        </div>
+      </div>
+
+      <!-- Center: Currencies -->
+      <div class="currency-group">
+        <div class="curr-badge gold-coin" id="badgeCoins" title="Coins / เหรียญ">
+          <span class="curr-icon">🪙</span>
+          <b id="topCoins">133</b>
+        </div>
+        <div class="curr-badge diamond" id="badgeDiamonds" title="Diamonds / เพชร">
+          <span class="curr-icon">💎</span>
+          <b id="topDiamonds">50</b>
+        </div>
+      </div>
+
+      <!-- Right: Utility Actions -->
+      <div class="top-actions">
+        <button class="top-icon-btn" id="btnMail" title="Daily Rewards / กล่องของขวัญ">
+          <span class="ti-icon">✉️</span>
+          <span class="ti-dot"></span>
+        </button>
+        <button class="top-icon-btn" id="btnSettings" title="Settings / ตั้งค่า">
+          <span class="ti-icon">⚙️</span>
+        </button>
+        <button class="lang-toggle-btn" id="btnLang" title="Toggle Language / เปลี่ยนภาษา">
+          <span id="langFlags">🇹🇭 TH / 🇬🇧 EN</span>
+        </button>
+        <!-- Hidden audio hooks so existing audio methods continue to work seamlessly -->
+        <button class="hidden" id="btnSound"></button>
+        <button class="hidden" id="btnVoice"></button>
+      </div>
+    </header>
+    <!-- Atmospheric Stage FX -->
+    <div class="stage-fx">
+      <div class="spotlight spot-left"></div>
+      <div class="spotlight spot-center"></div>
+      <div class="spotlight spot-right"></div>
+      <div class="neon-rail rail-top"></div>
+      <div class="neon-rail rail-mid"></div>
+      <div class="confetti-layer">
+        <i class="c-p c1"></i><i class="c-p c2"></i><i class="c-p c3"></i><i class="c-p c4"></i>
+        <i class="c-p c5"></i><i class="c-p c6"></i><i class="c-p c7"></i><i class="c-p c8"></i>
+      </div>
+    </div>
+
+    <div class="lobby-stage-layout">
+      <!-- Center: Mascot & 3D Podium & Glowing Golden Card Fan -->
+      <div class="stage-center">
+        <div class="stage-glow"></div>
+        <div class="mascot-group">
+          <!-- Boss Shiba Mascot SVG -->
+          <div class="stage-mascot" id="stageMascot"></div>
+
+          <!-- Glowing 3D Golden Card Fan -->
+          <div class="stage-card-fan" title="Deck of Destiny">
+            <div class="fan-card-gold f1"><div class="fcg-diamond">💎</div></div>
+            <div class="fan-card-gold f2"><div class="fcg-diamond">💎</div></div>
+            <div class="fan-card-gold f3"><div class="fcg-diamond">💎</div></div>
+            <div class="fan-card-gold f4"><div class="fcg-diamond">💎</div></div>
+            <div class="fan-card-gold f5"><div class="fcg-diamond">💎</div></div>
+            <div class="fan-sparkle s1">✨</div>
+            <div class="fan-sparkle s2">✨</div>
+            <div class="fan-sparkle s3">✨</div>
+          </div>
+        </div>
+
+        <!-- 3D Tiered Circular Stage Podium -->
+        <div class="stage-podium">
+          <div class="podium-tier tier-top">
+            <span class="podium-light pl1"></span>
+            <span class="podium-light pl2"></span>
+            <span class="podium-light pl3"></span>
+            <span class="podium-light pl4"></span>
+            <span class="podium-light pl5"></span>
+          </div>
+          <div class="podium-tier tier-mid"></div>
+          <div class="podium-tier tier-base"></div>
+        </div>
+      </div>
+
+      <!-- Right: Main 3D Action Buttons -->
+      <div class="lobby-action-column">
+        <!-- 1. Select Match & Play (Full Match Lobby) -->
+        <button class="lobby-main-btn btn-match big-hero-btn" id="btnMatchBrowser">
+          <span class="btn-badge-alert">🔥</span>
+          <div class="btn-content">
+            <span class="btn-th" data-i18n="selectMatch">เลือกห้องแข่งขัน / เข้าเล่นเกม</span>
+            <span class="btn-en">SELECT MATCH &amp; LOBBY</span>
+          </div>
+        </button>
+
+        <!-- 2. Puppy Academy (Interactive Tutorial Mode) -->
+        <button class="lobby-main-btn btn-tutorial big-hero-btn" id="btnTutorial">
+          <span class="btn-badge-alert">🎓</span>
+          <div class="btn-content">
+            <span class="btn-th" data-i18n="howToPlay">โรงเรียนหมาระเบิด (โหมดสอนเล่น)</span>
+            <span class="btn-en">PUPPY ACADEMY &amp; HOW TO PLAY</span>
+          </div>
+        </button>
+
+        <!-- Hidden hooks for compatibility -->
+        <button class="hidden" id="btnPlayFriends"></button>
+        <button class="hidden" id="btnCustomBot"></button>
+      </div>
+    </div>
+
+    <!-- Bottom Navigation Dock (3 Distinct 3D Buttons) -->
+    <nav class="bottom-dock-nav">
+      <!-- 1. Deck & Rules -->
+      <button class="dock-btn dock-deck" id="dockBtnDeck">
+        <span class="dock-icon">🃏</span>
+        <div class="dock-labels">
+          <b class="dock-th" data-i18n="dockDeck">จัดเด็ค & กฎ</b>
+          <small class="dock-en">DECK & RULES</small>
+        </div>
+      </button>
+
+      <!-- 2. Shop -->
+      <button class="dock-btn dock-shop" id="dockBtnShop">
+        <span class="dock-icon">🏪</span>
+        <div class="dock-labels">
+          <b class="dock-th" data-i18n="dockShop">ร้านค้า</b>
+          <small class="dock-en">SHOP</small>
+        </div>
+      </button>
+
+      <!-- 3. Ranking -->
+      <button class="dock-btn dock-ranking" id="dockBtnRanking">
+        <span class="dock-icon">🏆</span>
+        <div class="dock-labels">
+          <b class="dock-th" data-i18n="dockRanking">จัดอันดับ</b>
+          <small class="dock-en">RANKING</small>
+        </div>
+      </button>
+    </nav>
+
+    <!-- Legacy hidden helpers so background scripts work smoothly -->
+    <input id="inpName" type="hidden">
+    <div id="homeVersions" class="hidden"></div>
+  </section>
+
+  <!-- MATCH LOBBY BROWSER (DEDICATED FULL SCREEN) -->
+  <section id="screen-browser" class="screen">
+    <div class="browser-header">
+      <button class="btn small" id="btnBrowserBack">← <span data-i18n="back">ย้อนกลับ</span></button>
+      <div class="browser-title-group">
+        <h2 style="margin:0;font-size:1.6rem;letter-spacing:1px;color:var(--gold);">🎯 <span data-i18n="selectMatch">เลือกล็อบบี้แข่งขัน</span></h2>
+        <small class="browser-subtitle" style="color:var(--muted);letter-spacing:2px;font-weight:700;">MATCH LOBBY & DIRECT JOIN</small>
+      </div>
+      <button class="btn small gold" id="btnBrowserRefresh">🔄 <span data-i18n="refresh">รีเฟรช</span></button>
+    </div>
+
+    <div class="browser-container">
+      <!-- Left side: Direct Code Join & Quick Create -->
+      <div class="browser-sidebar">
+        <!-- Direct Join Card -->
+        <div class="browser-card direct-join-card">
+          <div class="bcard-head">
+            <span class="bcard-icon">🔑</span>
+            <div>
+              <h3><span data-i18n="enterRoomCode">ระบุรหัสห้อง</span></h3>
+              <p class="bcard-desc">เข้าร่วมห้องเพื่อนด้วยรหัส 4 หลัก</p>
+            </div>
+          </div>
+          <div class="code-input-container">
+            <input id="browserCodeInp" class="code-box-xl" maxlength="4" placeholder="ABCD" autocomplete="off" autocorrect="off" autocapitalize="characters">
+            <button class="btn big gold pulse" id="btnBrowserJoinCode">🚀 <span data-i18n="join">เข้าห้องแข่งขัน</span></button>
+          </div>
+        </div>
+
+        <!-- Fast Create Room Card -->
+        <div class="browser-card fast-create-card">
+          <div class="bcard-head">
+            <span class="bcard-icon">🎮</span>
+            <div>
+              <h3><span data-i18n="createRoom">สร้างห้องใหม่</span></h3>
+              <p class="bcard-desc">เลือกเวอร์ชันการ์ดที่ต้องการเล่น</p>
+            </div>
+          </div>
+          <div class="browser-version-list" id="browserVersionList"></div>
+          <button class="btn big green pulse" id="btnBrowserCreateSubmit">✨ <span data-i18n="createRoom">สร้างห้องเลย</span></button>
+        </div>
+      </div>
+
+      <!-- Right side: Live Room List -->
+      <div class="browser-main">
+        <div class="bmain-head">
+          <div class="bmain-title">
+            <h3 style="margin:0;">🌐 <span data-i18n="activeRooms">ห้องที่เปิดอยู่ขณะนี้</span></h3>
+            <span class="badge" id="browserRoomCount">0 ห้อง</span>
+          </div>
+        </div>
+
+        <!-- Room List Grid -->
+        <div class="room-grid" id="browserRoomGrid">
+          <!-- Dynamically populated or empty state -->
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LOBBY -->
+  <section id="screen-lobby" class="screen">
+    <div class="lobby-head">
+      <div>
+        <small data-i18n="shareCode"></small>
+        <div class="room-code" id="lobbyCode">----</div>
+        <button class="btn small" id="btnCopy" data-i18n="copyLink"></button>
+      </div>
+      <button class="btn small red" id="btnLeave" data-i18n="leave"></button>
+    </div>
+    <div class="lobby-grid">
+      <div class="panel">
+        <h3>👥 <span data-i18n="players"></span> <span id="lobbyCount"></span></h3>
+        <div id="lobbyPlayers" class="lobby-players"></div>
+        <button class="btn small" id="btnAddBot" data-i18n="addBot"></button>
+        <div class="lobby-cta">
+          <button class="btn big green" id="btnReady"></button>
+          <button class="btn big gold" id="btnStart" data-i18n="start"></button>
+          <p class="note" id="lobbyHint"></p>
+        </div>
+      </div>
+      <div class="panel">
+        <h3>⚙️ <span data-i18n="settings"></span></h3>
+        <div id="lobbySettings"></div>
+      </div>
+      <div class="panel chat-panel">
+        <h3>💬 <span data-i18n="chat"></span></h3>
+        <div class="chat-box" id="lobbyChat"></div>
+        <form class="chat-form" data-chat><input maxlength="120"><button class="btn small" data-i18n="send"></button></form>
+      </div>
+    </div>
+  </section>
+
+  <!-- GAME -->
+  <section id="screen-game" class="screen">
+
+    <div id="table">
+      <div id="combatTicker"></div>
+      <!-- Combo / Multi-Turn Alert Pill -->
+      <div id="comboTurnAlert" class="combo-turn-alert hidden">
+        <span class="cta-flame">🔥</span>
+        <div class="cta-text">
+          <b class="cta-main" id="ctaMainText">ต้องเล่นทั้งหมด x2 เทิร์น!</b>
+          <span class="cta-sub" id="ctaSubText">เหลือเทิร์นค้างอีก 2 เทิร์น</span>
+        </div>
+        <span class="cta-badge" id="ctaBadgeCount">x2</span>
+      </div>
+      <div id="boardArena">
+        <div id="boardRim">
+          <span class="corner-star tl">⭐</span>
+          <span class="corner-star tr">⭐</span>
+          <span class="corner-trophy bl">🏆</span>
+          <span class="corner-trophy br">🏆</span>
+          <div id="boardSurface">
+            <!-- Left: 3D Draw Pile -->
+            <div class="pile-wrap draw-zone">
+              <div id="deckPile" class="pile deck">
+                <div class="stack-edge e3"></div>
+                <div class="stack-edge e2"></div>
+                <div class="stack-edge e1"></div>
+                <div class="card back"><span class="draw-label" data-i18n="drawPileLabel">DRAW PILE</span></div>
+                <span class="pile-count" id="deckCount">0</span>
+              </div>
+              <small data-i18n="deck"></small>
+            </div>
+
+            <!-- Center: Explosion Risk Gauge -->
+            <div id="centerInfo">
+              <div id="riskMeter" class="risk-low">
+                <span class="warn-tri w1">⚠️</span>
+                <span class="warn-tri w2">⚠️</span>
+                <span class="warn-tri w3">⚠️</span>
+                <svg class="risk-svg" viewBox="0 0 120 120">
+                  <circle class="risk-bg" cx="60" cy="60" r="50"/>
+                  <circle id="riskArc" class="risk-fg" cx="60" cy="60" r="50"/>
+                </svg>
+                <div class="risk-inner">
+                  <div class="risk-title" data-i18n="explosionRisk">EXPLOSION RISK:</div>
+                  <div id="riskPct">0%</div>
+                  <div id="bombInfo"></div>
+                </div>
+                <div id="timerRing" title="Turn Timer">
+                  <svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="16"/><circle id="timerArc" cx="18" cy="18" r="16"/></svg>
+                  <span id="timerText"></span>
+                </div>
+                <div id="dirIcon">🔃</div>
+              </div>
+            </div>
+
+            <!-- Right: Discard Pile with Comic Burst -->
+            <div class="pile-wrap discard-zone">
+              <div class="discard-burst"></div>
+              <div id="discardPile" class="pile"></div>
+              <small data-i18n="discard"></small>
+            </div>
+
+            <!-- Bottom Center: 3D Arcade Action Buzzer -->
+            <button id="arcadeBuzzer" type="button" title="Quick Action">
+              <span class="buzzer-top"><span id="buzzerIcon">⚡</span></span>
+              <span class="buzzer-base"></span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Opponents around the table -->
+      <div id="seats"></div>
+
+      <div id="pendingBar" class="hidden">
+        <div id="pendingText"></div>
+        <div class="nope-meter"><div id="nopeFill"></div></div>
+        <button class="btn red nope-btn" id="btnNope">🛑 <span data-i18n="nope"></span></button>
+      </div>
+      <div id="spectate" class="hidden" data-i18n="spectating"></div>
+    </div>
+
+    <!-- Bottom HUD: My Hero Avatar + Hand + Quick Chat -->
+    <div id="bottomHud">
+      <div id="myHeroSeat"></div>
+
+      <div id="handArea">
+        <div class="hand-top">
+          <div id="turnBadge"></div>
+          <small id="handHint" data-i18n="tapHint"></small>
+        </div>
+        <div class="hand-wrap">
+          <button class="hand-nav" id="handLeft" aria-label="Scroll left">◀</button>
+          <div id="hand"></div>
+          <button class="hand-nav" id="handRight" aria-label="Scroll right">▶</button>
+        </div>
+        <div id="actionBar">
+          <button class="btn small gold" id="btnSort" title="Sort Hand">🔀 <span data-i18n="sortHand">เรียงไพ่</span></button>
+          <form class="quick-chat" data-chat>
+            <span class="qc-icon">💬</span>
+            <input maxlength="120" placeholder="พิมพ์ข้อความ... / Type message...">
+            <button type="submit" class="qc-send" title="Send">＋</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div id="sideDock">
+      <button class="chip arcade-chip" id="btnSticker"><span>💬</span><small>EMOTE</small></button>
+      <button class="chip arcade-chip" id="btnLog"><span>📜</span><small>LOG</small></button>
+      <button class="chip arcade-chip" id="btnGameMenu"><span>⚙️</span><small>MENU</small></button>
+    </div>
+    <div id="sidePanel" class="hidden">
+      <div class="tabs"><button data-tab="log" class="active" data-i18n="log"></button><button data-tab="chat" data-i18n="chat"></button></div>
+      <div id="logBox" class="tab-body"></div>
+      <div id="gameChat" class="tab-body hidden"><div class="chat-box" id="gameChatBox"></div>
+        <form class="chat-form" data-chat><input maxlength="120"><button class="btn small" data-i18n="send"></button></form></div>
+    </div>
+    <div id="stickerPicker" class="hidden"></div>
+  </section>
+
+  <!-- FX overlays -->
+  <div id="banner"></div>
+  <div id="actionSpotlight"></div>
+  <div id="cardFly"></div>
+  <div id="flash"></div>
+  <div id="toasts"></div>
+  <div id="confetti"></div>
+
+  <!-- MODAL -->
+  <div id="modal" class="hidden"><div class="modal-box"><button class="modal-x">✕</button><div id="modalBody"></div></div></div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="shared/cards.js"></script>
+  <script src="i18n.js"></script>
+  <script src="audio.js"></script>
+  <script src="client.js"></script>
+</body>
+</html>
