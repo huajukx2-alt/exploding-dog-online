@@ -162,6 +162,7 @@ label { font-size: 0.85rem; color: #cbd5e1; display: block; margin-top: 4px; }
 .btn.big { width: 100%; padding: 12px 18px; font-size: 1.05rem; margin-top: 8px; }
 .btn.small { padding: 5px 11px; font-size: 0.82rem; border-radius: 9px; }
 .btn.gold { background: linear-gradient(135deg, #f59e0b, #ea580c); color: #1e1200; }
+.btn.purple { background: linear-gradient(135deg, #a855f7, #7e22ce); color: #fff; }
 .btn.pink { background: linear-gradient(135deg, #ec4899, #9333ea); }
 .btn.green { background: linear-gradient(135deg, #22c55e, #16a34a); }
 .btn.blue { background: linear-gradient(135deg, #3b82f6, #2563eb); }
@@ -913,6 +914,14 @@ label { font-size: 0.85rem; color: #cbd5e1; display: block; margin-top: 4px; }
   transform: translateY(-28px) scale(1.12) !important;
   z-index: 35 !important;
   margin-right: 0;
+}
+#hand.shuffling .card {
+  animation: handShuffleAnim 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@keyframes handShuffleAnim {
+  0% { transform: scale(1); }
+  50% { transform: translateY(-12px) scale(1.05); }
+  100% { transform: scale(1); }
 }
 #hand .card .card-type {
   pointer-events: none !important;

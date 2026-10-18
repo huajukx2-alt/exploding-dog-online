@@ -5,7 +5,7 @@ const path = require('path');
 const { Server } = require('socket.io');
 const Game = require('./game');
 const db = require('./db');
-const { FREE_STICKERS } = require('./public/shared/cards');
+const { CARDS, FREE_STICKERS } = require('./public/shared/cards');
 
 const app = express();
 const server = http.createServer(app);
@@ -251,12 +251,28 @@ io.on('connection', (socket) => {
       socket.emit('state', g.getState(p));
     } catch (e) { console.error('[reorder error]', e); }
   });
+  const KIND_ORDER = { defense: 1, reaction: 2, action: 3, cat: 4, special: 5, bomb: 6 };
   socket.on('sortHand', () => {
     try {
-      const g = ctx(socket); const p = g && g.bySocket(socket.id); if (!p) return;
-      p.hand.sort((a, b) => a.id.localeCompare(b.id));
+      const g = ctx(socket); const p = g && g.bySocket(socket.id); if (!p || !p.hand) return;
+      p.hand.sort((a, b) => {
+        const ka = KIND_ORDER[CARDS[a.id]?.kind] ?? 99;
+        const kb = KIND_ORDER[CARDS[b.id]?.kind] ?? 99;
+        if (ka !== kb) return ka - kb;
+        return a.id.localeCompare(b.id);
+      });
       socket.emit('state', g.getState(p));
     } catch (e) { console.error('[sortHand error]', e); }
+  });
+  socket.on('shuffleHand', () => {
+    try {
+      const g = ctx(socket); const p = g && g.bySocket(socket.id); if (!p || !p.hand || p.hand.length <= 1) return;
+      for (let i = p.hand.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [p.hand[i], p.hand[j]] = [p.hand[j], p.hand[i]];
+      }
+      socket.emit('state', g.getState(p));
+    } catch (e) { console.error('[shuffleHand error]', e); }
   });
   socket.on('chat', (data) => {
     try {

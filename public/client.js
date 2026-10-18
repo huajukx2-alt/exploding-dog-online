@@ -1706,14 +1706,53 @@
   $('#hand').addEventListener('scroll', updateHandNav, { passive: true });
   $('#handLeft').onclick = () => { A.sfx('click'); $('#hand').scrollBy({ left: -260, behavior: 'smooth' }); };
   $('#handRight').onclick = () => { A.sfx('click'); $('#hand').scrollBy({ left: 260, behavior: 'smooth' }); };
+  const KIND_SORT_ORDER = { defense: 1, reaction: 2, action: 3, cat: 4, special: 5, bomb: 6 };
+  function sortCardsInHand(hand) {
+    return hand.sort((a, b) => {
+      const ka = KIND_SORT_ORDER[CARDS[a.id]?.kind] ?? 99;
+      const kb = KIND_SORT_ORDER[CARDS[b.id]?.kind] ?? 99;
+      if (ka !== kb) return ka - kb;
+      return (CARDS[a.id]?.name?.[lang] || a.id).localeCompare(CARDS[b.id]?.name?.[lang] || b.id);
+    });
+  }
+
   $('#btnSort').onclick = () => {
     A.sfx('shuffle');
+    Haptics.tap();
+    const h = $('#hand');
+    if (h) {
+      h.classList.add('shuffling');
+      setTimeout(() => h.classList.remove('shuffling'), 300);
+      h.scrollTo({ left: 0, behavior: 'smooth' });
+    }
+    if (S?.me?.hand && S.me.hand.length > 1) {
+      sortCardsInHand(S.me.hand);
+      syncHand(S.me.hand);
+    }
     socket.emit('sortHand');
-    setTimeout(() => {
-      const h = $('#hand');
-      if (h) h.scrollTo({ left: 0, behavior: 'smooth' });
-    }, 120);
   };
+
+  const btnShuffleHand = $('#btnShuffleHand');
+  if (btnShuffleHand) {
+    btnShuffleHand.onclick = () => {
+      A.sfx('shuffle');
+      Haptics.tap();
+      const h = $('#hand');
+      if (h) {
+        h.classList.add('shuffling');
+        setTimeout(() => h.classList.remove('shuffling'), 300);
+      }
+      if (S?.me?.hand && S.me.hand.length > 1) {
+        // Fisher-Yates shuffle locally for instant zero-latency feedback
+        for (let i = S.me.hand.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [S.me.hand[i], S.me.hand[j]] = [S.me.hand[j], S.me.hand[i]];
+        }
+        syncHand(S.me.hand);
+      }
+      socket.emit('shuffleHand');
+    };
+  }
   const btnCardDetail = $('#btnCardDetail');
   if (btnCardDetail) {
     btnCardDetail.onclick = () => {
