@@ -16,6 +16,7 @@
   let imgMap = {};
   let screen = 'home';
   let lastSettingsKey = '';
+  let lastSettingsStructKey = '';
   let openPromptKey = null;
   let lastTick = -1;
   let homeVersion = localStorage.getItem('ek_ver') || 'original';
@@ -696,7 +697,7 @@
       </div>`);
     $('#stSound').onclick = () => { A.set('sound', !A.opt.sound); syncToggles(); openSettingsModal(); };
     $('#stVoice').onclick = () => { A.set('voice', !A.opt.voice); syncToggles(); openSettingsModal(); };
-    $('#stLang').onclick = () => { lang = lang === 'th' ? 'en' : 'th'; localStorage.setItem('ek_lang', lang); lastSettingsKey = ''; applyI18n(); openSettingsModal(); };
+    $('#stLang').onclick = () => { lang = lang === 'th' ? 'en' : 'th'; localStorage.setItem('ek_lang', lang); lastSettingsKey = ''; lastSettingsStructKey = ''; applyI18n(); openSettingsModal(); };
     $('#stRules').onclick = openRules;
     if ($('#stLogout')) $('#stLogout').onclick = async () => { await api('/api/logout', {}); token = ''; localStorage.removeItem('ek_token'); socket.emit('auth', ''); setUser(null); closeModal(); };
     if ($('#stLogin')) $('#stLogin').onclick = () => { closeModal(); openAuth('login'); };
@@ -753,7 +754,7 @@
   };
   const btnS = $('#btnSound'); if (btnS) btnS.onclick = () => { A.set('sound', !A.opt.sound); syncToggles(); A.sfx('click'); };
   const btnV = $('#btnVoice'); if (btnV) btnV.onclick = () => { A.set('voice', !A.opt.voice); syncToggles(); if (A.opt.voice) A.say(lang === 'th' ? 'เปิดเสียงพากย์แล้วโฮ่ง' : 'Announcer on, woof', lang); };
-  const btnL = $('#btnLang'); if (btnL) btnL.onclick = () => { lang = lang === 'th' ? 'en' : 'th'; localStorage.setItem('ek_lang', lang); lastSettingsKey = ''; applyI18n(); renderUserChip(); };
+  const btnL = $('#btnLang'); if (btnL) btnL.onclick = () => { lang = lang === 'th' ? 'en' : 'th'; localStorage.setItem('ek_lang', lang); lastSettingsKey = ''; lastSettingsStructKey = ''; applyI18n(); renderUserChip(); };
 
   // ------------------------------------------------------------ AUTH / PROFILE / SHOP / LEADERBOARD / RULES
   function openAuth(mode) {
@@ -1217,11 +1218,64 @@
   }
 
   function renderSettings(isHost) {
-    const st = S.settings; const key = JSON.stringify([st, isHost, lang]);
-    if (key === lastSettingsKey) return; lastSettingsKey = key;
+    const st = S.settings;
+    const fullKey = JSON.stringify([st, isHost, lang]);
+    if (fullKey === lastSettingsKey) return;
+
     const dis = isHost ? '' : 'disabled';
     const counts = st.custom ? st.counts : VERSIONS[st.version].counts;
     const opt = (vals, cur, fmt) => vals.map(v => `<option value="${v}" ${v == cur ? 'selected' : ''}>${fmt(v)}</option>`).join('');
+    const cardList = st.custom ? CONFIGURABLE : Object.keys(counts);
+    const totalCards = cardList.reduce((sum, id) => sum + (parseInt(counts[id], 10) || 0), 0);
+
+    const structKey = JSON.stringify([st.version, !!st.custom, !!st.imploding, st.turnSeconds, st.nopeSeconds, st.botLevel, isHost, lang]);
+    const gridEl = $('#lobbySettings .count-grid');
+
+    // 1. IN-PLACE UPDATE: If already rendered with matching structure, only update card counts in-place!
+    // This completely prevents DOM destruction, eliminates scroll-jumping, and keeps inputs active!
+    if (gridEl && structKey === lastSettingsStructKey) {
+      lastSettingsKey = fullKey;
+      cardList.forEach(id => {
+        const n = counts[id] || 0;
+        const item = $(`[data-card-item="${id}"]`);
+        if (item) {
+          item.classList.toggle('off', n === 0);
+          const inp = $(`[data-card-input="${id}"]`, item);
+          if (inp && document.activeElement !== inp) inp.value = n;
+          const txt = $('b.count-txt', item);
+          if (txt) txt.textContent = `x${n}`;
+        }
+      });
+      const badge = $('#deckTotalCards');
+      if (badge) badge.textContent = `${totalCards} ${t('cardsUnit') || 'ใบ'}`;
+      return;
+    }
+
+    // 2. STRUCTURAL RENDER: Save scroll positions before replacing HTML
+    const lobbyEl = $('#screen-lobby');
+    const savedLobbyScroll = lobbyEl ? lobbyEl.scrollTop : 0;
+    const savedGridScroll = gridEl ? gridEl.scrollTop : 0;
+    const savedWinScroll = window.scrollY;
+
+    const curH = $('#lobbySettings')?.offsetHeight;
+    if (curH > 0) $('#lobbySettings').style.minHeight = curH + 'px';
+
+    const customToolbar = (st.custom && isHost) ? `
+      <div class="deck-toolbar">
+        <div class="deck-toolbar-actions">
+          <button type="button" class="dt-btn" id="btnDeckReset" title="คืนค่าเป็นค่าตั้งต้นของเวอร์ชันนี้">🔄 ${t('resetPreset') || 'รีเซ็ต'}</button>
+          <button type="button" class="dt-btn" id="btnDeckZero" title="ปรับการ์ดทั้งหมดเป็น 0 เพื่อเริ่มจัดเด็คใหม่">0️⃣ ${t('allZero') || 'เคลียร์ 0'}</button>
+          <button type="button" class="dt-btn" id="btnDeckPlus1" title="เพิ่มการ์ดทุกใบอย่างละ 1">+1 ทุกใบ</button>
+          <button type="button" class="dt-btn" id="btnDeckMinus1" title="ลดการ์ดทุกใบอย่างละ 1">-1 ทุกใบ</button>
+        </div>
+        <div class="deck-toolbar-info">
+          <span class="deck-count-badge">🃏 ${t('totalDeckCards') || 'รวม'}: <b id="deckTotalCards">${totalCards} ${t('cardsUnit') || 'ใบ'}</b></span>
+        </div>
+      </div>` : (st.custom ? `
+      <div class="deck-toolbar" style="justify-content:flex-end;">
+        <span class="deck-count-badge">🃏 ${t('totalDeckCards') || 'รวม'}: <b id="deckTotalCards">${totalCards} ${t('cardsUnit') || 'ใบ'}</b></span>
+      </div>` : '');
+
     $('#lobbySettings').innerHTML = `
       <div class="ver-grid small">${Object.entries(VERSIONS).map(([id, v]) => `<button class="ver-card ${id === st.version ? 'on' : ''}" data-v="${id}" ${dis}><h4>${v.icon} ${esc(v.name[lang])}</h4><p>${esc(v.desc[lang])}</p></button>`).join('')}</div>
       <div class="set-row"><label>⏱️ ${t('turnTimer')}</label><select data-s="turnSeconds" ${dis}>${opt([15, 20, 25, 30, 45, 60], st.turnSeconds || 25, v => v + ' ' + t('sec'))}</select></div>
@@ -1230,17 +1284,181 @@
       <div class="set-row"><label>🧩 ${t('customMode')}</label><input type="checkbox" data-s="custom" ${st.custom ? 'checked' : ''} ${dis}></div>
       ${st.custom ? `<div class="set-row"><label>🌀 ${t('imploding')}</label><input type="checkbox" data-s="imploding" ${(st.imploding ?? VERSIONS[st.version].imploding) ? 'checked' : ''} ${dis}></div>` : ''}
       <h4>🃏 ${t('cardsInGame')}</h4>
-      <div class="count-grid">${(st.custom ? CONFIGURABLE : Object.keys(counts)).map(id => {
+      ${customToolbar}
+      <div class="count-grid">${cardList.map(id => {
         const n = counts[id] || 0;
-        return `<div class="count-item ${n ? '' : 'off'}">${cardHTML(id, { cls: 'mini', attr: 'data-detail' })}
-          ${st.custom && isHost ? `<div class="stepper"><button data-dec="${id}">−</button><b>${n}</b><button data-inc="${id}">+</button></div>` : `<b>x${n}</b>`}</div>`;
+        return `<div class="count-item ${n ? '' : 'off'}" data-card-item="${id}">${cardHTML(id, { cls: 'mini', attr: 'data-detail' })}
+          ${st.custom && isHost ? `
+            <div class="stepper">
+              <button type="button" class="stepper-btn" data-dec="${id}" title="-1 (Shift: -5, กดค้างเพื่อลดเร็ว)">−</button>
+              <input type="number" class="stepper-input" data-card-input="${id}" min="0" max="10" value="${n}" inputmode="numeric" />
+              <button type="button" class="stepper-btn" data-inc="${id}" title="+1 (Shift: +5, กดค้างเพื่อเพิ่มเร็ว)">+</button>
+            </div>` : `<b class="count-txt">x${n}</b>`}</div>`;
       }).join('')}</div>`;
+
+    lastSettingsKey = fullKey;
+    lastSettingsStructKey = structKey;
+
+    // Restore scroll positions immediately
+    const newGrid = $('#lobbySettings .count-grid');
+    if (newGrid && savedGridScroll) newGrid.scrollTop = savedGridScroll;
+    if (lobbyEl && savedLobbyScroll) lobbyEl.scrollTop = savedLobbyScroll;
+    if (savedWinScroll) window.scrollTo(0, savedWinScroll);
+    requestAnimationFrame(() => {
+      if ($('#lobbySettings')) $('#lobbySettings').style.minHeight = '';
+    });
+
     if (!isHost) { bindDetail($('#lobbySettings')); return; }
+
     $$('[data-v]').forEach(b => b.onclick = () => { A.sfx('select'); socket.emit('settings', { version: b.dataset.v }); });
     $$('[data-s]').forEach(el => el.onchange = () => socket.emit('settings', { [el.dataset.s]: el.type === 'checkbox' ? el.checked : (isNaN(el.value) ? el.value : +el.value) }));
-    const step = (id, d) => socket.emit('settings', { counts: { [id]: Math.max(0, Math.min(10, (st.counts[id] || 0) + d)) } });
-    $$('[data-inc]').forEach(b => b.onclick = () => { A.sfx('click'); step(b.dataset.inc, 1); });
-    $$('[data-dec]').forEach(b => b.onclick = () => { A.sfx('click'); step(b.dataset.dec, -1); });
+
+    const updateAllInPlace = (newCounts) => {
+      let tot = 0;
+      cardList.forEach(id => {
+        const n = newCounts[id] || 0;
+        tot += n;
+        const item = $(`[data-card-item="${id}"]`);
+        if (item) {
+          item.classList.toggle('off', n === 0);
+          const inp = $(`[data-card-input="${id}"]`, item);
+          if (inp) inp.value = n;
+        }
+      });
+      const badge = $('#deckTotalCards');
+      if (badge) badge.textContent = `${tot} ${t('cardsUnit') || 'ใบ'}`;
+    };
+
+    const step = (id, delta) => {
+      const cur = parseInt(st.counts[id] || 0, 10);
+      const next = Math.max(0, Math.min(10, cur + delta));
+      if (cur === next) return;
+      st.counts[id] = next;
+      const item = $(`[data-card-item="${id}"]`);
+      if (item) {
+        item.classList.toggle('off', next === 0);
+        const inp = $(`[data-card-input="${id}"]`, item);
+        if (inp && document.activeElement !== inp) inp.value = next;
+      }
+      const badge = $('#deckTotalCards');
+      if (badge) {
+        const tot = Object.values(st.counts).reduce((a, b) => a + (parseInt(b, 10) || 0), 0);
+        badge.textContent = `${tot} ${t('cardsUnit') || 'ใบ'}`;
+      }
+      socket.emit('settings', { counts: { [id]: next } });
+    };
+
+    const bindHold = (btn, isInc, id) => {
+      let holdTimer = null;
+      let holdInterval = null;
+      let pid = null;
+      const doStep = (e) => {
+        const delta = (e && e.shiftKey ? 5 : 1) * (isInc ? 1 : -1);
+        A.sfx('click');
+        step(id, delta);
+      };
+      const stop = (e) => {
+        if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
+        if (holdInterval) { clearInterval(holdInterval); holdInterval = null; }
+        if (pid !== null && btn.releasePointerCapture) {
+          try { btn.releasePointerCapture(pid); } catch (_) {}
+          pid = null;
+        }
+      };
+      btn.addEventListener('pointerdown', (e) => {
+        if (e.button !== undefined && e.button !== 0) return;
+        pid = e.pointerId;
+        if (btn.setPointerCapture) {
+          try { btn.setPointerCapture(pid); } catch (_) {}
+        }
+        doStep(e);
+        holdTimer = setTimeout(() => {
+          holdInterval = setInterval(() => doStep(e), 100);
+        }, 260);
+      });
+      btn.addEventListener('pointerup', stop);
+      btn.addEventListener('pointerleave', stop);
+      btn.addEventListener('pointercancel', stop);
+    };
+
+    $$('[data-inc]').forEach(b => bindHold(b, true, b.dataset.inc));
+    $$('[data-dec]').forEach(b => bindHold(b, false, b.dataset.dec));
+
+    $$('[data-card-input]').forEach(inp => {
+      const id = inp.dataset.cardInput;
+      const commit = () => {
+        let val = parseInt(inp.value, 10);
+        if (isNaN(val)) val = 0;
+        val = Math.max(0, Math.min(10, val));
+        inp.value = val;
+        if ((st.counts[id] || 0) !== val) {
+          st.counts[id] = val;
+          const item = inp.closest('.count-item');
+          if (item) item.classList.toggle('off', val === 0);
+          const badge = $('#deckTotalCards');
+          if (badge) {
+            const tot = Object.values(st.counts).reduce((a, b) => a + (parseInt(b, 10) || 0), 0);
+            badge.textContent = `${tot} ${t('cardsUnit') || 'ใบ'}`;
+          }
+          socket.emit('settings', { counts: { [id]: val } });
+        }
+      };
+      inp.onfocus = () => { try { inp.select(); } catch (_) {} };
+      inp.onchange = commit;
+      inp.onblur = commit;
+      inp.onkeydown = (e) => {
+        if (e.key === 'Enter') { inp.blur(); }
+        else if (e.key === 'ArrowUp') { e.preventDefault(); step(id, 1); }
+        else if (e.key === 'ArrowDown') { e.preventDefault(); step(id, -1); }
+      };
+      inp.onwheel = (e) => {
+        e.preventDefault();
+        step(id, e.deltaY < 0 ? 1 : -1);
+      };
+    });
+
+    const bReset = $('#btnDeckReset');
+    if (bReset) bReset.onclick = () => {
+      A.sfx('select');
+      const resetCounts = {};
+      for (const cid of CONFIGURABLE) resetCounts[cid] = VERSIONS[st.version]?.counts[cid] || 0;
+      st.counts = { ...resetCounts };
+      updateAllInPlace(st.counts);
+      socket.emit('settings', { counts: resetCounts });
+      toast('🔄 ' + (t('resetPreset') || 'รีเซ็ตค่าเริ่มต้น'));
+    };
+
+    const bZero = $('#btnDeckZero');
+    if (bZero) bZero.onclick = () => {
+      A.sfx('click');
+      const zeroCounts = {};
+      for (const cid of CONFIGURABLE) zeroCounts[cid] = 0;
+      st.counts = { ...zeroCounts };
+      updateAllInPlace(st.counts);
+      socket.emit('settings', { counts: zeroCounts });
+      toast('0️⃣ ' + (t('allZero') || 'เคลียร์เป็น 0 ทุกใบ'));
+    };
+
+    const bPlus = $('#btnDeckPlus1');
+    if (bPlus) bPlus.onclick = () => {
+      A.sfx('click');
+      const updated = {};
+      for (const cid of CONFIGURABLE) updated[cid] = Math.min(10, (st.counts[cid] || 0) + 1);
+      st.counts = { ...updated };
+      updateAllInPlace(st.counts);
+      socket.emit('settings', { counts: updated });
+    };
+
+    const bMinus = $('#btnDeckMinus1');
+    if (bMinus) bMinus.onclick = () => {
+      A.sfx('click');
+      const updated = {};
+      for (const cid of CONFIGURABLE) updated[cid] = Math.max(0, (st.counts[cid] || 0) - 1);
+      st.counts = { ...updated };
+      updateAllInPlace(st.counts);
+      socket.emit('settings', { counts: updated });
+    };
+
     bindDetail($('#lobbySettings'));
   }
   function bindDetail(root) { $$('[data-detail]', root).forEach(c => c.onclick = () => openCardDetail(c.dataset.id)); }
