@@ -102,9 +102,12 @@ function onGameEnd(game, results) {
       vsBotsOnly: humans === 1, version: game.settings.version
     });
     if (rec) {
-      rewards[p.id] = { coins: rec.coins, rp: rec.rp };
+      rewards[p.id] = { coins: rec.coins, diamonds: rec.diamonds, rp: rec.rp };
       p.rp = rec.user.rp; p.inventory = rec.user.inventory;
-      if (p.socketId) io.to(p.socketId).emit('profile', rec.user);
+      if (p.socketId) {
+        io.to(p.socketId).emit('profile', rec.user);
+        if (rec.vault) io.to(p.socketId).emit('vault', rec.vault);
+      }
     }
   }
   return rewards;

@@ -618,6 +618,7 @@
     if (saved) socket.emit('rejoin', saved);
   });
   socket.on('err', (e) => { toast('⚠️ ' + esc(terr(e)), 'err'); A.sfx('nope'); });
+  socket.on('vault', (v) => { try { localStorage.setItem('ek_account_vault', JSON.stringify(v)); } catch (_) {} });
   socket.on('joined', ({ code, playerId, key }) => { sessionStorage.setItem('ek_room', JSON.stringify({ code, playerId, key })); history.replaceState(null, '', '?room=' + code); });
   socket.on('rejoinFailed', () => { sessionStorage.removeItem('ek_room'); });
   socket.on('left', () => {
@@ -1502,7 +1503,7 @@
       <h4>🐶 ${lang === 'th' ? 'อวตารอิโมจิคลาสสิก' : 'Classic Dog Emojis'}</h4>
       <div class="avatar-pick">${EMOJI_AVATARS.map(a => `<button class="${a === curAvatar ? 'on' : ''}" data-av="${a}">${a}</button>`).join('')}</div>
 
-      <h4>${t('history')}</h4><div class="history">${(user.history || []).map(h => `<div>#${h.place}/${h.total} · ${VERSIONS[h.version]?.icon || ''} · 🪙+${h.coins} · ${h.rp >= 0 ? '+' : ''}${h.rp} RP</div>`).join('') || '-'}</div>
+      <h4>${t('history')}</h4><div class="history">${(user.history || []).map(h => `<div>#${h.place}/${h.total} · ${VERSIONS[h.version]?.icon || ''} · 🪙+${h.coins}${h.diamonds ? ` · <b style="color:#38bdf8">💎+${h.diamonds}</b>` : ''} · ${h.rp >= 0 ? '+' : ''}${h.rp} RP</div>`).join('') || '-'}</div>
       <div class="row" style="margin-top:12px;gap:8px;"><button class="btn small" id="pfShop">🛒 ${t('shop')}</button><button class="btn small gold" id="pfGacha">🎲 ${t('gacha') || 'กาชา'}</button><button class="btn small red" id="pfLogout">${t('logout')}</button></div>`);
 
     const save = async (body) => {
@@ -3474,12 +3475,42 @@
   function showResults(results, fresh) {
     const isHost = me()?.isHost;
     const mine = results.find(r => r.id === S?.me?.id);
-    openModal(`<h2>🏁 ${t('gameOver')}</h2><div class="results">${results.map(r => `
-      <div class="res-row place${r.place} ${r.id === S?.me?.id ? 'me' : ''}"><b>${['🥇', '🥈', '🥉'][r.place - 1] || '#' + r.place}</b><span>${esc(r.avatar)} ${esc(r.name)}</span>
-      ${r.reward ? `<span class="reward">🪙 +${r.reward.coins} · ${r.reward.rp >= 0 ? '+' : ''}${r.reward.rp} RP</span>` : '<span></span>'}</div>`).join('')}</div>
+
+    // If guest, award guest coins & diamonds locally
+    if (!user && mine) {
+      const gWon = mine.place === 1;
+      const gCoins = (gWon ? 120 : 30) + (results.length - mine.place) * 15;
+      const gDia = gWon ? 3 : (mine.place === 2 ? 1 : 0);
+      const curC = parseInt(localStorage.getItem('ek_guest_coins') || '100');
+      const curD = parseInt(localStorage.getItem('ek_guest_diamonds') || '20');
+      localStorage.setItem('ek_guest_coins', curC + gCoins);
+      localStorage.setItem('ek_guest_diamonds', curD + gDia);
+      renderUserChip();
+      mine.reward = { coins: gCoins, diamonds: gDia, rp: gWon ? 25 : 5 };
+    }
+
+    openModal(`<h2>🏁 ${t('gameOver')}</h2><div class="results">${results.map(r => {
+      let rewText = '<span></span>';
+      if (r.reward) {
+        const parts = [`🪙 +${r.reward.coins}`];
+        if (r.reward.diamonds) parts.push(`<b style="color:#38bdf8">💎 +${r.reward.diamonds}</b>`);
+        if (r.reward.rp !== undefined) parts.push(`${r.reward.rp >= 0 ? '+' : ''}${r.reward.rp} RP`);
+        rewText = `<span class="reward">${parts.join(' · ')}</span>`;
+      }
+      return `
+        <div class="res-row place${r.place} ${r.id === S?.me?.id ? 'me' : ''}">
+          <b>${['🥇', '🥈', '🥉'][r.place - 1] || '#' + r.place}</b>
+          ${avatarHTML(r, 'sm')}
+          <span>${esc(r.name)}</span>
+          ${rewText}
+        </div>`;
+    }).join('')}</div>
       ${!user ? `<p class="note">${t('guestNote')}</p>` : ''}
       <div class="row">${isHost ? `<button class="btn big gold" id="resLobby">🔄 ${t('playAgain')}</button>` : `<span class="note" style="align-self:center;">⏳ ${lang === 'th' ? 'รอหัวหน้าห้องเริ่มตาใหม่...' : 'Waiting for host to restart...'}</span>`}<button class="btn big" id="resHome">🏠 ${t('home')}</button></div>`, { cls: 'results-modal' });
-    if (fresh && mine && mine.reward) { A.sfx('coin'); if (mine.place === 1) confetti(true); }
+    if (fresh && mine && mine.reward) {
+      A.sfx(mine.place === 1 ? 'win' : 'coin');
+      if (mine.place === 1) confetti(true);
+    }
     const l = $('#resLobby'); if (l) l.onclick = () => { closeModal(true); socket.emit('backToLobby'); };
     $('#resHome').onclick = () => { closeModal(true); socket.emit('leaveRoom'); };
   }

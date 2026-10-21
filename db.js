@@ -445,19 +445,34 @@ function claimMail(token, mailId) {
 // result: { place, total, won, exploded, defuses, vsBotsOnly, version }
 function recordGame(username, r) {
   const u = db.users[String(username).toLowerCase()]; if (!u) return null;
-  const mult = r.vsBotsOnly ? 0.5 : 1;
-  const coins = Math.round(((r.won ? 150 : 30) + (r.total - r.place) * 15 + r.defuses * 10) * mult);
-  const rpDelta = Math.round((r.won ? 30 : (r.place <= Math.ceil(r.total / 2) ? 5 : -10)) * mult);
+  const mult = r.vsBotsOnly ? 0.6 : 1;
+  const coins = Math.round(((r.won ? 180 : 35) + (r.total - r.place) * 18 + r.defuses * 12) * mult);
+  const rpDelta = Math.round((r.won ? 35 : (r.place <= Math.ceil(r.total / 2) ? 10 : -10)) * mult);
+
+  // Generous Diamond rewards:
+  // Winner gets +5 diamonds (or +3 vs bots only)
+  // Runner-up (2nd place) gets +1 diamond
+  // Defuse bonus (2+ defuses in a match) gets +1 extra diamond
+  let diamonds = 0;
+  if (r.won) {
+    diamonds = r.vsBotsOnly ? 3 : 5;
+  } else if (r.place === 2 && r.total >= 3) {
+    diamonds = 1;
+  }
+  if ((r.defuses || 0) >= 2 && r.won) {
+    diamonds += 1;
+  }
+
   u.coins = (u.coins || 0) + coins;
-  if (r.won) u.diamonds = (u.diamonds || 0) + 1; // 1 diamond for victory!
+  u.diamonds = (u.diamonds || 0) + diamonds;
   u.rp = Math.max(0, (u.rp || 0) + rpDelta);
   u.stats = u.stats || { games: 0, wins: 0, explosions: 0, defuses: 0 };
   u.stats.games++; if (r.won) u.stats.wins++;
   if (r.exploded) u.stats.explosions++;
-  u.stats.defuses += r.defuses;
-  u.history = [{ t: Date.now(), place: r.place, total: r.total, coins, rp: rpDelta, version: r.version }, ...(u.history || [])].slice(0, 20);
+  u.stats.defuses += (r.defuses || 0);
+  u.history = [{ t: Date.now(), place: r.place, total: r.total, coins, diamonds, rp: rpDelta, version: r.version }, ...(u.history || [])].slice(0, 20);
   u.updatedAt = Date.now(); save();
-  return { coins, rp: rpDelta, user: publicUser(u), vault: generateVault(u) };
+  return { coins, diamonds, rp: rpDelta, user: publicUser(u), vault: generateVault(u) };
 }
 
 function leaderboard() {
