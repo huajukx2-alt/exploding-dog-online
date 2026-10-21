@@ -148,7 +148,9 @@
     { id: 'av_diamond_poodle', type: 'avatar', icon: '🐩', price: 850, name: { th: 'พุดเดิ้ล ไดมอนด์ควีน', en: 'Diamond Queen Poodle' }, desc: { th: 'มงกุฎเพชรระยิบระยับระดับราชวงศ์', en: 'Sparkling diamond royal tiara' } },
     { id: 'av_samurai_akita', type: 'avatar', icon: '🐕‍🦺', price: 750, name: { th: 'อาคิตะ ซามูไรทองคำ', en: 'Samurai Doge Legend' }, desc: { th: 'เกราะซามูไรญี่ปุ่นโบราณสีแดงชาด', en: 'Traditional crimson samurai armor' } },
     { id: 'av_gentleman_pug', type: 'avatar', icon: '🐶', price: 450, name: { th: 'ปั๊ก สุภาพบุรุษคลาสสิก', en: 'Gentleman Classic Pug' }, desc: { th: 'หมวกทรงสูง แว่นตาเลนส์เดี่ยวทองคำ', en: 'Top hat & golden monocle' } },
-    { id: 'av_ninja_dog', type: 'avatar', icon: '🥷', price: 550, name: { th: 'ตูบนินจา เงาจันทร์', en: 'Shadow Moon Ninja Dog' }, desc: { th: 'หน้ากากนินจา ดาบคาตานะคู่สุดเท่', en: 'Stealth shinobi mask & twin blades' } }
+    { id: 'av_ninja_dog', type: 'avatar', icon: '🥷', price: 550, name: { th: 'ตูบนินจา เงาจันทร์', en: 'Shadow Moon Ninja Dog' }, desc: { th: 'หน้ากากนินจา ดาบคาตานะคู่สุดเท่', en: 'Stealth shinobi mask & twin blades' } },
+    { id: 'av_zombie_pup', type: 'avatar', icon: '🧟', price: 666, name: { th: 'ตูบซอมบี้ คืนชีพ', en: 'Undead Zombie Pup' }, desc: { th: 'ตาสีมรกตเรืองแสง รอยเย็บสุดเท่และคาบกระดูก', en: 'Glowing emerald ghost eye, spooky stitches & bone' } },
+    { id: 'av_shiba_sensei', type: 'avatar', icon: '🎓', price: 500, name: { th: 'ครูฝึกบ็อบบี้ เซนเซย์', en: 'Coach Bobby Sensei' }, desc: { th: 'หมวกบัณฑิต แว่นตานักปราชญ์ ผู้เชี่ยวชาญตำราหมาระเบิด', en: 'Master graduation cap & wisdom spectacles' } }
   ];
 
   // Purchasable and Limited Titles / Ranks (ยศ & ฉายา)

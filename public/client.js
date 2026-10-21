@@ -69,9 +69,9 @@
     </div>`;
   }
   const backHTML = (skin, extra = '') => `<div class="card back ${skin || ''}" ${extra}></div>`;
-    function renderAvatarSVG(av, fallbackTheme = 'gold') {
+  function renderAvatarSVG(av, fallbackTheme = 'gold') {
     if (!av) av = fallbackTheme;
-    if (av === 'av_shiba_vip' || av === 'gold') {
+    if (av === 'av_shiba_vip' || av === 'av_golden_shiba' || av === 'gold' || av === 'emerald' || av === 'original') {
       return `<svg viewBox="0 0 120 120" class="dog-hero-svg">
         <defs>
           <radialGradient id="gVipShiba" cx="50%" cy="40%" r="60%">
@@ -106,7 +106,7 @@
         <text x="60" y="109" font-size="7" font-weight="900" fill="#78350f" text-anchor="middle">$</text>
       </svg>`;
     }
-    if (av === 'av_cyber_husky' || av === 'neon') {
+    if (av === 'av_cyber_husky' || av === 'neon' || av === 'cyber' || av === 'streaking') {
       return `<svg viewBox="0 0 120 120" class="dog-hero-svg">
         <defs>
           <radialGradient id="gHusky" cx="50%" cy="40%" r="60%">
@@ -135,7 +135,7 @@
         <line x1="100" y1="46" x2="108" y2="38" stroke="#22d3ee" stroke-width="3" stroke-linecap="round"/>
       </svg>`;
     }
-    if (av === 'av_corgi_galaxy' || av === 'galaxy') {
+    if (av === 'av_corgi_galaxy' || av === 'av_corgi_astro' || av === 'galaxy' || av === 'cosmic' || av === 'party') {
       return `<svg viewBox="0 0 120 120" class="dog-hero-svg">
         <defs>
           <radialGradient id="gCorgiGal" cx="50%" cy="40%" r="60%">
@@ -162,7 +162,7 @@
         <path d="M28,36 A38,38 0 0,1 58,18" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" opacity="0.85"/>
       </svg>`;
     }
-    if (av === 'custom_bulldog') {
+    if (av === 'custom_bulldog' || av === 'sandbox' || av === 'custom') {
       return `<svg viewBox="0 0 120 120" class="dog-hero-svg">
         <defs>
           <radialGradient id="gBulldogSand" cx="50%" cy="40%" r="60%">
@@ -210,7 +210,7 @@
         </g>
       </svg>`;
     }
-    if (av === 'av_blaze_bulldog' || av === 'fire') {
+    if (av === 'av_blaze_bulldog' || av === 'fire' || av === 'crimson' || av === 'barking') {
       return `<svg viewBox="0 0 120 120" class="dog-hero-svg">
         <defs>
           <radialGradient id="gBulldog" cx="50%" cy="40%" r="60%">
@@ -236,7 +236,7 @@
         <line x1="87" y1="47" x2="67" y2="53" stroke="#1c1208" stroke-width="4.5" stroke-linecap="round"/>
       </svg>`;
     }
-    if (av === 'av_god_shiba') {
+    if (av === 'av_god_shiba' || av === 'av_sun_god' || av === 'rainbow' || av === 'mega') {
       return `<svg viewBox="0 0 120 120" class="dog-hero-svg">
         <defs>
           <radialGradient id="gSunGod" cx="50%" cy="40%" r="60%">
@@ -416,7 +416,106 @@
         <circle cx="60" cy="100" r="3" fill="#b91c1c"/>
       </svg>`;
     }
-    const charCode = (typeof av === 'string' && av.length) ? av.codePointAt(0) : 128054;
+    if (av === 'av_zombie_pup' || av === 'undead' || av === 'zombie') {
+      return `<svg viewBox="0 0 120 120" class="dog-hero-svg">
+        <defs>
+          <radialGradient id="gZombie" cx="50%" cy="40%" r="60%">
+            <stop offset="0%" stop-color="#2dd4bf"/>
+            <stop offset="45%" stop-color="#0f766e"/>
+            <stop offset="100%" stop-color="#042f2e"/>
+          </radialGradient>
+          <radialGradient id="gEyeGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#a7f3d0"/>
+            <stop offset="60%" stop-color="#34d399"/>
+            <stop offset="100%" stop-color="#059669"/>
+          </radialGradient>
+          <linearGradient id="gBone" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#f8fafc"/>
+            <stop offset="100%" stop-color="#cbd5e1"/>
+          </linearGradient>
+        </defs>
+        <circle cx="60" cy="60" r="56" fill="url(#gZombie)"/>
+        <circle cx="60" cy="60" r="48" fill="none" stroke="#2dd4bf" stroke-width="2" stroke-dasharray="4 6" opacity="0.4"/>
+        <circle cx="22" cy="28" r="2.5" fill="#5eead4" opacity="0.8"/>
+        <circle cx="98" cy="32" r="3" fill="#5eead4" opacity="0.7"/>
+        <circle cx="90" cy="88" r="2" fill="#5eead4" opacity="0.6"/>
+        <path d="M18,36 Q22,22 16,14 Q26,20 22,34" fill="#2dd4bf" opacity="0.5"/>
+        <path d="M102,40 Q106,26 100,18 Q110,24 106,38" fill="#2dd4bf" opacity="0.5"/>
+        <polygon points="22,48 30,12 50,34" fill="#115e59" stroke="#042f2e" stroke-width="4"/>
+        <polygon points="28,42 32,20 44,34" fill="#2dd4bf"/>
+        <line x1="26" y1="26" x2="36" y2="28" stroke="#042f2e" stroke-width="2.5"/>
+        <line x1="30" y1="23" x2="32" y2="31" stroke="#042f2e" stroke-width="2"/>
+        <polygon points="98,48 92,20 86,14 80,24 68,34" fill="#115e59" stroke="#042f2e" stroke-width="4"/>
+        <polygon points="92,42 88,24 74,34" fill="#2dd4bf"/>
+        <path d="M24,95 Q60,82 96,95 L100,118 L20,118 Z" fill="#134e4a" stroke="#042f2e" stroke-width="4"/>
+        <path d="M28,94 Q60,105 92,94" fill="none" stroke="#042f2e" stroke-width="8" stroke-linecap="round"/>
+        <circle cx="60" cy="103" r="6" fill="#f8fafc" stroke="#042f2e" stroke-width="2"/>
+        <circle cx="58" cy="102" r="1.5" fill="#042f2e"/><circle cx="62" cy="102" r="1.5" fill="#042f2e"/>
+        <ellipse cx="60" cy="62" rx="36" ry="31" fill="#14b8a6" stroke="#042f2e" stroke-width="4"/>
+        <path d="M48,34 Q56,40 64,36" fill="none" stroke="#042f2e" stroke-width="3" stroke-linecap="round"/>
+        <line x1="51" y1="33" x2="53" y2="40" stroke="#042f2e" stroke-width="2.2"/>
+        <line x1="57" y1="34" x2="59" y2="41" stroke="#042f2e" stroke-width="2.2"/>
+        <line x1="62" y1="33" x2="63" y2="39" stroke="#042f2e" stroke-width="2.2"/>
+        <ellipse cx="60" cy="72" rx="22" ry="16" fill="#99f6e4" stroke="#042f2e" stroke-width="3"/>
+        <ellipse cx="60" cy="65" rx="8" ry="5.5" fill="#042f2e"/>
+        <circle cx="44" cy="54" r="8.5" fill="#042f2e"/>
+        <circle cx="44" cy="54" r="7" fill="url(#gEyeGlow)"/>
+        <circle cx="44" cy="54" r="3.5" fill="#fff"/>
+        <circle cx="76" cy="54" r="7" fill="#0f766e" stroke="#042f2e" stroke-width="2"/>
+        <line x1="71" y1="49" x2="81" y2="59" stroke="#042f2e" stroke-width="3.5" stroke-linecap="round"/>
+        <line x1="81" y1="49" x2="71" y2="59" stroke="#042f2e" stroke-width="3.5" stroke-linecap="round"/>
+        <path d="M50,75 Q60,82 70,75" fill="none" stroke="#042f2e" stroke-width="3" stroke-linecap="round"/>
+        <g transform="translate(60, 80) rotate(-12)">
+          <rect x="-18" y="-3.5" width="36" height="7" rx="3.5" fill="url(#gBone)" stroke="#042f2e" stroke-width="2"/>
+          <circle cx="-18" cy="-5" r="4" fill="url(#gBone)" stroke="#042f2e" stroke-width="1.8"/>
+          <circle cx="-18" cy="5" r="4" fill="url(#gBone)" stroke="#042f2e" stroke-width="1.8"/>
+          <circle cx="18" cy="-5" r="4" fill="url(#gBone)" stroke="#042f2e" stroke-width="1.8"/>
+          <circle cx="18" cy="5" r="4" fill="url(#gBone)" stroke="#042f2e" stroke-width="1.8"/>
+        </g>
+      </svg>`;
+    }
+    if (av === 'av_shiba_sensei' || av === 'coach_bobby' || av === 'sensei') {
+      return `<svg viewBox="0 0 120 120" class="dog-hero-svg">
+        <defs>
+          <radialGradient id="gSenseiBg" cx="50%" cy="40%" r="60%">
+            <stop offset="0%" stop-color="#fef08a"/>
+            <stop offset="50%" stop-color="#f59e0b"/>
+            <stop offset="100%" stop-color="#78350f"/>
+          </radialGradient>
+          <linearGradient id="gMortar" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#334155"/>
+            <stop offset="100%" stop-color="#0f172a"/>
+          </linearGradient>
+        </defs>
+        <circle cx="60" cy="60" r="56" fill="url(#gSenseiBg)"/>
+        <polygon points="22,46 32,14 52,36" fill="#d97706" stroke="#1c1208" stroke-width="4" stroke-linejoin="round"/>
+        <polygon points="28,42 34,22 46,36" fill="#fef3c7"/>
+        <polygon points="98,46 88,14 68,36" fill="#d97706" stroke="#1c1208" stroke-width="4" stroke-linejoin="round"/>
+        <polygon points="92,42 86,22 74,36" fill="#fef3c7"/>
+        <path d="M24,96 Q60,82 96,96 L100,118 L20,118 Z" fill="#1e293b" stroke="#0f172a" stroke-width="4"/>
+        <polygon points="60,94 50,118 70,118" fill="#fef08a"/>
+        <polygon points="56,96 60,104 64,96" fill="#dc2626"/>
+        <ellipse cx="60" cy="66" rx="35" ry="30" fill="#fbbf24" stroke="#1c1208" stroke-width="4"/>
+        <ellipse cx="60" cy="74" rx="22" ry="16" fill="#fef3c7"/>
+        <circle cx="36" cy="70" r="6" fill="#f43f5e" opacity="0.35"/>
+        <circle cx="84" cy="70" r="6" fill="#f43f5e" opacity="0.35"/>
+        <circle cx="44" cy="58" r="9.5" fill="rgba(255,255,255,0.4)" stroke="#78350f" stroke-width="3"/>
+        <circle cx="76" cy="58" r="9.5" fill="rgba(255,255,255,0.4)" stroke="#78350f" stroke-width="3"/>
+        <line x1="53.5" y1="58" x2="66.5" y2="58" stroke="#78350f" stroke-width="3"/>
+        <circle cx="44" cy="58" r="4.5" fill="#1c1208"/><circle cx="42.5" cy="56.5" r="1.5" fill="#fff"/>
+        <circle cx="76" cy="58" r="4.5" fill="#1c1208"/><circle cx="74.5" cy="56.5" r="1.5" fill="#fff"/>
+        <ellipse cx="60" cy="68" rx="6.5" ry="4.5" fill="#1c1208"/>
+        <path d="M52,76 Q60,83 68,76" fill="none" stroke="#1c1208" stroke-width="3" stroke-linecap="round"/>
+        <polygon points="60,8 100,24 60,36 20,24" fill="url(#gMortar)" stroke="#020617" stroke-width="3.5" stroke-linejoin="round"/>
+        <rect x="42" y="27" width="36" height="12" rx="4" fill="#0f172a" stroke="#020617" stroke-width="2"/>
+        <circle cx="60" cy="22" r="3" fill="#fbbf24"/>
+        <path d="M60,22 Q38,26 34,42" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/>
+        <polygon points="32,42 36,42 35,49 33,49" fill="#d97706"/>
+      </svg>`;
+    }
+    const isEmoji = typeof av === 'string' && (/\p{Emoji}/u.test(av) && !/^[a-zA-Z0-9_]+$/.test(av));
+    const displayChar = isEmoji ? av : '🐶';
+    const charCode = displayChar.codePointAt(0) || 128054;
     return `<svg viewBox="0 0 120 120" class="dog-hero-svg emoji-avatar-svg">
       <defs>
         <radialGradient id="gE_${charCode}" cx="50%" cy="45%" r="55%">
@@ -425,7 +524,7 @@
         </radialGradient>
       </defs>
       <circle cx="60" cy="60" r="54" fill="url(#gE_${charCode})" stroke="#6366f1" stroke-width="3"/>
-      <text x="60" y="74" font-size="52" text-anchor="middle" dominant-baseline="central">${av || '🐶'}</text>
+      <text x="60" y="74" font-size="52" text-anchor="middle" dominant-baseline="central">${displayChar}</text>
     </svg>`;
   }
   function dogHeroSVG(themeOrAv) { return renderAvatarSVG(themeOrAv); }
@@ -1215,7 +1314,7 @@
       name: { th: 'ตรอกหมาวัด', en: 'Classic Alley' },
       tag: { th: 'ด่านคลาสสิก', en: 'CLASSIC' },
       theme: 'emerald',
-      avatar: 'av_golden_shiba',
+      avatar: 'av_shiba_vip',
       desc: { th: 'การ์ดดั้งเดิม 55 ใบ ระเบิด 4 ใบ ปลดชนวน 6 ใบ เล่นง่าย ไหวพริบล้วนๆ', en: 'Original 55 cards, 4 Bombs, 6 Defuses. Pure wits and fun!' },
       accent: '#10b981',
       glow: 'rgba(16, 185, 129, 0.45)',
@@ -1226,7 +1325,7 @@
       name: { th: 'ดาราจักรหลุมดำ', en: 'Imploding Cosmos' },
       tag: { th: 'มหาปาร์ตี้หลุมดำ', en: 'IMPLODING CHAOS' },
       theme: 'cosmic',
-      avatar: 'av_corgi_astro',
+      avatar: 'av_corgi_galaxy',
       desc: { th: 'การ์ดระเบิดหลุมดำหงายหน้าในกองจั่ว! ขโมยเจาะจง สลับทิศทาง ลุ้นสุดขีด', en: 'Face-up Imploding Doge, targeted attacks, reverse, wild chaos!' },
       accent: '#a855f7',
       glow: 'rgba(168, 85, 247, 0.45)',
@@ -1270,7 +1369,7 @@
       name: { th: 'เมก้าโกลาหล', en: 'Mega Mix (All)' },
       tag: { th: 'รวมมิตรทุกจักรวาล', en: 'ALL-STAR CHAOS' },
       theme: 'rainbow',
-      avatar: 'av_sun_god',
+      avatar: 'av_god_shiba',
       desc: { th: 'รวมการ์ดทุกภาค ทั้งหลุมดำ ซ่อนระเบิด หมาเห่า ซอมบี้ กว่า 120 ใบ มันส์ทะลุพิกัด', en: 'All expansions merged together: 120+ cards of ultimate explosive frenzy!' },
       accent: '#f59e0b',
       glow: 'rgba(245, 158, 11, 0.5)',
