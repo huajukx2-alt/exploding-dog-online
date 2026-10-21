@@ -3,19 +3,61 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { SHOP, GACHA_POOL, AVATARS } = require('./public/shared/cards');
+let firebaseDb = null;
+try {
+  firebaseDb = require('./firebase-db');
+} catch (e) {
+  console.warn('[db] firebase-db module not loaded:', e.message);
+}
 
 const DATA_DIR = path.join(__dirname, 'data');
 const FILE = path.join(DATA_DIR, 'users.json');
 let db = { users: {} };          // username(lowercase) -> user
 const sessions = new Map();      // token -> username
 
-function load() {
-  try { if (fs.existsSync(FILE)) { const parsed = JSON.parse(fs.readFileSync(FILE, 'utf8')); db.users = parsed.users || {}; } } catch (e) { console.error('users.json load failed', e); }
+async function load() {
+  try {
+    if (fs.existsSync(FILE)) {
+      const parsed = JSON.parse(fs.readFileSync(FILE, 'utf8'));
+      db.users = parsed.users || {};
+    }
+  } catch (e) {
+    console.error('users.json load failed', e);
+  }
   if (!db.users) db.users = {};
-  for (const u of Object.values(db.users)) if (u.token) sessions.set(u.token, u.username.toLowerCase());
+  for (const u of Object.values(db.users)) {
+    if (u.token) sessions.set(u.token, u.username.toLowerCase());
+  }
+
+  // Cloud sync: pull all users from Firebase on boot
+  if (firebaseDb && firebaseDb.isEnabled) {
+    try {
+      const cloudUsers = await firebaseDb.fetchAllUsers();
+      if (cloudUsers && typeof cloudUsers === 'object') {
+        let merged = 0;
+        for (const [k, u] of Object.entries(cloudUsers)) {
+          if (u && u.username) {
+            const key = k.toLowerCase();
+            db.users[key] = { ...(db.users[key] || {}), ...u };
+            if (db.users[key].token) {
+              sessions.set(db.users[key].token, key);
+            }
+            merged++;
+          }
+        }
+        if (merged > 0) {
+          save(); // persist merged accounts into local cache
+          console.log(`[Firebase] 🌟 Merged ${merged} cloud accounts into memory!`);
+        }
+      }
+    } catch (fbErr) {
+      console.error('[Firebase] Error syncing cloud users on load:', fbErr.message);
+    }
+  }
 }
+
 let saveTimer = null;
-function save() {
+function save(userKey) {
   clearTimeout(saveTimer);
   saveTimer = setTimeout(() => {
     try {
@@ -32,6 +74,15 @@ function save() {
       console.error('[db] save error:', err);
     }
   }, 300);
+
+  // Sync to Firebase Cloud
+  if (firebaseDb && firebaseDb.isEnabled) {
+    if (userKey && db.users[userKey.toLowerCase()]) {
+      firebaseDb.saveUser(userKey, db.users[userKey.toLowerCase()]);
+    } else {
+      firebaseDb.saveAllUsers(db.users);
+    }
+  }
 }
 
 const hash = (pw, salt) => {
@@ -514,8 +565,16 @@ function completeTutorial(token) {
   return { ok: true, user: publicUser(u), vault: generateVault(u) };
 }
 
+async function syncToCloud() {
+  if (firebaseDb && firebaseDb.isEnabled) {
+    return await firebaseDb.saveAllUsers(db.users);
+  }
+  return false;
+}
+
 module.exports = {
   load, save, register, login, logout, byToken, publicUser, updateProfile,
   buy, equip, dailyBonus, gacha, getMailbox, claimMail, completeTutorial, recordGame, leaderboard,
-  generateVault, restoreFromVault, resetPassword, updateRecoveryPin, db
+  generateVault, restoreFromVault, resetPassword, updateRecoveryPin, db,
+  firebaseDb, syncToCloud
 };

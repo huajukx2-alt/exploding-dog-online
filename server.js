@@ -23,6 +23,7 @@ app.post('/api/register', (req, res) => { const b = req.body || {}; reply(res, d
 app.post('/api/login', (req, res) => { const b = req.body || {}; reply(res, db.login(b.username, b.password)); });
 app.post('/api/logout', (req, res) => { db.logout(req.headers['x-token']); res.json({ ok: true }); });
 app.get('/api/me', (req, res) => { const u = auth(req); u ? res.json({ user: db.publicUser(u) }) : res.status(401).json({ error: 'auth' }); });
+app.get('/api/cloud-status', (req, res) => res.json({ isEnabled: !!db.firebaseDb?.isEnabled, provider: db.firebaseDb?.provider || 'none' }));
 app.post('/api/tutorial/complete', (req, res) => reply(res, db.completeTutorial(req.headers['x-token'])));
 app.post('/api/profile', (req, res) => reply(res, db.updateProfile(req.headers['x-token'], req.body || {})));
 app.post('/api/buy', (req, res) => {
