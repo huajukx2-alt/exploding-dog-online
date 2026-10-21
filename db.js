@@ -294,17 +294,33 @@ function register(username, password, displayName, recoveryPin, email) {
 }
 
 function login(username, password) {
-  const key = String(username || '').trim().toLowerCase();
-  if (!Object.prototype.hasOwnProperty.call(db.users, key)) return { error: 'bad_login' };
-  const u = db.users[key];
-  if (!u || !u.salt || hash(String(password || ''), u.salt) !== u.pw) return { error: 'bad_login' };
-  if (u.token) sessions.delete(u.token);
-  u.token = crypto.randomBytes(24).toString('hex');
-  sessions.set(u.token, u.username.toLowerCase());
-  if (!u.recoveryPin) u.recoveryPin = '1234';
-  u.updatedAt = Date.now();
-  save();
-  return { token: u.token, user: publicUser(u), vault: generateVault(u) };
+  const cleanUser = String(username || '').trim();
+  const key = cleanUser.toLowerCase();
+  if (!key) return { error: 'bad_username' };
+
+  if (Object.prototype.hasOwnProperty.call(db.users, key)) {
+    const u = db.users[key];
+    if (!u || !u.salt || hash(String(password || ''), u.salt) !== u.pw) return { error: 'bad_login' };
+    if (u.token) sessions.delete(u.token);
+    u.token = crypto.randomBytes(24).toString('hex');
+    sessions.set(u.token, u.username.toLowerCase());
+    if (!u.recoveryPin) u.recoveryPin = '1234';
+    u.updatedAt = Date.now();
+    save();
+    return { token: u.token, user: publicUser(u), vault: generateVault(u) };
+  }
+
+  // Seamless Auto-Registration: If account does not exist (e.g. server redeployed or typed on login tab directly)
+  const cleanPass = String(password || '');
+  if (cleanPass.length >= 4 && /^[a-zA-Z0-9_]{3,16}$/.test(cleanUser)) {
+    const regRes = register(cleanUser, cleanPass, cleanUser, '1234', '');
+    if (regRes && regRes.token) {
+      regRes.autoRegistered = true;
+      return regRes;
+    }
+  }
+
+  return { error: 'bad_login' };
 }
 
 function byToken(token) { const k = sessions.get(token); return k ? db.users[k] : null; }

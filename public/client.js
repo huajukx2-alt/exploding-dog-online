@@ -771,7 +771,15 @@
       name = 'auth';
     }
     screen = name;
-    $$('.screen').forEach(s => s.classList.toggle('active', s.id === 'screen-' + name));
+    $('.screen').forEach(s => {
+      const isActive = s.id === 'screen-' + name;
+      s.classList.toggle('active', isActive);
+      if (!isActive) {
+        s.style.display = 'none';
+      } else {
+        s.style.display = '';
+      }
+    });
     document.body.dataset.screen = name;
   }
 
@@ -806,20 +814,34 @@
       A.sfx('click');
       const regForm = $('#authFormRegister') || $('#authRegisterForm');
       const loginForm = $('#authFormLogin') || $('#authLoginForm');
-      if (mode === 'register') {
-        tabRegister?.classList.add('active');
-        tabLogin?.classList.remove('active');
-        regForm?.classList.remove('hidden');
-        regForm?.classList.add('active');
-        loginForm?.classList.add('hidden');
-        loginForm?.classList.remove('active');
-      } else {
+
+      // Sync typed credentials between tabs so player never loses their input
+      const regUser = $('#authRegUsername')?.value?.trim();
+      const regPass = $('#authRegPassword')?.value;
+      const logUser = $('#authLoginUsername')?.value?.trim();
+      const logPass = $('#authLoginPassword')?.value;
+
+      if (mode === 'login') {
         tabLogin?.classList.add('active');
         tabRegister?.classList.remove('active');
         loginForm?.classList.remove('hidden');
         loginForm?.classList.add('active');
         regForm?.classList.add('hidden');
         regForm?.classList.remove('active');
+        if (regUser && !logUser && $('#authLoginUsername')) $('#authLoginUsername').value = regUser;
+        if (regPass && !logPass && $('#authLoginPassword')) $('#authLoginPassword').value = regPass;
+      } else {
+        tabRegister?.classList.add('active');
+        tabLogin?.classList.remove('active');
+        regForm?.classList.remove('hidden');
+        regForm?.classList.add('active');
+        loginForm?.classList.add('hidden');
+        loginForm?.classList.remove('active');
+        if (logUser && !regUser && $('#authRegUsername')) $('#authRegUsername').value = logUser;
+        if (logPass && !regPass && $('#authRegPassword')) {
+          $('#authRegPassword').value = logPass;
+          if ($('#authRegConfirm')) $('#authRegConfirm').value = logPass;
+        }
       }
     }
     window.switchAuthTab = switchAuthTab;
@@ -880,43 +902,54 @@
       toast(lang === 'th' ? '🐾 แฮ่กๆ! น้องโกลเด้นโบกมือทักทาย!' : 'Wag wag! Golden party pup says hi!', 'good');
     });
 
-    // Register submit
-    if (authRegForm) {
-      authRegForm.onsubmit = async (e) => {
-        e.preventDefault();
-        const username = $('#authRegUsername')?.value.trim();
-        const email = $('#authRegEmail')?.value.trim();
-        const password = $('#authRegPassword')?.value;
-        const confirm = $('#authRegConfirm')?.value;
-        const terms = $('#authTermsCheck')?.checked;
+    // Register Handler
+    const doRegisterSubmit = async (e) => {
+      if (e) e.preventDefault();
+      const username = $('#authRegUsername')?.value.trim();
+      const email = $('#authRegEmail')?.value.trim();
+      const password = $('#authRegPassword')?.value;
+      const confirm = $('#authRegConfirm')?.value;
+      const terms = $('#authTermsCheck')?.checked;
 
-        if (!terms) {
-          return toast(lang === 'th' ? '⚠️ กรุณายอมรับข้อตกลงและกติกาการเล่น 🦴' : 'Please accept terms and rules', 'err');
-        }
-        if (!username || username.length < 3) {
-          return toast(lang === 'th' ? '⚠️ ชื่อผู้ใช้ต้องมีอย่างน้อย 3 ตัวอักษร' : 'Username min 3 chars', 'err');
-        }
-        if (!password || password.length < 4) {
-          return toast(lang === 'th' ? '⚠️ รหัสผ่านต้องมีอย่างน้อย 4 ตัวอักษร' : 'Password min 4 chars', 'err');
-        }
-        if (password !== confirm) {
-          return toast(lang === 'th' ? '⚠️ รหัสผ่านและการยืนยันไม่ตรงกัน' : 'Passwords do not match', 'err');
-        }
+      if (!terms) {
+        return toast(lang === 'th' ? '⚠️ กรุณายอมรับข้อตกลงและกติกาการเล่น 🦴' : 'Please accept terms and rules', 'err');
+      }
+      if (!username || username.length < 3) {
+        return toast(lang === 'th' ? '⚠️ ชื่อผู้ใช้ต้องมีอย่างน้อย 3 ตัวอักษร' : 'Username min 3 chars', 'err');
+      }
+      if (!password || password.length < 4) {
+        return toast(lang === 'th' ? '⚠️ รหัสผ่านต้องมีอย่างน้อย 4 ตัวอักษร' : 'Password min 4 chars', 'err');
+      }
+      if (password !== confirm) {
+        return toast(lang === 'th' ? '⚠️ รหัสผ่านและการยืนยันไม่ตรงกัน' : 'Passwords do not match', 'err');
+      }
 
+      const btnSubmit = $('#btnAuthSubmitRegister');
+      if (btnSubmit) {
+        btnSubmit.disabled = true;
+        btnSubmit.innerHTML = `<span class="btn-star">⏳</span><span class="btn-text">${lang === 'th' ? 'กำลังสร้างบัญชี...' : 'Creating...'}</span><span class="btn-star">⏳</span>`;
+      }
+
+      try {
         const r = await api('/api/register', { username, password, displayName: username, email });
         if (r.error) {
+          if (btnSubmit) {
+            btnSubmit.disabled = false;
+            btnSubmit.innerHTML = `<span class="btn-star">✦</span><span class="btn-text">${lang === 'th' ? 'สร้างบัญชี & เข้าสู่ระบบ (CREATE & PLAY!)' : 'CREATE & PLAY!'}</span><span class="btn-star">✦</span>`;
+          }
           return toast('⚠️ ' + terr(r.error), 'err');
         }
 
         token = r.token;
         localStorage.setItem('ek_token', token);
         socket.emit('auth', token);
+        isGuestSessionActive = false;
         setUser(r.user, r.vault);
         A.sfx('win');
         confetti(true);
         toast(lang === 'th' ? `🎉 ยินดีต้อนรับ ${esc(r.user.displayName)}! สมัครสมาชิกสำเร็จ` : `Welcome ${esc(r.user.displayName)}!`, 'good');
 
-        // Hook for tutorial agent
+        // Hook for tutorial onboarding
         if (typeof window.onNewAccountCreated === 'function') {
           try {
             window.onNewAccountCreated(r.user);
@@ -927,36 +960,82 @@
 
         show('home');
         renderHome();
-      };
-    }
-
-    // Login submit
-    if (authLoginForm) {
-      authLoginForm.onsubmit = async (e) => {
-        e.preventDefault();
-        const username = $('#authLoginUsername')?.value.trim();
-        const password = $('#authLoginPassword')?.value;
-
-        if (!username || !password) {
-          return toast(lang === 'th' ? '⚠️ กรุณากรอกชื่อผู้ใช้และรหัสผ่าน' : 'Please enter username and password', 'err');
+        checkMailboxStatus();
+      } catch (err) {
+        console.error('Register submit error:', err);
+        toast(lang === 'th' ? '⚠️ การเชื่อมต่อขัดข้อง กรุณาลองใหม่' : 'Connection error', 'err');
+        if (btnSubmit) {
+          btnSubmit.disabled = false;
+          btnSubmit.innerHTML = `<span class="btn-star">✦</span><span class="btn-text">${lang === 'th' ? 'สร้างบัญชี & เข้าสู่ระบบ (CREATE & PLAY!)' : 'CREATE & PLAY!'}</span><span class="btn-star">✦</span>`;
         }
+      }
+    };
 
+    if (authRegForm) authRegForm.onsubmit = doRegisterSubmit;
+    const btnSubmitReg = $('#btnAuthSubmitRegister');
+    if (btnSubmitReg) btnSubmitReg.onclick = doRegisterSubmit;
+
+    // Login Handler
+    const doLoginSubmit = async (e) => {
+      if (e) e.preventDefault();
+      const usernameInp = $('#authLoginUsername') || $('#authRegUsername');
+      const passwordInp = $('#authLoginPassword') || $('#authRegPassword');
+      const username = usernameInp?.value.trim();
+      const password = passwordInp?.value;
+
+      if (!username || !password) {
+        return toast(lang === 'th' ? '⚠️ กรุณากรอกชื่อผู้ใช้และรหัสผ่าน' : 'Please enter username and password', 'err');
+      }
+
+      const btnSubmit = $('#btnAuthSubmitLogin');
+      if (btnSubmit) {
+        btnSubmit.disabled = true;
+        btnSubmit.innerHTML = `<span class="btn-star">⏳</span><span class="btn-text">${lang === 'th' ? 'กำลังเข้าสู่ระบบ...' : 'Logging in...'}</span><span class="btn-star">⏳</span>`;
+      }
+
+      try {
         const r = await api('/api/login', { username, password });
         if (r.error) {
+          if (btnSubmit) {
+            btnSubmit.disabled = false;
+            btnSubmit.innerHTML = `<span class="btn-star">✦</span><span class="btn-text">${lang === 'th' ? 'เข้าสู่ระบบ (LOGIN)' : 'LOGIN'}</span><span class="btn-star">✦</span>`;
+          }
           return toast('⚠️ ' + terr(r.error), 'err');
         }
 
         token = r.token;
         localStorage.setItem('ek_token', token);
         socket.emit('auth', token);
+        isGuestSessionActive = false;
         setUser(r.user, r.vault);
         A.sfx('coin');
-        toast('👋 ' + (lang === 'th' ? `ยินดีต้อนรับกลับ ${esc(r.user.displayName)}!` : `Welcome back ${esc(r.user.displayName)}!`), 'good');
+
+        if (r.autoRegistered) {
+          confetti(true);
+          toast('🎉 ' + (lang === 'th' ? `ยินดีต้อนรับ ${esc(r.user.displayName)}! ระบบสร้างบัญชีให้คุณแล้ว` : `Welcome ${esc(r.user.displayName)}! Account created.`), 'good');
+          if (typeof window.onNewAccountCreated === 'function') {
+            try { window.onNewAccountCreated(r.user); } catch (_) {}
+          }
+        } else {
+          toast('👋 ' + (lang === 'th' ? `ยินดีต้อนรับกลับ ${esc(r.user.displayName)}!` : `Welcome back ${esc(r.user.displayName)}!`), 'good');
+        }
 
         show('home');
         renderHome();
-      };
-    }
+        checkMailboxStatus();
+      } catch (err) {
+        console.error('Login submit error:', err);
+        toast(lang === 'th' ? '⚠️ การเชื่อมต่อขัดข้อง กรุณาลองใหม่' : 'Connection error', 'err');
+        if (btnSubmit) {
+          btnSubmit.disabled = false;
+          btnSubmit.innerHTML = `<span class="btn-star">✦</span><span class="btn-text">${lang === 'th' ? 'เข้าสู่ระบบ (LOGIN)' : 'LOGIN'}</span><span class="btn-star">✦</span>`;
+        }
+      }
+    };
+
+    if (authLoginForm) authLoginForm.onsubmit = doLoginSubmit;
+    const btnSubmitLogin = $('#btnAuthSubmitLogin');
+    if (btnSubmitLogin) btnSubmitLogin.onclick = doLoginSubmit;
 
     // BGM footer button
     const btnBgm = $('#btnFooterBgm');
@@ -973,82 +1052,10 @@
       btnBgm.onclick = () => {
         const nextState = !A.opt.sound;
         A.set('sound', nextState);
-        if (nextState) {
-          A.startBGM();
-        } else {
-          A.stopBGM();
-        }
+        A.set('music', nextState);
         updateBgmBtn();
       };
     }
-  }
-
-  // ------------------------------------------------------------ BOSS SHIBA MASCOT
-  function bossShibaMascotSVG() {
-    return `<svg class="boss-mascot-svg" viewBox="0 0 280 340" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <radialGradient id="shibaFur" cx="45%" cy="35%" r="65%">
-          <stop offset="0%" stop-color="#fb923c"/>
-          <stop offset="60%" stop-color="#ea580c"/>
-          <stop offset="100%" stop-color="#c2410c"/>
-        </radialGradient>
-        <linearGradient id="shibaWhite" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#ffffff"/>
-          <stop offset="100%" stop-color="#fed7aa"/>
-        </linearGradient>
-        <linearGradient id="goldChainGrad" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stop-color="#fef08a"/>
-          <stop offset="45%" stop-color="#eab308"/>
-          <stop offset="85%" stop-color="#ca8a04"/>
-          <stop offset="100%" stop-color="#78350f"/>
-        </linearGradient>
-        <linearGradient id="shadesGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#1e293b"/>
-          <stop offset="50%" stop-color="#0f172a"/>
-          <stop offset="100%" stop-color="#020617"/>
-        </linearGradient>
-        <filter id="chainGlow" x="-20%" y="-20%" width="140%" height="140%">
-          <feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#000" flood-opacity="0.5"/>
-        </filter>
-      </defs>
-      <path d="M195 230 C235 220, 255 175, 230 155 C212 140, 192 165, 195 185 C197 195, 210 185, 218 175 C225 185, 215 210, 185 225 Z" fill="url(#shibaFur)" stroke="#7c2d12" stroke-width="3.5"/>
-      <path d="M228 158 C238 168, 232 182, 222 178 Z" fill="#ffffff"/>
-      <ellipse cx="112" cy="308" rx="20" ry="14" fill="#fed7aa" stroke="#7c2d12" stroke-width="3"/>
-      <ellipse cx="168" cy="308" rx="20" ry="14" fill="#fed7aa" stroke="#7c2d12" stroke-width="3"/>
-      <path d="M100 170 C75 190, 75 280, 105 300 C125 306, 155 306, 175 300 C205 280, 205 190, 180 170 Z" fill="url(#shibaFur)" stroke="#7c2d12" stroke-width="4"/>
-      <path d="M112 178 C95 200, 95 270, 120 292 C132 296, 148 296, 160 292 C185 270, 185 200, 168 178 C155 192, 125 192, 112 178 Z" fill="url(#shibaWhite)"/>
-      <path d="M96 185 C68 200, 62 230, 80 252 C88 260, 102 248, 98 238 C90 226, 92 205, 106 195 Z" fill="url(#shibaFur)" stroke="#7c2d12" stroke-width="3.5"/>
-      <ellipse cx="88" cy="248" rx="10" ry="9" fill="#ffffff" stroke="#7c2d12" stroke-width="2.5"/>
-      <path d="M184 185 C212 200, 218 230, 200 252 C192 260, 178 248, 182 238 C190 226, 188 205, 174 195 Z" fill="url(#shibaFur)" stroke="#7c2d12" stroke-width="3.5"/>
-      <ellipse cx="192" cy="248" rx="10" ry="9" fill="#ffffff" stroke="#7c2d12" stroke-width="2.5"/>
-      <path d="M82 92 C72 45, 102 32, 118 64 Z" fill="url(#shibaFur)" stroke="#7c2d12" stroke-width="4"/>
-      <path d="M90 85 C84 56, 102 48, 112 68 Z" fill="#f472b6"/>
-      <path d="M198 92 C208 45, 178 32, 162 64 Z" fill="url(#shibaFur)" stroke="#7c2d12" stroke-width="4"/>
-      <path d="M190 85 C196 56, 178 48, 168 68 Z" fill="#f472b6"/>
-      <ellipse cx="140" cy="115" rx="58" ry="50" fill="url(#shibaFur)" stroke="#7c2d12" stroke-width="4"/>
-      <path d="M102 118 C90 135, 105 160, 140 160 C175 160, 190 135, 178 118 C166 142, 114 142, 102 118 Z" fill="url(#shibaWhite)"/>
-      <ellipse cx="140" cy="132" rx="14" ry="11" fill="#ffffff"/>
-      <ellipse cx="140" cy="126" rx="8" ry="6" fill="#0f172a"/>
-      <path d="M134 133 C137 137, 140 137, 140 137 C140 137, 143 137, 146 133" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/>
-      <circle cx="118" cy="84" r="5" fill="#ffffff"/>
-      <circle cx="162" cy="84" r="5" fill="#ffffff"/>
-      <g filter="url(#chainGlow)">
-        <path d="M96 95 C94 90, 134 88, 136 96 C137 114, 134 126, 116 126 C98 126, 95 114, 96 95 Z" fill="url(#shadesGrad)" stroke="#fde047" stroke-width="3"/>
-        <path d="M144 96 C146 88, 186 90, 184 95 C185 114, 182 126, 164 126 C146 126, 143 114, 144 96 Z" fill="url(#shadesGrad)" stroke="#fde047" stroke-width="3"/>
-        <path d="M134 98 C137 95, 143 95, 146 98" stroke="#fde047" stroke-width="3.5" stroke-linecap="round"/>
-        <path d="M104 98 L122 96 C124 104, 118 112, 110 114 Z" fill="rgba(255,255,255,0.45)"/>
-        <path d="M152 98 L170 96 C172 104, 166 112, 158 114 Z" fill="rgba(255,255,255,0.45)"/>
-      </g>
-      <g filter="url(#chainGlow)">
-        <path d="M106 162 C116 178, 164 178, 174 162" stroke="url(#goldChainGrad)" stroke-width="12" stroke-linecap="round"/>
-        <path d="M106 162 C116 178, 164 178, 174 162" stroke="#78350f" stroke-width="2" stroke-linecap="round" stroke-dasharray="6 4"/>
-        <ellipse cx="140" cy="172" rx="9" ry="6" fill="#fef08a" stroke="#ca8a04" stroke-width="2"/>
-        <ellipse cx="124" cy="169" rx="8" ry="5.5" fill="#fef08a" stroke="#ca8a04" stroke-width="2"/>
-        <ellipse cx="156" cy="169" rx="8" ry="5.5" fill="#fef08a" stroke="#ca8a04" stroke-width="2"/>
-        <ellipse cx="112" cy="164" rx="7" ry="5" fill="#fef08a" stroke="#ca8a04" stroke-width="2"/>
-        <ellipse cx="168" cy="164" rx="7" ry="5" fill="#fef08a" stroke="#ca8a04" stroke-width="2"/>
-      </g>
-    </svg>`;
   }
 
   // ------------------------------------------------------------ HOME / CASINO LOBBY
