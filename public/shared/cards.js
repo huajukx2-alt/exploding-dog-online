@@ -139,16 +139,43 @@
   // Cards host can configure in custom mode (bombs/defuse handled automatically)
   const CONFIGURABLE = Object.keys(CARDS).filter(id => !['exploding_kitten', 'imploding_kitten', 'defuse'].includes(id));
 
-  // Shop catalog
+  // 3D & Luxury Avatars
+  const AVATARS = [
+    { id: 'av_shiba_vip', type: 'avatar', icon: '🐕', price: 500, name: { th: 'เสี่ยชิบะ 24K', en: 'VIP 24K Shiba' }, desc: { th: 'แว่นตาทองคำ สร้อยเพชรสุดหรูระยิบระยับ', en: 'Gold sunglasses & diamond chain' } },
+    { id: 'av_cyber_husky', type: 'avatar', icon: '🐺', price: 650, name: { th: 'ไซเบอร์ฮัสกี้ ไฮเทค', en: 'Cyber Mecha Husky' }, desc: { th: 'หมวกเหล็กนีออนไซเบอร์โลกอนาคต', en: 'Futuristic VR cyber visor' } },
+    { id: 'av_corgi_galaxy', type: 'avatar', icon: '🐶', price: 600, name: { th: 'คอร์กี้ ท่องดวงดาว', en: 'Cosmic Corgi' }, desc: { th: 'ชุดนักบินอวกาศสำรวจดวงดาวจักรวาล', en: 'Space astronaut glass helmet' } },
+    { id: 'av_blaze_bulldog', type: 'avatar', icon: '🦮', price: 700, name: { th: 'บูลด็อก เพลิงนรก', en: 'Blaze Inferno Bulldog' }, desc: { th: 'เพลิงบรรลัยกัลป์สุดดุดันแชมเปี้ยน', en: 'Hellfire spiked collar champion' } },
+    { id: 'av_diamond_poodle', type: 'avatar', icon: '🐩', price: 850, name: { th: 'พุดเดิ้ล ไดมอนด์ควีน', en: 'Diamond Queen Poodle' }, desc: { th: 'มงกุฎเพชรระยิบระยับระดับราชวงศ์', en: 'Sparkling diamond royal tiara' } },
+    { id: 'av_samurai_akita', type: 'avatar', icon: '🐕‍🦺', price: 750, name: { th: 'อาคิตะ ซามูไรทองคำ', en: 'Samurai Doge Legend' }, desc: { th: 'เกราะซามูไรญี่ปุ่นโบราณสีแดงชาด', en: 'Traditional crimson samurai armor' } },
+    { id: 'av_gentleman_pug', type: 'avatar', icon: '🐶', price: 450, name: { th: 'ปั๊ก สุภาพบุรุษคลาสสิก', en: 'Gentleman Classic Pug' }, desc: { th: 'หมวกทรงสูง แว่นตาเลนส์เดี่ยวทองคำ', en: 'Top hat & golden monocle' } },
+    { id: 'av_ninja_dog', type: 'avatar', icon: '🥷', price: 550, name: { th: 'ตูบนินจา เงาจันทร์', en: 'Shadow Moon Ninja Dog' }, desc: { th: 'หน้ากากนินจา ดาบคาตานะคู่สุดเท่', en: 'Stealth shinobi mask & twin blades' } }
+  ];
+
+  // Shop catalog (Avatars, Frames, Card Backs, Stickers)
   const SHOP = [
-    { id: 'frame_gold', type: 'frame', price: 300, icon: '🥇', name: { th: 'กรอบทองคำ', en: 'Gold Frame' } },
-    { id: 'frame_neon', type: 'frame', price: 500, icon: '💡', name: { th: 'กรอบนีออน', en: 'Neon Frame' } },
-    { id: 'frame_fire', type: 'frame', price: 800, icon: '🔥', name: { th: 'กรอบเปลวไฟ', en: 'Fire Frame' } },
-    { id: 'frame_rainbow', type: 'frame', price: 1200, icon: '🌈', name: { th: 'กรอบสายรุ้ง', en: 'Rainbow Frame' } },
-    { id: 'skin_galaxy', type: 'skin', price: 400, icon: '🌌', name: { th: 'หลังการ์ดกาแล็กซี่', en: 'Galaxy Card Back' } },
-    { id: 'skin_sakura', type: 'skin', price: 400, icon: '🌸', name: { th: 'หลังการ์ดซากุระ', en: 'Sakura Card Back' } },
-    { id: 'skin_gold', type: 'skin', price: 900, icon: '👑', name: { th: 'หลังการ์ดราชาหมา', en: 'Royal Pup Card Back' } },
-    { id: 'skin_matrix', type: 'skin', price: 700, icon: '🟩', name: { th: 'หลังการ์ดแมทริกซ์', en: 'Matrix Card Back' } },
+    // Avatars
+    ...AVATARS,
+
+    // Frames (รวมกรอบสุดหรู)
+    { id: 'frame_gold', type: 'frame', price: 300, icon: '🥇', name: { th: 'กรอบทองคำ 24K', en: 'Gold VIP Frame' }, desc: { th: 'ประกายทองคำแท้ 24K หรูหรา', en: 'Shining 24K metallic gold border' } },
+    { id: 'frame_neon', type: 'frame', price: 500, icon: '💡', name: { th: 'กรอบนีออนไซเบอร์', en: 'Neon Cyber Frame' }, desc: { th: 'แสงไฟนีออนฟ้า-ชมพูสะท้อนมืด', en: 'Glowing cyan & magenta neon lights' } },
+    { id: 'frame_fire', type: 'frame', price: 800, icon: '🔥', name: { th: 'กรอบเพลิงบรรลัยกัลป์', en: 'Inferno Fire Frame' }, desc: { th: 'เปลวเพลิงลุกโชนสะกดทุกสายตา', en: 'Blazing animated fire aura' } },
+    { id: 'frame_rainbow', type: 'frame', price: 1200, icon: '🌈', name: { th: 'กรอบสายรุ้งออโรร่า', en: 'Aurora Rainbow Frame' }, desc: { th: 'สายรุ้งเรืองแสงเปลี่ยนสี 360 องศา', en: 'Shifting dynamic rainbow spectrum' } },
+    { id: 'frame_diamond', type: 'frame', price: 1500, icon: '💎', name: { th: 'กรอบไดมอนด์ราชันย์', en: 'Imperial Diamond Frame' }, desc: { th: 'เพชรคริสตัลเหลี่ยมสะท้อนแสงวิบวับ', en: 'Prismatic crystal diamond facets' } },
+    { id: 'frame_cyber', type: 'frame', price: 950, icon: '⚡', name: { th: 'กรอบไซเบอร์เนติก', en: 'Cybernetic Pulse Frame' }, desc: { th: 'วงจรอิเล็กทรอนิกส์พัลส์สีเขียวมรกต', en: 'Futuristic pulsing matrix circuits' } },
+    { id: 'frame_sakura', type: 'frame', price: 650, icon: '🌸', name: { th: 'กรอบกลีบซากุระพริ้ว', en: 'Sakura Petal Frame' }, desc: { th: 'กลีบดอกซากุระชมพูทองหวานละมุน', en: 'Falling cherry blossom petals' } },
+    { id: 'frame_abyss', type: 'frame', price: 1100, icon: '🔮', name: { th: 'กรอบมนตรามิติหลุมดำ', en: 'Dark Nebula Void Frame' }, desc: { th: 'มิติมนตราสีม่วงลึกลับแห่งความมืด', en: 'Swirling purple cosmic nebula' } },
+
+    // Card Back Skins (รวมหลังไพ่สุดอลังการ)
+    { id: 'skin_galaxy', type: 'skin', price: 400, icon: '🌌', name: { th: 'หลังไพ่กาแล็กซี่จักรวาล', en: 'Galaxy Cosmic Card Back' }, desc: { th: 'หมู่ดาวและเนบิวลาสีม่วงเข้ม', en: 'Deep nebula space with starry dust' } },
+    { id: 'skin_sakura', type: 'skin', price: 400, icon: '🌸', name: { th: 'หลังไพ่ซากุระญี่ปุ่น', en: 'Sakura Blossom Card Back' }, desc: { th: 'ซากุระผลิบานสไตล์ญี่ปุ่นโบราณ', en: 'Gentle cherry blossom gradient' } },
+    { id: 'skin_gold', type: 'skin', price: 900, icon: '👑', name: { th: 'หลังไพ่ราชาหมาทองคำ', en: 'Royal Pup Gold Back' }, desc: { th: 'แผ่นทองคำบริสุทธิ์พร้อมตรามงกุฎ', en: '24K gold foil & royal crown emblem' } },
+    { id: 'skin_matrix', type: 'skin', price: 700, icon: '🟩', name: { th: 'หลังไพ่แมทริกซ์ดิจิทัล', en: 'Matrix Digital Code Back' }, desc: { th: 'สายธารโค้ดดิจิทัลสีเขียวนีออน', en: 'Terminal digital phosphor code' } },
+    { id: 'skin_diamond', type: 'skin', price: 1000, icon: '💎', name: { th: 'หลังไพ่คริสตัลไดมอนด์', en: 'Crystal Diamond Back' }, desc: { th: 'ลวดลายเพชรสะท้อนแสงทรงปริซึม', en: 'Geometric faceted diamond crystal' } },
+    { id: 'skin_dragon', type: 'skin', price: 1200, icon: '🐉', name: { th: 'หลังไพ่มังกรเพลิงโบราณ', en: 'Ancient Fire Dragon' }, desc: { th: 'เกล็ดมังกรสีชาดพร้อมตรามังกรทอง', en: 'Crimson dragon scales & gold dragon' } },
+    { id: 'skin_cyber', type: 'skin', price: 800, icon: '⚡', name: { th: 'หลังไพ่ไซเบอร์ไฮเปอร์', en: 'Hyper Cyberpunk Grid' }, desc: { th: 'ตารางเลเซอร์ไซเบอร์พังก์ยุค 2077', en: 'Synthwave cyber neon laser grid' } },
+
+    // Stickers
     { id: 'st_laugh', type: 'sticker', price: 100, icon: '😂', label: 'UH OH!', name: { th: 'ขำกลิ้ง (UH OH!)', en: 'UH OH! Laugh' } },
     { id: 'st_cry', type: 'sticker', price: 100, icon: '😭', label: 'NOOO!', name: { th: 'ม่ายยย (NOOO!)', en: 'NOOO! Cry' } },
     { id: 'st_angry', type: 'sticker', price: 150, icon: '🐺', label: 'GRRR!', name: { th: 'หมาแยกเขี้ยว', en: 'Growl Dog' } },
@@ -158,6 +185,37 @@
     { id: 'st_crown', type: 'sticker', price: 300, icon: '👑', label: 'ALPHA!', name: { th: 'จ่าฝูง', en: 'Alpha Dog' } },
     { id: 'st_ghost', type: 'sticker', price: 200, icon: '👻', label: 'RIP!', name: { th: 'วิญญาณตูบ', en: 'Ghost Pup' } }
   ];
+
+  // Gacha Pool (สุ่มของลิมิเต็ดด้วยเพชร 💎)
+  const GACHA_POOL = {
+    UR: [
+      { id: 'av_god_shiba', type: 'avatar', icon: '👑', name: { th: 'เทพชิบะ สุริยันเทวะ 24K', en: 'Sun God Doge 24K' }, tier: 'UR', desc: { th: 'รัศมีสุริยันสีทองเจิดจ้า ระดับลิมิเต็ดสูงสุด', en: 'Celestial glowing golden solar aura' } },
+      { id: 'frame_celestial_dragon', type: 'frame', icon: '🐉', name: { th: 'กรอบมังกรดาราจักร', en: 'Celestial Dragon Frame' }, tier: 'UR', desc: { th: 'มังกรทองล้อมกรอบพร้อมละอองดาวเรืองแสง', en: 'Golden dragon swirling starry halo' } },
+      { id: 'skin_cosmic_void', type: 'skin', icon: '🌌', name: { th: 'หลังไพ่มิติหลุมดำคอสมิก', en: 'Cosmic Void 3D Back' }, tier: 'UR', desc: { th: 'มิติหลุมดำสะท้อนแสงโฮโลแกรมลึกไร้ก้นบึ้ง', en: 'Deep void 3D holographic stars' } }
+    ],
+    SSR: [
+      { id: 'av_mecha_alpha', type: 'avatar', icon: '🤖', name: { th: 'เมคาอัลฟ่าไททัน', en: 'Mecha Alpha Titan' }, tier: 'SSR', desc: { th: 'หุ่นรบไซเบอร์สุดแกร่งเกราะไททาเนียม', en: 'Titan mecha robotic combat armor' } },
+      { id: 'frame_lightning_god', type: 'frame', icon: '⚡', name: { th: 'กรอบอัสนีบาตราชา', en: 'Thunder God Frame' }, tier: 'SSR', desc: { th: 'ประกายสายฟ้าฟาดต่อเนื่องสีฟ้าคราม', en: 'Crackling electric blue lightning' } },
+      { id: 'av_diamond_poodle', type: 'avatar', icon: '🐩', name: { th: 'พุดเดิ้ล ไดมอนด์ควีน', en: 'Diamond Queen Poodle' }, tier: 'SSR' },
+      { id: 'frame_diamond', type: 'frame', icon: '💎', name: { th: 'กรอบไดมอนด์ราชันย์', en: 'Imperial Diamond Frame' }, tier: 'SSR' },
+      { id: 'skin_dragon', type: 'skin', icon: '🐉', name: { th: 'หลังไพ่มังกรเพลิงโบราณ', en: 'Ancient Fire Dragon' }, tier: 'SSR' },
+      { id: 'frame_rainbow', type: 'frame', icon: '🌈', name: { th: 'กรอบสายรุ้งออโรร่า', en: 'Rainbow Frame' }, tier: 'SSR' }
+    ],
+    SR: [
+      { id: 'av_blaze_bulldog', type: 'avatar', icon: '🦮', name: { th: 'บูลด็อก เพลิงนรก', en: 'Blaze Bulldog' }, tier: 'SR' },
+      { id: 'av_samurai_akita', type: 'avatar', icon: '🐕‍🦺', name: { th: 'อาคิตะ ซามูไรทองคำ', en: 'Samurai Doge' }, tier: 'SR' },
+      { id: 'av_cyber_husky', type: 'avatar', icon: '🐺', name: { th: 'ไซเบอร์ฮัสกี้ ไฮเทค', en: 'Cyber Mecha Husky' }, tier: 'SR' },
+      { id: 'frame_fire', type: 'frame', icon: '🔥', name: { th: 'กรอบเพลิงบรรลัยกัลป์', en: 'Fire Frame' }, tier: 'SR' },
+      { id: 'skin_gold', type: 'skin', icon: '👑', name: { th: 'หลังไพ่ราชาหมาทองคำ', en: 'Royal Pup Gold' }, tier: 'SR' },
+      { id: 'skin_matrix', type: 'skin', icon: '🟩', name: { th: 'หลังไพ่แมทริกซ์ดิจิทัล', en: 'Matrix Card Back' }, tier: 'SR' },
+      { id: 'skin_galaxy', type: 'skin', icon: '🌌', name: { th: 'หลังไพ่กาแล็กซี่จักรวาล', en: 'Galaxy Card Back' }, tier: 'SR' }
+    ],
+    R: [
+      { id: 'coins_1000', type: 'coins', amount: 1000, icon: '💰', name: { th: 'หีบเหรียญทองยักษ์ (+1,000)', en: 'Huge Coin Chest (+1,000)' }, tier: 'R' },
+      { id: 'coins_500', type: 'coins', amount: 500, icon: '🪙', name: { th: 'ถุงเหรียญทองโต (+500)', en: 'Big Coin Pouch (+500)' }, tier: 'R' },
+      { id: 'coins_300', type: 'coins', amount: 300, icon: '🪙', name: { th: 'เหรียญทองนำโชค (+300)', en: 'Lucky Coins (+300)' }, tier: 'R' }
+    ]
+  };
   const FREE_STICKERS = [
     { id: 'st_nooo', icon: '😭', label: 'NOOO!' },
     { id: 'st_uhoh', icon: '😂', label: 'UH OH!' },
@@ -184,5 +242,5 @@
   };
   function rankOf(rp) { let r = RANKS[0]; for (const x of RANKS) if (rp >= x.min) r = x; return r; }
 
-  return { CARDS, VERSIONS, CONFIGURABLE, SHOP, FREE_STICKERS, RANKS, CARD_KINDS, rankOf };
+  return { CARDS, VERSIONS, CONFIGURABLE, SHOP, FREE_STICKERS, RANKS, CARD_KINDS, AVATARS, GACHA_POOL, rankOf };
 });

@@ -48,12 +48,329 @@
     </div>`;
   }
   const backHTML = (skin, extra = '') => `<div class="card back ${skin || ''}" ${extra}></div>`;
-  function avatarHTML(p, size = '') {
-    return `<div class="avatar ${p.frame || ''} ${size}"><span>${esc(p.avatar || '🐶')}</span></div>`;
+    function renderAvatarSVG(av, fallbackTheme = 'gold') {
+    if (!av) av = fallbackTheme;
+    if (av === 'av_shiba_vip' || av === 'gold') {
+      return `<svg viewBox="0 0 120 120" class="dog-hero-svg">
+        <defs>
+          <radialGradient id="gVipShiba" cx="50%" cy="40%" r="60%">
+            <stop offset="0%" stop-color="#fef08a"/>
+            <stop offset="60%" stop-color="#f59e0b"/>
+            <stop offset="100%" stop-color="#78350f"/>
+          </radialGradient>
+          <linearGradient id="gVipChain" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#fef08a"/>
+            <stop offset="50%" stop-color="#fde047"/>
+            <stop offset="100%" stop-color="#b45309"/>
+          </linearGradient>
+        </defs>
+        <circle cx="60" cy="60" r="56" fill="url(#gVipShiba)"/>
+        <polygon points="22,46 32,10 52,34" fill="#d97706" stroke="#1c1208" stroke-width="4" stroke-linejoin="round"/>
+        <polygon points="28,42 34,18 48,34" fill="#fef3c7"/>
+        <polygon points="98,46 88,10 68,34" fill="#d97706" stroke="#1c1208" stroke-width="4" stroke-linejoin="round"/>
+        <polygon points="92,42 86,18 72,34" fill="#fef3c7"/>
+        <path d="M26,95 Q60,78 94,95 L98,118 L22,118 Z" fill="#b45309" stroke="#1c1208" stroke-width="4"/>
+        <ellipse cx="60" cy="62" rx="36" ry="32" fill="#fbbf24" stroke="#1c1208" stroke-width="4"/>
+        <ellipse cx="60" cy="70" rx="22" ry="16" fill="#fef3c7"/>
+        <path d="M48,74 Q60,82 72,74" fill="none" stroke="#1c1208" stroke-width="3.5" stroke-linecap="round"/>
+        <path d="M58,77 C56,88 68,88 65,76 Z" fill="#fb7185" stroke="#1c1208" stroke-width="2.5"/>
+        <ellipse cx="60" cy="65" rx="8" ry="5.5" fill="#1c1208"/>
+        <rect x="25" y="44" width="31" height="17" rx="5" fill="#111827" stroke="#fde047" stroke-width="3.5"/>
+        <rect x="64" y="44" width="31" height="17" rx="5" fill="#111827" stroke="#fde047" stroke-width="3.5"/>
+        <line x1="56" y1="51" x2="64" y2="51" stroke="#fde047" stroke-width="3.5"/>
+        <line x1="31" y1="48" x2="43" y2="57" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="70" y1="48" x2="82" y2="57" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M32,94 Q60,110 88,94" fill="none" stroke="url(#gVipChain)" stroke-width="7" stroke-dasharray="8 4" stroke-linecap="round"/>
+        <circle cx="60" cy="106" r="6.5" fill="#fef08a" stroke="#ca8a04" stroke-width="2"/>
+        <text x="60" y="109" font-size="7" font-weight="900" fill="#78350f" text-anchor="middle">$</text>
+      </svg>`;
+    }
+    if (av === 'av_cyber_husky' || av === 'neon') {
+      return `<svg viewBox="0 0 120 120" class="dog-hero-svg">
+        <defs>
+          <radialGradient id="gHusky" cx="50%" cy="40%" r="60%">
+            <stop offset="0%" stop-color="#38bdf8"/>
+            <stop offset="60%" stop-color="#1e1b4b"/>
+            <stop offset="100%" stop-color="#090d16"/>
+          </radialGradient>
+        </defs>
+        <circle cx="60" cy="60" r="56" fill="url(#gHusky)"/>
+        <polygon points="24,46 30,10 52,34" fill="#334155" stroke="#0f172a" stroke-width="4"/>
+        <polygon points="30,42 33,18 47,34" fill="#ec4899"/>
+        <polygon points="96,46 90,10 68,34" fill="#334155" stroke="#0f172a" stroke-width="4"/>
+        <polygon points="90,42 87,18 73,34" fill="#ec4899"/>
+        <path d="M26,95 Q60,80 94,95 L98,118 L22,118 Z" fill="#1e293b" stroke="#0f172a" stroke-width="4"/>
+        <line x1="60" y1="92" x2="60" y2="118" stroke="#06b6d4" stroke-width="3"/>
+        <ellipse cx="60" cy="62" rx="35" ry="32" fill="#64748b" stroke="#0f172a" stroke-width="4"/>
+        <ellipse cx="60" cy="68" rx="24" ry="18" fill="#f1f5f9"/>
+        <path d="M50,74 Q60,83 70,74" fill="none" stroke="#0f172a" stroke-width="3.5" stroke-linecap="round"/>
+        <path d="M56,76 C56,88 66,88 65,76 Z" fill="#fb7185" stroke="#0f172a" stroke-width="2.5"/>
+        <ellipse cx="60" cy="65" rx="7.5" ry="5" fill="#0f172a"/>
+        <rect x="20" y="40" width="80" height="22" rx="8" fill="#090d16" stroke="#22d3ee" stroke-width="3.5"/>
+        <rect x="25" y="44" width="70" height="14" rx="5" fill="#f43f5e" opacity="0.9"/>
+        <circle cx="42" cy="51" r="4.5" fill="#a5f3fc"/><circle cx="78" cy="51" r="4.5" fill="#a5f3fc"/>
+        <line x1="52" y1="51" x2="68" y2="51" stroke="#a5f3fc" stroke-width="2.5"/>
+        <line x1="20" y1="46" x2="12" y2="38" stroke="#22d3ee" stroke-width="3" stroke-linecap="round"/>
+        <line x1="100" y1="46" x2="108" y2="38" stroke="#22d3ee" stroke-width="3" stroke-linecap="round"/>
+      </svg>`;
+    }
+    if (av === 'av_corgi_galaxy' || av === 'galaxy') {
+      return `<svg viewBox="0 0 120 120" class="dog-hero-svg">
+        <defs>
+          <radialGradient id="gCorgiGal" cx="50%" cy="40%" r="60%">
+            <stop offset="0%" stop-color="#c084fc"/>
+            <stop offset="50%" stop-color="#4f46e5"/>
+            <stop offset="100%" stop-color="#0f172a"/>
+          </radialGradient>
+        </defs>
+        <circle cx="60" cy="60" r="56" fill="url(#gCorgiGal)"/>
+        <circle cx="30" cy="28" r="1.5" fill="#fff" opacity="0.8"/>
+        <circle cx="92" cy="24" r="1.5" fill="#fff" opacity="0.8"/>
+        <circle cx="86" cy="78" r="1.2" fill="#fff" opacity="0.6"/>
+        <path d="M26,92 Q60,78 94,92 L98,118 L22,118 Z" fill="#f8fafc" stroke="#1e293b" stroke-width="4"/>
+        <rect x="46" y="96" width="28" height="14" rx="4" fill="#38bdf8" stroke="#1e293b" stroke-width="2.5"/>
+        <polygon points="24,50 28,14 50,36" fill="#fb923c" stroke="#1c1208" stroke-width="3.5"/>
+        <polygon points="96,50 92,14 70,36" fill="#fb923c" stroke="#1c1208" stroke-width="3.5"/>
+        <ellipse cx="60" cy="62" rx="33" ry="29" fill="#fb923c" stroke="#1c1208" stroke-width="3.5"/>
+        <ellipse cx="60" cy="68" rx="20" ry="16" fill="#fff"/>
+        <circle cx="46" cy="55" r="6" fill="#1c1208"/><circle cx="74" cy="55" r="6" fill="#1c1208"/>
+        <circle cx="44" cy="53" r="2.2" fill="#fff"/><circle cx="72" cy="53" r="2.2" fill="#fff"/>
+        <ellipse cx="60" cy="63" rx="7" ry="5" fill="#1c1208"/>
+        <path d="M55,72 C55,83 66,83 65,72 Z" fill="#fb7185" stroke="#1c1208" stroke-width="2"/>
+        <circle cx="60" cy="58" r="46" fill="rgba(186,230,253,0.2)" stroke="#bae6fd" stroke-width="3.5"/>
+        <path d="M28,36 A38,38 0 0,1 58,18" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" opacity="0.85"/>
+      </svg>`;
+    }
+    if (av === 'av_blaze_bulldog' || av === 'fire') {
+      return `<svg viewBox="0 0 120 120" class="dog-hero-svg">
+        <defs>
+          <radialGradient id="gBulldog" cx="50%" cy="40%" r="60%">
+            <stop offset="0%" stop-color="#f97316"/>
+            <stop offset="60%" stop-color="#b91c1c"/>
+            <stop offset="100%" stop-color="#450a0a"/>
+          </radialGradient>
+        </defs>
+        <circle cx="60" cy="60" r="56" fill="url(#gBulldog)"/>
+        <path d="M24,92 L60,112 L96,92 L98,118 L22,118 Z" fill="#991b1b" stroke="#1c1208" stroke-width="4"/>
+        <polygon points="60,94 52,114 68,114" fill="#f59e0b"/>
+        <ellipse cx="60" cy="64" rx="38" ry="33" fill="#d97706" stroke="#1c1208" stroke-width="4"/>
+        <path d="M24,52 Q60,22 96,52 Q60,42 24,52 Z" fill="#18181b" stroke="#1c1208" stroke-width="3.5"/>
+        <circle cx="50" cy="40" r="2.5" fill="#ef4444"/><circle cx="70" cy="40" r="2.5" fill="#ef4444"/>
+        <ellipse cx="60" cy="74" rx="26" ry="16" fill="#fef3c7" stroke="#1c1208" stroke-width="3.5"/>
+        <path d="M40,78 Q60,70 80,78" fill="none" stroke="#1c1208" stroke-width="4" stroke-linecap="round"/>
+        <polygon points="44,76 48,67 52,76" fill="#fff" stroke="#1c1208" stroke-width="2"/>
+        <polygon points="68,76 72,67 76,76" fill="#fff" stroke="#1c1208" stroke-width="2"/>
+        <ellipse cx="60" cy="64" rx="8.5" ry="5.5" fill="#1c1208"/>
+        <circle cx="44" cy="55" r="6.5" fill="#7f1d1d"/><circle cx="76" cy="55" r="6.5" fill="#7f1d1d"/>
+        <circle cx="44" cy="55" r="3.5" fill="#fbbf24"/><circle cx="76" cy="55" r="3.5" fill="#fbbf24"/>
+        <line x1="33" y1="47" x2="53" y2="53" stroke="#1c1208" stroke-width="4.5" stroke-linecap="round"/>
+        <line x1="87" y1="47" x2="67" y2="53" stroke="#1c1208" stroke-width="4.5" stroke-linecap="round"/>
+      </svg>`;
+    }
+    if (av === 'av_god_shiba') {
+      return `<svg viewBox="0 0 120 120" class="dog-hero-svg">
+        <defs>
+          <radialGradient id="gSunGod" cx="50%" cy="40%" r="60%">
+            <stop offset="0%" stop-color="#fffbeb"/>
+            <stop offset="35%" stop-color="#fbbf24"/>
+            <stop offset="75%" stop-color="#b45309"/>
+            <stop offset="100%" stop-color="#451a03"/>
+          </radialGradient>
+        </defs>
+        <circle cx="60" cy="60" r="56" fill="url(#gSunGod)"/>
+        <g stroke="#fef08a" stroke-width="3" stroke-linecap="round" opacity="0.9">
+          <line x1="60" y1="4" x2="60" y2="16"/>
+          <line x1="60" y1="104" x2="60" y2="116"/>
+          <line x1="4" y1="60" x2="16" y2="60"/>
+          <line x1="104" y1="60" x2="116" y2="60"/>
+          <line x1="20" y1="20" x2="28" y2="28"/>
+          <line x1="100" y1="20" x2="92" y2="28"/>
+          <line x1="20" y1="100" x2="28" y2="92"/>
+          <line x1="100" y1="100" x2="92" y2="92"/>
+        </g>
+        <circle cx="60" cy="60" r="46" fill="none" stroke="#fef08a" stroke-width="2.5" stroke-dasharray="8 4"/>
+        <polygon points="22,48 30,12 52,36" fill="#f59e0b" stroke="#78350f" stroke-width="3.5"/>
+        <polygon points="28,30 30,12 38,24" fill="#fef08a"/>
+        <polygon points="98,48 90,12 68,36" fill="#f59e0b" stroke="#78350f" stroke-width="3.5"/>
+        <polygon points="92,30 90,12 82,24" fill="#fef08a"/>
+        <path d="M24,96 Q60,82 96,96 L100,118 L20,118 Z" fill="#991b1b" stroke="#78350f" stroke-width="3.5"/>
+        <circle cx="60" cy="104" r="8" fill="#34d399" stroke="#065f46" stroke-width="2"/>
+        <ellipse cx="60" cy="62" rx="35" ry="32" fill="#fbbf24" stroke="#78350f" stroke-width="3.5"/>
+        <ellipse cx="60" cy="70" rx="22" ry="16" fill="#fffbeb"/>
+        <path d="M60,40 L57,48 L63,48 Z" fill="#dc2626"/>
+        <circle cx="60" cy="38" r="3.5" fill="#ef4444" stroke="#fef08a" stroke-width="1.5"/>
+        <path d="M38,62 Q32,56 36,50" fill="none" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M82,62 Q88,56 84,50" fill="none" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round"/>
+        <ellipse cx="46" cy="56" rx="6.5" ry="5.5" fill="#78350f"/>
+        <ellipse cx="46" cy="56" rx="4" ry="3.5" fill="#fef08a"/>
+        <ellipse cx="74" cy="56" rx="6.5" ry="5.5" fill="#78350f"/>
+        <ellipse cx="74" cy="56" rx="4" ry="3.5" fill="#fef08a"/>
+        <ellipse cx="60" cy="65" rx="7" ry="5" fill="#78350f"/>
+        <path d="M50,74 Q60,82 70,74" fill="none" stroke="#78350f" stroke-width="3" stroke-linecap="round"/>
+      </svg>`;
+    }
+    if (av === 'av_mecha_alpha') {
+      return `<svg viewBox="0 0 120 120" class="dog-hero-svg">
+        <defs>
+          <radialGradient id="gTitan" cx="50%" cy="40%" r="60%">
+            <stop offset="0%" stop-color="#475569"/>
+            <stop offset="60%" stop-color="#1e293b"/>
+            <stop offset="100%" stop-color="#020617"/>
+          </radialGradient>
+          <linearGradient id="gLaser" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#ef4444"/>
+            <stop offset="50%" stop-color="#f87171"/>
+            <stop offset="100%" stop-color="#ef4444"/>
+          </linearGradient>
+        </defs>
+        <circle cx="60" cy="60" r="56" fill="url(#gTitan)"/>
+        <polygon points="20,44 26,8 52,32" fill="#64748b" stroke="#0f172a" stroke-width="4"/>
+        <polygon points="26,38 30,16 46,32" fill="#06b6d4"/>
+        <polygon points="100,44 94,8 68,32" fill="#64748b" stroke="#0f172a" stroke-width="4"/>
+        <polygon points="94,38 90,16 74,32" fill="#06b6d4"/>
+        <path d="M22,96 L60,82 L98,96 L102,118 L18,118 Z" fill="#334155" stroke="#0f172a" stroke-width="4"/>
+        <polygon points="60,88 50,108 70,108" fill="#0284c7" stroke="#38bdf8" stroke-width="2"/>
+        <polygon points="28,52 60,34 92,52 86,84 60,94 34,84" fill="#94a3b8" stroke="#0f172a" stroke-width="4"/>
+        <polygon points="38,58 60,44 82,58 76,80 60,88 44,80" fill="#cbd5e1"/>
+        <polygon points="30,56 90,56 86,66 34,66" fill="#18181b" stroke="#ef4444" stroke-width="2.5"/>
+        <line x1="34" y1="61" x2="86" y2="61" stroke="url(#gLaser)" stroke-width="5" stroke-linecap="round"/>
+        <polygon points="60,70 54,76 66,76" fill="#0f172a"/>
+        <line x1="52" y1="81" x2="68" y2="81" stroke="#0f172a" stroke-width="2.5"/>
+        <line x1="54" y1="85" x2="66" y2="85" stroke="#0f172a" stroke-width="2.5"/>
+      </svg>`;
+    }
+    if (av === 'av_diamond_poodle') {
+      return `<svg viewBox="0 0 120 120" class="dog-hero-svg">
+        <defs>
+          <radialGradient id="gDiaPoodle" cx="50%" cy="40%" r="60%">
+            <stop offset="0%" stop-color="#e0e7ff"/>
+            <stop offset="60%" stop-color="#a5b4fc"/>
+            <stop offset="100%" stop-color="#3730a3"/>
+          </radialGradient>
+        </defs>
+        <circle cx="60" cy="60" r="56" fill="url(#gDiaPoodle)"/>
+        <circle cx="26" cy="56" r="18" fill="#e0e7ff" stroke="#4338ca" stroke-width="3.5"/>
+        <circle cx="94" cy="56" r="18" fill="#e0e7ff" stroke="#4338ca" stroke-width="3.5"/>
+        <polygon points="40,32 50,14 60,26 70,14 80,32" fill="#38bdf8" stroke="#1e1b4b" stroke-width="3" stroke-linejoin="round"/>
+        <circle cx="50" cy="14" r="3" fill="#fff"/><circle cx="70" cy="14" r="3" fill="#fff"/>
+        <polygon points="60,22 57,28 63,28" fill="#fff"/>
+        <ellipse cx="60" cy="38" rx="24" ry="16" fill="#f5f3ff" stroke="#4338ca" stroke-width="3.5"/>
+        <path d="M26,96 Q60,82 94,96 L98,118 L22,118 Z" fill="#6366f1" stroke="#312e81" stroke-width="4"/>
+        <circle cx="44" cy="94" r="5" fill="#fff" stroke="#c7d2fe" stroke-width="1.5"/>
+        <circle cx="54" cy="97" r="5.5" fill="#fff" stroke="#c7d2fe" stroke-width="1.5"/>
+        <circle cx="66" cy="97" r="5.5" fill="#fff" stroke="#c7d2fe" stroke-width="1.5"/>
+        <circle cx="76" cy="94" r="5" fill="#fff" stroke="#c7d2fe" stroke-width="1.5"/>
+        <ellipse cx="60" cy="66" rx="26" ry="24" fill="#faf5ff" stroke="#4338ca" stroke-width="3.5"/>
+        <circle cx="50" cy="62" r="5" fill="#1e1b4b"/><circle cx="48" cy="60" r="1.8" fill="#fff"/>
+        <circle cx="70" cy="62" r="5" fill="#1e1b4b"/><circle cx="68" cy="60" r="1.8" fill="#fff"/>
+        <line x1="46" y1="56" x2="42" y2="52" stroke="#1e1b4b" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="74" y1="56" x2="78" y2="52" stroke="#1e1b4b" stroke-width="2.5" stroke-linecap="round"/>
+        <ellipse cx="60" cy="71" rx="5.5" ry="4" fill="#ec4899"/>
+        <path d="M54,78 Q60,84 66,78" fill="none" stroke="#4338ca" stroke-width="2.5" stroke-linecap="round"/>
+      </svg>`;
+    }
+    if (av === 'av_samurai_akita') {
+      return `<svg viewBox="0 0 120 120" class="dog-hero-svg">
+        <defs>
+          <radialGradient id="gSamurai" cx="50%" cy="40%" r="60%">
+            <stop offset="0%" stop-color="#fecaca"/>
+            <stop offset="60%" stop-color="#dc2626"/>
+            <stop offset="100%" stop-color="#450a0a"/>
+          </radialGradient>
+        </defs>
+        <circle cx="60" cy="60" r="56" fill="url(#gSamurai)"/>
+        <path d="M38,20 Q60,6 82,20 Q60,14 38,20 Z" fill="#fbbf24" stroke="#78350f" stroke-width="3"/>
+        <circle cx="60" cy="18" r="5" fill="#dc2626" stroke="#fbbf24" stroke-width="2"/>
+        <path d="M22,46 Q60,22 98,46 L102,66 L90,62 L94,48 Q60,34 26,48 L30,62 L18,66 Z" fill="#1c1917" stroke="#78350f" stroke-width="3.5"/>
+        <ellipse cx="60" cy="66" rx="34" ry="28" fill="#f59e0b" stroke="#1c1917" stroke-width="3.5"/>
+        <ellipse cx="60" cy="72" rx="20" ry="16" fill="#fef3c7"/>
+        <path d="M20,96 L60,86 L100,96 L104,118 L16,118 Z" fill="#991b1b" stroke="#1c1917" stroke-width="3.5"/>
+        <line x1="30" y1="102" x2="90" y2="102" stroke="#fbbf24" stroke-width="3"/>
+        <ellipse cx="46" cy="60" rx="5.5" ry="4.5" fill="#1c1917"/>
+        <ellipse cx="74" cy="60" rx="5.5" ry="4.5" fill="#1c1917"/>
+        <line x1="42" y1="52" x2="52" y2="56" stroke="#1c1917" stroke-width="3" stroke-linecap="round"/>
+        <line x1="78" y1="52" x2="68" y2="56" stroke="#1c1917" stroke-width="3" stroke-linecap="round"/>
+        <ellipse cx="60" cy="68" rx="6.5" ry="4.5" fill="#1c1917"/>
+        <path d="M52,76 Q60,82 68,76" fill="none" stroke="#1c1917" stroke-width="2.5" stroke-linecap="round"/>
+      </svg>`;
+    }
+    if (av === 'av_ninja_dog') {
+      return `<svg viewBox="0 0 120 120" class="dog-hero-svg">
+        <defs>
+          <radialGradient id="gNinja" cx="50%" cy="40%" r="60%">
+            <stop offset="0%" stop-color="#334155"/>
+            <stop offset="60%" stop-color="#0f172a"/>
+            <stop offset="100%" stop-color="#020617"/>
+          </radialGradient>
+        </defs>
+        <circle cx="60" cy="60" r="56" fill="url(#gNinja)"/>
+        <polygon points="24,46 32,10 52,34" fill="#1e293b" stroke="#020617" stroke-width="4"/>
+        <polygon points="96,46 88,10 68,34" fill="#1e293b" stroke="#020617" stroke-width="4"/>
+        <ellipse cx="60" cy="62" rx="36" ry="32" fill="#1e293b" stroke="#020617" stroke-width="4"/>
+        <rect x="34" y="32" width="52" height="15" rx="4" fill="#94a3b8" stroke="#020617" stroke-width="2.5"/>
+        <polygon points="60,34 62,39 67,39 63,42 65,47 60,44 55,47 57,42 53,39 58,39" fill="#0f172a"/>
+        <path d="M26,62 Q60,54 94,62 L90,88 Q60,102 30,88 Z" fill="#090d16" stroke="#020617" stroke-width="3"/>
+        <ellipse cx="46" cy="54" rx="6" ry="4" fill="#fbbf24" stroke="#020617" stroke-width="2"/>
+        <ellipse cx="74" cy="54" rx="6" ry="4" fill="#fbbf24" stroke="#020617" stroke-width="2"/>
+        <circle cx="47" cy="54" r="2" fill="#020617"/>
+        <circle cx="73" cy="54" r="2" fill="#020617"/>
+        <path d="M88,78 Q108,82 114,96 L104,98 Q96,86 86,84 Z" fill="#dc2626"/>
+        <path d="M26,96 Q60,82 94,96 L98,118 L22,118 Z" fill="#090d16" stroke="#020617" stroke-width="4"/>
+        <line x1="38" y1="98" x2="82" y2="98" stroke="#dc2626" stroke-width="4"/>
+      </svg>`;
+    }
+    if (av === 'av_gentleman_pug') {
+      return `<svg viewBox="0 0 120 120" class="dog-hero-svg">
+        <defs>
+          <radialGradient id="gPug" cx="50%" cy="40%" r="60%">
+            <stop offset="0%" stop-color="#fed7aa"/>
+            <stop offset="60%" stop-color="#b45309"/>
+            <stop offset="100%" stop-color="#451a03"/>
+          </radialGradient>
+        </defs>
+        <circle cx="60" cy="60" r="56" fill="url(#gPug)"/>
+        <rect x="42" y="10" width="36" height="30" rx="4" fill="#18181b" stroke="#09090b" stroke-width="3"/>
+        <rect x="42" y="32" width="36" height="7" fill="#dc2626"/>
+        <ellipse cx="60" cy="40" rx="34" ry="7" fill="#27272a" stroke="#09090b" stroke-width="3"/>
+        <polygon points="24,44 14,64 34,58" fill="#18181b" stroke="#09090b" stroke-width="3"/>
+        <polygon points="96,44 106,64 86,58" fill="#18181b" stroke="#09090b" stroke-width="3"/>
+        <ellipse cx="60" cy="68" rx="32" ry="26" fill="#fcd34d" stroke="#18181b" stroke-width="3.5"/>
+        <ellipse cx="60" cy="76" rx="20" ry="14" fill="#18181b"/>
+        <circle cx="44" cy="62" r="7" fill="#18181b"/><circle cx="42" cy="60" r="2.5" fill="#fff"/>
+        <circle cx="76" cy="62" r="8" fill="rgba(186,230,253,0.3)" stroke="#fbbf24" stroke-width="2.5"/>
+        <circle cx="76" cy="62" r="5" fill="#18181b"/><circle cx="74" cy="60" r="2" fill="#fff"/>
+        <path d="M84,66 Q92,78 88,96" fill="none" stroke="#fbbf24" stroke-width="1.8" stroke-dasharray="3 2"/>
+        <path d="M26,98 Q60,84 94,98 L98,118 L22,118 Z" fill="#09090b" stroke="#18181b" stroke-width="4"/>
+        <polygon points="60,94 52,118 68,118" fill="#fff"/>
+        <polygon points="50,96 60,100 50,104" fill="#dc2626"/>
+        <polygon points="70,96 60,100 70,104" fill="#dc2626"/>
+        <circle cx="60" cy="100" r="3" fill="#b91c1c"/>
+      </svg>`;
+    }
+    const charCode = (typeof av === 'string' && av.length) ? av.codePointAt(0) : 128054;
+    return `<svg viewBox="0 0 120 120" class="dog-hero-svg emoji-avatar-svg">
+      <defs>
+        <radialGradient id="gE_${charCode}" cx="50%" cy="45%" r="55%">
+          <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.35"/>
+          <stop offset="100%" stop-color="#0f172a" stop-opacity="0.9"/>
+        </radialGradient>
+      </defs>
+      <circle cx="60" cy="60" r="54" fill="url(#gE_${charCode})" stroke="#6366f1" stroke-width="3"/>
+      <text x="60" y="74" font-size="52" text-anchor="middle" dominant-baseline="central">${av || '🐶'}</text>
+    </svg>`;
   }
-  function rankBadge(rp) { const r = rankOf(rp || 0); return `<span class="rank r-${r.id}" title="${r.name[lang]}">${r.icon}</span>`; }
+  function dogHeroSVG(themeOrAv) { return renderAvatarSVG(themeOrAv); }
+  function avatarHTML(p, size = '') {
+    if (!p) p = {};
+    const av = p.avatar || '🐶';
+    const isSvg = typeof av === 'string' && (av.startsWith('av_') || ['gold', 'neon', 'fire', 'galaxy'].includes(av));
+    if (isSvg) {
+      return `<div class="avatar ${p.frame || ''} ${size} has-svg">${renderAvatarSVG(av)}</div>`;
+    }
+    return `<div class="avatar ${p.frame || ''} ${size}"><span>${esc(av)}</span></div>`;
+  }
 
-  // Rich SVG cartoon dog characters matching the 4 arcade archetypes (VIP Shiba, Cyber Husky, Galaxy Corgi, Blaze Bulldog)
+  // Rich SVG cartoon dog characters matching the 4 arcade archetypes
   const DOG_THEMES = ['gold', 'neon', 'fire', 'galaxy'];
   function themeForPlayer(p, idx = 0) {
     if (p.frame === 'frame_gold') return 'gold';
@@ -61,94 +378,6 @@
     if (p.frame === 'frame_fire') return 'fire';
     if (p.frame === 'frame_rainbow') return 'galaxy';
     return DOG_THEMES[idx % DOG_THEMES.length];
-  }
-  function dogHeroSVG(theme) {
-    if (theme === 'gold') {
-      // Cool Gold VIP Shiba with sunglasses & gold chain
-      return `<svg viewBox="0 0 120 120" class="dog-hero-svg">
-        <defs><radialGradient id="gGold" cx="50%" cy="40%" r="60%"><stop offset="0%" stop-color="#fef08a"/><stop offset="100%" stop-color="#b45309"/></radialGradient></defs>
-        <circle cx="60" cy="60" r="56" fill="url(#gGold)"/>
-        <polygon points="24,46 32,12 52,34" fill="#f59e0b" stroke="#1c1208" stroke-width="4" stroke-linejoin="round"/>
-        <polygon points="96,46 88,12 68,34" fill="#f59e0b" stroke="#1c1208" stroke-width="4" stroke-linejoin="round"/>
-        <path d="M28,95 Q60,78 92,95 L98,118 L22,118 Z" fill="#d97706" stroke="#1c1208" stroke-width="4"/>
-        <ellipse cx="60" cy="62" rx="36" ry="32" fill="#fbbf24" stroke="#1c1208" stroke-width="4"/>
-        <ellipse cx="60" cy="70" rx="22" ry="16" fill="#fef3c7"/>
-        <path d="M48,74 Q60,82 72,74" fill="none" stroke="#1c1208" stroke-width="3.5" stroke-linecap="round"/>
-        <path d="M58,77 C56,88 68,88 65,76 Z" fill="#fb7185" stroke="#1c1208" stroke-width="2.5"/>
-        <ellipse cx="60" cy="65" rx="8" ry="5.5" fill="#1c1208"/>
-        <!-- Cool Gold Sunglasses -->
-        <rect x="26" y="44" width="30" height="16" rx="4" fill="#1e1b4b" stroke="#fde047" stroke-width="3.5"/>
-        <rect x="64" y="44" width="30" height="16" rx="4" fill="#1e1b4b" stroke="#fde047" stroke-width="3.5"/>
-        <line x1="56" y1="50" x2="64" y2="50" stroke="#fde047" stroke-width="3.5"/>
-        <line x1="32" y1="48" x2="42" y2="56" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round"/>
-        <line x1="70" y1="48" x2="80" y2="56" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round"/>
-        <!-- Gold Chain -->
-        <path d="M34,94 Q60,108 86,94" fill="none" stroke="#fde047" stroke-width="6" stroke-dasharray="7 4" stroke-linecap="round"/>
-      </svg>`;
-    }
-    if (theme === 'neon') {
-      // Cyber Neon Husky with glowing VR visor
-      return `<svg viewBox="0 0 120 120" class="dog-hero-svg">
-        <defs><radialGradient id="gNeon" cx="50%" cy="40%" r="60%"><stop offset="0%" stop-color="#38bdf8"/><stop offset="100%" stop-color="#1e1b4b"/></radialGradient></defs>
-        <circle cx="60" cy="60" r="56" fill="url(#gNeon)"/>
-        <polygon points="24,46 30,10 52,34" fill="#475569" stroke="#0f172a" stroke-width="4"/>
-        <polygon points="30,42 33,18 47,34" fill="#f472b6"/>
-        <polygon points="96,46 90,10 68,34" fill="#475569" stroke="#0f172a" stroke-width="4"/>
-        <polygon points="90,42 87,18 73,34" fill="#f472b6"/>
-        <path d="M26,95 Q60,80 94,95 L98,118 L22,118 Z" fill="#334155" stroke="#0f172a" stroke-width="4"/>
-        <ellipse cx="60" cy="62" rx="35" ry="32" fill="#64748b" stroke="#0f172a" stroke-width="4"/>
-        <ellipse cx="60" cy="68" rx="24" ry="18" fill="#f1f5f9"/>
-        <path d="M50,74 Q60,83 70,74" fill="none" stroke="#0f172a" stroke-width="3.5" stroke-linecap="round"/>
-        <path d="M56,76 C56,88 66,88 65,76 Z" fill="#fb7185" stroke="#0f172a" stroke-width="2.5"/>
-        <ellipse cx="60" cy="65" rx="7.5" ry="5" fill="#0f172a"/>
-        <!-- Cyber VR Visor -->
-        <rect x="22" y="41" width="76" height="20" rx="8" fill="#090d16" stroke="#22d3ee" stroke-width="3.5"/>
-        <rect x="27" y="45" width="66" height="12" rx="5" fill="#ec4899" opacity="0.85"/>
-        <circle cx="43" cy="51" r="4" fill="#67e8f9"/><circle cx="77" cy="51" r="4" fill="#67e8f9"/>
-        <line x1="53" y1="51" x2="67" y2="51" stroke="#67e8f9" stroke-width="2.5"/>
-      </svg>`;
-    }
-    if (theme === 'fire') {
-      // Blaze Bulldog with pirate/biker bandana & flame scarf
-      return `<svg viewBox="0 0 120 120" class="dog-hero-svg">
-        <defs><radialGradient id="gFire" cx="50%" cy="40%" r="60%"><stop offset="0%" stop-color="#fb923c"/><stop offset="100%" stop-color="#7f1d1d"/></radialGradient></defs>
-        <circle cx="60" cy="60" r="56" fill="url(#gFire)"/>
-        <path d="M24,92 L60,112 L96,92 L98,118 L22,118 Z" fill="#dc2626" stroke="#1c1208" stroke-width="4"/>
-        <ellipse cx="60" cy="64" rx="38" ry="33" fill="#d97706" stroke="#1c1208" stroke-width="4"/>
-        <!-- Head Bandana -->
-        <path d="M24,52 Q60,22 96,52 Q60,44 24,52 Z" fill="#1e293b" stroke="#1c1208" stroke-width="3.5"/>
-        <!-- Bulldog Jowls & Fangs -->
-        <ellipse cx="60" cy="74" rx="26" ry="16" fill="#fef3c7" stroke="#1c1208" stroke-width="3.5"/>
-        <path d="M40,78 Q60,70 80,78" fill="none" stroke="#1c1208" stroke-width="4" stroke-linecap="round"/>
-        <polygon points="44,76 48,67 52,76" fill="#fff" stroke="#1c1208" stroke-width="2"/>
-        <polygon points="68,76 72,67 76,76" fill="#fff" stroke="#1c1208" stroke-width="2"/>
-        <ellipse cx="60" cy="64" rx="8.5" ry="5.5" fill="#1c1208"/>
-        <!-- Fierce Eyes -->
-        <circle cx="44" cy="55" r="6.5" fill="#1c1208"/><circle cx="76" cy="55" r="6.5" fill="#1c1208"/>
-        <line x1="33" y1="47" x2="53" y2="53" stroke="#1c1208" stroke-width="4.5" stroke-linecap="round"/>
-        <line x1="87" y1="47" x2="67" y2="53" stroke="#1c1208" stroke-width="4.5" stroke-linecap="round"/>
-      </svg>`;
-    }
-    // Galaxy Space Corgi (default / galaxy)
-    return `<svg viewBox="0 0 120 120" class="dog-hero-svg">
-      <defs><radialGradient id="gGal" cx="50%" cy="40%" r="60%"><stop offset="0%" stop-color="#818cf8"/><stop offset="100%" stop-color="#1e1b4b"/></radialGradient></defs>
-      <circle cx="60" cy="60" r="56" fill="url(#gGal)"/>
-      <!-- Space Suit -->
-      <path d="M26,92 Q60,78 94,92 L98,118 L22,118 Z" fill="#f8fafc" stroke="#1e293b" stroke-width="4"/>
-      <rect x="46" y="96" width="28" height="14" rx="4" fill="#38bdf8" stroke="#1e293b" stroke-width="2.5"/>
-      <!-- Corgi Ears & Head -->
-      <polygon points="24,50 28,14 50,36" fill="#fb923c" stroke="#1c1208" stroke-width="3.5"/>
-      <polygon points="96,50 92,14 70,36" fill="#fb923c" stroke="#1c1208" stroke-width="3.5"/>
-      <ellipse cx="60" cy="62" rx="33" ry="29" fill="#fb923c" stroke="#1c1208" stroke-width="3.5"/>
-      <ellipse cx="60" cy="68" rx="20" ry="16" fill="#fff"/>
-      <circle cx="46" cy="55" r="6" fill="#1c1208"/><circle cx="74" cy="55" r="6" fill="#1c1208"/>
-      <circle cx="44" cy="53" r="2.2" fill="#fff"/><circle cx="72" cy="53" r="2.2" fill="#fff"/>
-      <ellipse cx="60" cy="63" rx="7" ry="5" fill="#1c1208"/>
-      <path d="M55,72 C55,83 66,83 65,72 Z" fill="#fb7185" stroke="#1c1208" stroke-width="2"/>
-      <!-- Glass Space Bubble Helmet -->
-      <circle cx="60" cy="58" r="46" fill="rgba(186,230,253,0.16)" stroke="#bae6fd" stroke-width="3.5"/>
-      <path d="M28,36 A38,38 0 0,1 58,18" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" opacity="0.75"/>
-    </svg>`;
   }
 
   // ------------------------------------------------------------ i18n apply
@@ -510,6 +739,9 @@
     }
   }
 
+    const myAvatar = () => (user && (user.equipped?.avatar || user.avatar)) || localStorage.getItem('ek_guest_avatar') || '🐶';
+  const myFrame = () => (user && user.equipped?.frame) || localStorage.getItem('ek_guest_frame') || '';
+  const mySkin = () => (user && user.equipped?.skin) || localStorage.getItem('ek_guest_skin') || '';
   const myName = () => {
     if (user && user.displayName) return user.displayName;
     const saved = localStorage.getItem('ek_name');
@@ -559,7 +791,7 @@
         const c = $('#browserCodeInp')?.value.trim();
         if (!c) return toast(lang === 'th' ? 'กรุณาระบุรหัสห้อง 4 หลัก' : 'Enter 4-letter room code', 'err');
         A.sfx('click');
-        socket.emit('joinRoom', { code: c, name: myName() });
+        socket.emit('joinRoom', { code: c, name: myName(), avatar: myAvatar(), frame: myFrame(), skin: mySkin() });
       };
     }
 
@@ -568,7 +800,7 @@
     if (btnCreate) {
       btnCreate.onclick = () => {
         A.sfx('click');
-        socket.emit('createRoom', { name: myName(), settings: { version: homeVersion } });
+        socket.emit('createRoom', { name: myName(), avatar: myAvatar(), frame: myFrame(), skin: mySkin(), settings: { version: homeVersion } });
       };
     }
 
@@ -635,7 +867,7 @@
 
     $$('[data-rc]', grid).forEach(b => b.onclick = () => {
       A.sfx('click');
-      socket.emit('joinRoom', { code: b.dataset.rc, name: myName() });
+      socket.emit('joinRoom', { code: b.dataset.rc, name: myName(), avatar: myAvatar(), frame: myFrame(), skin: mySkin() });
     });
   }
 
@@ -682,7 +914,7 @@
     $('#modalStartSolo').onclick = () => {
       const bots = +$('#modalSelBots').value;
       closeModal();
-      socket.emit('quickSolo', { name: myName(), bots, settings: { version: homeVersion } });
+      socket.emit('quickSolo', { name: myName(), avatar: myAvatar(), frame: myFrame(), skin: mySkin(), bots, settings: { version: homeVersion } });
     };
   }
 
@@ -717,7 +949,7 @@
 
   // Bindings for top bar and main navigation
   const pCard = $('#playerProfileCard'); if (pCard) pCard.onclick = () => openProfile();
-  const bMail = $('#btnMail'); if (bMail) bMail.onclick = handleMailClick;
+  const bMail = $('#btnMail'); if (bMail) bMail.onclick = openMailboxModal;
   const bSettings = $('#btnSettings'); if (bSettings) bSettings.onclick = openSettingsModal;
 
   function toggleFullscreen() {
@@ -1572,7 +1804,7 @@
     // center: draw pile + explosion risk gauge + discard pile
     $('#deckCount').textContent = S.deckCount;
     $$('#deckPile .card.back').forEach(c => {
-      c.className = 'card back ' + (m.skin || '');
+      c.className = 'card back ' + (m.skin || mySkin() || '');
       if (!c.querySelector('.draw-label')) c.innerHTML = `<span class="draw-label">${esc(t('drawPileLabel'))}</span>`;
     });
     const dKey = (S.discardTop || '') + ':' + lang;
@@ -2854,7 +3086,7 @@
       const saved = sessionStorage.getItem('ek_room');
       if (!saved) {
         setTimeout(() => {
-          socket.emit('joinRoom', { code, name: myName() });
+          socket.emit('joinRoom', { code, name: myName(), avatar: myAvatar(), frame: myFrame(), skin: mySkin() });
         }, 350);
       }
     }

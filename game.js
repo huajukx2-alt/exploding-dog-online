@@ -71,14 +71,17 @@ class Game {
       connected: true, auto: false, defuses: 0, mem: null, botPlays: 0, avatar: '🐶', frame: null, skin: null, rp: 0, userId: null, ...extra };
   }
 
-  addHuman(socketId, name, user) {
+  addHuman(socketId, name, user, guestData = {}) {
     if (this.state !== 'LOBBY') return { error: 'in_progress' };
     if (this.players.length >= this.settings.maxPlayers) return { error: 'room_full' };
     if (user && this.players.some(p => p.userId === user.username)) return { error: 'already_in' };
     const p = this.makePlayer({
       socketId, isBot: false, name: String((user && user.displayName) || name || 'Player').trim().slice(0, 16) || 'Player',
-      userId: user ? user.username : null, avatar: user ? user.avatar : '🐶',
-      frame: user ? user.equipped.frame : null, skin: user ? user.equipped.skin : null, rp: user ? user.rp : 0,
+      userId: user ? user.username : null,
+      avatar: user ? (user.avatar || '🐶') : (guestData?.avatar || '🐶'),
+      frame: user ? (user.equipped?.frame || null) : (guestData?.frame || null),
+      skin: user ? (user.equipped?.skin || null) : (guestData?.skin || null),
+      rp: user ? user.rp : 0,
       inventory: user ? user.inventory : []
     });
     if (!this.players.some(x => !x.isBot)) { p.isHost = true; p.ready = true; }
@@ -120,7 +123,19 @@ class Game {
     if (this.players.length >= this.settings.maxPlayers) return { error: 'room_full' };
     const used = new Set(this.players.map(p => p.name));
     const name = BOT_NAMES.find(n => !used.has(n)) || 'Bot' + this.seq;
-    const p = this.makePlayer({ isBot: true, name, ready: true, avatar: BOT_AVATARS[BOT_NAMES.indexOf(name)] || '🤖', socketId: null });
+    const idx = Math.max(0, BOT_NAMES.indexOf(name));
+    const botAvatars = ['av_shiba_vip', 'av_cyber_husky', 'av_blaze_bulldog', 'av_corgi_galaxy', 'av_diamond_poodle', 'av_samurai_akita', 'av_gentleman_pug', 'av_ninja_dog'];
+    const botFrames = ['frame_gold', 'frame_neon', 'frame_fire', 'frame_rainbow', 'frame_diamond', 'frame_cyber', 'frame_sakura', 'frame_abyss'];
+    const botSkins = ['skin_gold', 'skin_galaxy', 'skin_sakura', 'skin_matrix', 'skin_diamond', 'skin_dragon', 'skin_cyber', 'skin_cosmic_void'];
+    const p = this.makePlayer({
+      isBot: true,
+      name,
+      ready: true,
+      avatar: botAvatars[idx % botAvatars.length] || '🐶',
+      frame: botFrames[idx % botFrames.length],
+      skin: botSkins[idx % botSkins.length],
+      socketId: null
+    });
     this.players.push(p);
     this.fx('joined', { playerId: p.id });
     return { player: p };

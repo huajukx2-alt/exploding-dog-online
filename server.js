@@ -24,9 +24,42 @@ app.post('/api/login', (req, res) => { const b = req.body || {}; reply(res, db.l
 app.post('/api/logout', (req, res) => { db.logout(req.headers['x-token']); res.json({ ok: true }); });
 app.get('/api/me', (req, res) => { const u = auth(req); u ? res.json({ user: db.publicUser(u) }) : res.status(401).json({ error: 'auth' }); });
 app.post('/api/profile', (req, res) => reply(res, db.updateProfile(req.headers['x-token'], req.body || {})));
-app.post('/api/buy', (req, res) => { const b = req.body || {}; reply(res, db.buy(req.headers['x-token'], b.itemId)); });
-app.post('/api/equip', (req, res) => { const b = req.body || {}; reply(res, db.equip(req.headers['x-token'], b.itemId, b.type)); });
+app.post('/api/buy', (req, res) => {
+  const b = req.body || {};
+  const r = db.buy(req.headers['x-token'], b.itemId);
+  if (r.user) {
+    for (const g of games.values()) {
+      const p = g.players.find(x => x.userId === r.user.username);
+      if (p) {
+        p.frame = r.user.equipped.frame;
+        p.skin = r.user.equipped.skin;
+        p.avatar = r.user.avatar;
+        g.sync();
+      }
+    }
+  }
+  reply(res, r);
+});
+app.post('/api/equip', (req, res) => {
+  const b = req.body || {};
+  const r = db.equip(req.headers['x-token'], b.itemId, b.type);
+  if (r.user) {
+    for (const g of games.values()) {
+      const p = g.players.find(x => x.userId === r.user.username);
+      if (p) {
+        if (b.type === 'frame') p.frame = r.user.equipped.frame;
+        if (b.type === 'skin') p.skin = r.user.equipped.skin;
+        if (b.type === 'avatar') p.avatar = r.user.avatar;
+        g.sync();
+      }
+    }
+  }
+  reply(res, r);
+});
 app.post('/api/daily', (req, res) => reply(res, db.dailyBonus(req.headers['x-token'])));
+app.get('/api/mailbox', (req, res) => res.json(db.getMailbox(req.headers['x-token'])));
+app.post('/api/mailbox/claim', (req, res) => { const b = req.body || {}; reply(res, db.claimMail(req.headers['x-token'], b.mailId || 'all')); });
+app.post('/api/gacha', (req, res) => { const b = req.body || {}; reply(res, db.gacha(req.headers['x-token'], b.times || 1)); });
 app.get('/api/leaderboard', (req, res) => res.json({ list: db.leaderboard() }));
 app.get('/api/card-images', (req, res) => {
   const dir = path.join(__dirname, 'public', 'img', 'cards');
@@ -122,7 +155,7 @@ io.on('connection', (socket) => {
       const d = safeObj(data);
       leave(socket);
       const g = new Game(newCode(), io, onGameEnd);
-      const r = g.addHuman(socket.id, d.name, user()); if (r.error) return err(r.error);
+      const r = g.addHuman(socket.id, d.name, user(), d); if (r.error) return err(r.error);
       games.set(g.code, g);
       if (d.settings) g.updateSettings(socket.id, d.settings);
       for (let i = 0; i < Math.min(7, d.bots || 0); i++) g.addBot();
@@ -137,7 +170,7 @@ io.on('connection', (socket) => {
       const d = safeObj(data);
       leave(socket);
       const g = new Game(newCode(), io, onGameEnd);
-      const r = g.addHuman(socket.id, d.name, user()); if (r.error) return err(r.error);
+      const r = g.addHuman(socket.id, d.name, user(), d); if (r.error) return err(r.error);
       games.set(g.code, g);
       if (d.settings) g.updateSettings(socket.id, d.settings);
       for (let i = 0; i < Math.max(1, Math.min(7, d.bots ?? 3)); i++) g.addBot();
@@ -179,7 +212,7 @@ io.on('connection', (socket) => {
       leave(socket);
       let r;
       if (g.state === 'LOBBY') {
-        r = g.addHuman(socket.id, d.name, user());
+        r = g.addHuman(socket.id, d.name, user(), d);
       } else {
         // Room is currently playing/ended: join as spectator
         r = g.addSpectator(socket.id, d.name, user());

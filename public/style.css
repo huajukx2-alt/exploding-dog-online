@@ -2775,3 +2775,544 @@ body.shake-heavy {
 
 
 
+
+/* ==========================================================================
+   LUXURY AVATARS, FRAMES, CARD BACKS, GACHA & MAILBOX STYLES
+   ========================================================================== */
+
+/* Dog Hero & Avatar SVGs */
+.dog-hero-svg, .avatar svg, .p-avatar svg, .seat-dog svg, .my-hero-dog svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+}
+.avatar .emoji-avatar, .p-avatar .emoji-avatar, .seat-dog .emoji-avatar, .my-hero-dog .emoji-avatar {
+  font-size: 1.8rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.seat-dog {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.4);
+}
+.my-hero-dog {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+/* Keyframe Animations */
+@keyframes hue-rainbow {
+  0% { filter: hue-rotate(0deg); }
+  100% { filter: hue-rotate(360deg); }
+}
+@keyframes fire-flicker {
+  0% { box-shadow: 0 0 16px rgba(249,115,22,0.8), inset 0 0 8px rgba(239,68,68,0.5); }
+  100% { box-shadow: 0 0 24px rgba(239,68,68,0.95), inset 0 0 12px rgba(245,158,11,0.6); }
+}
+@keyframes diamond-sparkle {
+  0% { box-shadow: 0 0 18px rgba(56,189,248,0.8); }
+  100% { box-shadow: 0 0 28px rgba(186,230,253,0.95), inset 0 0 14px rgba(56,189,248,0.6); }
+}
+@keyframes dragon-pulse {
+  0% { box-shadow: 0 0 22px rgba(245,158,11,0.9), 0 0 35px rgba(239,68,68,0.5); }
+  100% { box-shadow: 0 0 34px rgba(251,191,36,1), 0 0 50px rgba(239,68,68,0.7); }
+}
+@keyframes lightning-crackle {
+  0% { box-shadow: 0 0 18px rgba(96,165,250,0.8); }
+  50% { box-shadow: 0 0 30px rgba(191,219,254,1), inset 0 0 12px rgba(96,165,250,0.7); }
+  100% { box-shadow: 0 0 20px rgba(59,130,246,0.85); }
+}
+
+/* SHARED FRAME STYLES */
+.avatar.frame_gold, .p-avatar.frame_gold { border-color: #fbbf24 !important; box-shadow: 0 0 16px rgba(251,191,36,0.7), inset 0 0 8px rgba(251,191,36,0.4) !important; }
+.avatar.frame_neon, .p-avatar.frame_neon { border-color: #22d3ee !important; box-shadow: 0 0 18px rgba(34,211,238,0.75), inset 0 0 10px rgba(34,211,238,0.4) !important; }
+.avatar.frame_fire, .p-avatar.frame_fire { border-color: #f97316 !important; box-shadow: 0 0 20px rgba(239,68,68,0.8) !important; animation: fire-flicker 2s infinite alternate; }
+.avatar.frame_rainbow, .p-avatar.frame_rainbow { border-color: #ec4899 !important; box-shadow: 0 0 20px rgba(168,85,247,0.8) !important; animation: hue-rainbow 4s linear infinite; }
+.avatar.frame_diamond, .p-avatar.frame_diamond { border-color: #38bdf8 !important; box-shadow: 0 0 22px rgba(56,189,248,0.85) !important; animation: diamond-sparkle 2.5s infinite alternate; }
+.avatar.frame_cyber, .p-avatar.frame_cyber { border-color: #10b981 !important; box-shadow: 0 0 18px rgba(16,185,129,0.8) !important; }
+.avatar.frame_sakura, .p-avatar.frame_sakura { border-color: #f472b6 !important; box-shadow: 0 0 18px rgba(244,114,182,0.75) !important; }
+.avatar.frame_abyss, .p-avatar.frame_abyss { border-color: #8b5cf6 !important; box-shadow: 0 0 22px rgba(139,92,246,0.8) !important; }
+.avatar.frame_celestial_dragon, .p-avatar.frame_celestial_dragon { border-color: #f59e0b !important; box-shadow: 0 0 26px rgba(245,158,11,0.95), 0 0 45px rgba(239,68,68,0.5) !important; animation: dragon-pulse 2s infinite alternate; }
+.avatar.frame_lightning_god, .p-avatar.frame_lightning_god { border-color: #60a5fa !important; box-shadow: 0 0 24px rgba(96,165,250,0.9) !important; animation: lightning-crackle 1.8s infinite; }
+
+/* IN-GAME SEAT PORTRAIT FRAME GLOWS */
+.seat-portrait.frame_gold { border-color: #fbbf24 !important; box-shadow: 0 0 20px rgba(251,191,36,0.7), 0 6px 18px rgba(0,0,0,0.7) !important; }
+.seat-portrait.frame_neon { border-color: #22d3ee !important; box-shadow: 0 0 20px rgba(34,211,238,0.7), 0 6px 18px rgba(0,0,0,0.7) !important; }
+.seat-portrait.frame_fire { border-color: #f97316 !important; box-shadow: 0 0 22px rgba(239,68,68,0.8), 0 6px 18px rgba(0,0,0,0.7) !important; }
+.seat-portrait.frame_rainbow { border-color: #ec4899 !important; box-shadow: 0 0 22px rgba(168,85,247,0.8), 0 6px 18px rgba(0,0,0,0.7) !important; animation: hue-rainbow 4s linear infinite; }
+.seat-portrait.frame_diamond { border-color: #38bdf8 !important; box-shadow: 0 0 24px rgba(56,189,248,0.85), 0 6px 18px rgba(0,0,0,0.7) !important; }
+.seat-portrait.frame_cyber { border-color: #10b981 !important; box-shadow: 0 0 20px rgba(16,185,129,0.8), 0 6px 18px rgba(0,0,0,0.7) !important; }
+.seat-portrait.frame_sakura { border-color: #f472b6 !important; box-shadow: 0 0 20px rgba(244,114,182,0.8), 0 6px 18px rgba(0,0,0,0.7) !important; }
+.seat-portrait.frame_abyss { border-color: #8b5cf6 !important; box-shadow: 0 0 22px rgba(139,92,246,0.8), 0 6px 18px rgba(0,0,0,0.7) !important; }
+.seat-portrait.frame_celestial_dragon { border-color: #f59e0b !important; box-shadow: 0 0 28px rgba(245,158,11,0.9), 0 0 45px rgba(239,68,68,0.6) !important; }
+.seat-portrait.frame_lightning_god { border-color: #60a5fa !important; box-shadow: 0 0 26px rgba(96,165,250,0.9) !important; }
+
+/* IN-GAME MY HERO RING (Bottom-Left) */
+.my-hero-ring.frame_gold { border: 3px solid #fbbf24 !important; box-shadow: 0 0 22px rgba(251,191,36,0.8) !important; }
+.my-hero-ring.frame_neon { border: 3px solid #22d3ee !important; box-shadow: 0 0 22px rgba(34,211,238,0.8) !important; }
+.my-hero-ring.frame_fire { border: 3px solid #f97316 !important; box-shadow: 0 0 24px rgba(239,68,68,0.85) !important; }
+.my-hero-ring.frame_rainbow { border: 3px solid #ec4899 !important; box-shadow: 0 0 24px rgba(168,85,247,0.85) !important; animation: hue-rainbow 4s linear infinite; }
+.my-hero-ring.frame_diamond { border: 3px solid #38bdf8 !important; box-shadow: 0 0 26px rgba(56,189,248,0.9) !important; }
+.my-hero-ring.frame_cyber { border: 3px solid #10b981 !important; box-shadow: 0 0 22px rgba(16,185,129,0.85) !important; }
+.my-hero-ring.frame_sakura { border: 3px solid #f472b6 !important; box-shadow: 0 0 22px rgba(244,114,182,0.85) !important; }
+.my-hero-ring.frame_abyss { border: 3px solid #8b5cf6 !important; box-shadow: 0 0 24px rgba(139,92,246,0.85) !important; }
+.my-hero-ring.frame_celestial_dragon { border: 3px solid #f59e0b !important; box-shadow: 0 0 30px rgba(245,158,11,0.95), 0 0 50px rgba(239,68,68,0.6) !important; }
+.my-hero-ring.frame_lightning_god { border: 3px solid #60a5fa !important; box-shadow: 0 0 28px rgba(96,165,250,0.95) !important; }
+
+/* IN-GAME OPPONENT FAN CARDS & DRAW PILE SKINS */
+.fan-card.skin_gold, .card.back.skin_gold {
+  background: linear-gradient(135deg, #fef08a 0%, #f59e0b 50%, #78350f 100%) !important;
+  border-color: #fef08a !important;
+  box-shadow: 0 0 10px rgba(250, 204, 21, 0.6) !important;
+}
+.fan-card.skin_gold::after, .card.back.skin_gold::after { content: '👑' !important; }
+
+.fan-card.skin_galaxy, .card.back.skin_galaxy {
+  background: radial-gradient(circle, #8b5cf6 0%, #1e1b4b 70%, #030712 100%) !important;
+  border-color: #c084fc !important;
+  box-shadow: 0 0 10px rgba(192, 132, 252, 0.6) !important;
+}
+.fan-card.skin_galaxy::after, .card.back.skin_galaxy::after { content: '🌌' !important; }
+
+.fan-card.skin_sakura, .card.back.skin_sakura {
+  background: linear-gradient(135deg, #fbcfe8 0%, #f472b6 50%, #be185d 100%) !important;
+  border-color: #fff !important;
+  box-shadow: 0 0 10px rgba(244, 114, 182, 0.6) !important;
+}
+.fan-card.skin_sakura::after, .card.back.skin_sakura::after { content: '🌸' !important; }
+
+.fan-card.skin_matrix, .card.back.skin_matrix {
+  background: repeating-linear-gradient(0deg, #052e16 0 4px, #14532d 4px 8px) !important;
+  border-color: #4ade80 !important;
+  box-shadow: 0 0 10px rgba(74, 222, 128, 0.6) !important;
+}
+.fan-card.skin_matrix::after, .card.back.skin_matrix::after { content: '🟩' !important; }
+
+.fan-card.skin_diamond, .card.back.skin_diamond {
+  background: linear-gradient(135deg, #e0f2fe 0%, #38bdf8 50%, #0369a1 100%) !important;
+  border-color: #bae6fd !important;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.7) !important;
+}
+.fan-card.skin_diamond::after, .card.back.skin_diamond::after { content: '💎' !important; }
+
+.fan-card.skin_dragon, .card.back.skin_dragon {
+  background: linear-gradient(135deg, #fca5a5 0%, #dc2626 50%, #450a0a 100%) !important;
+  border-color: #f87171 !important;
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.7) !important;
+}
+.fan-card.skin_dragon::after, .card.back.skin_dragon::after { content: '🐉' !important; }
+
+.fan-card.skin_cyber, .card.back.skin_cyber {
+  background: linear-gradient(135deg, #06b6d4 0%, #3b0764 100%) !important;
+  border-color: #22d3ee !important;
+  box-shadow: 0 0 10px rgba(34, 211, 238, 0.6) !important;
+}
+.fan-card.skin_cyber::after, .card.back.skin_cyber::after { content: '⚡' !important; }
+
+.fan-card.skin_cosmic_void, .card.back.skin_cosmic_void {
+  background: radial-gradient(circle, #6366f1 0%, #4f46e5 35%, #05020c 100%) !important;
+  border-color: #a5b4fc !important;
+  box-shadow: 0 0 16px rgba(99, 102, 241, 0.85) !important;
+}
+.fan-card.skin_cosmic_void::after, .card.back.skin_cosmic_void::after { content: '🌀' !important; }
+
+/* GACHA BOTTOM DOCK BUTTON */
+.dock-btn.dock-gacha {
+  background: linear-gradient(180deg, #9333ea 0%, #581c87 100%);
+  border: 2px solid #c084fc;
+  box-shadow: 0 6px 0 #3b0764, 0 8px 18px rgba(147, 51, 234, 0.5);
+  position: relative;
+}
+.dock-btn.dock-gacha:hover {
+  background: linear-gradient(180deg, #a855f7 0%, #6b21a8 100%);
+  border-color: #e9d5ff;
+}
+.dock-btn.dock-gacha:active {
+  transform: translateY(3px);
+  box-shadow: 0 3px 0 #3b0764;
+}
+.dock-badge-pulse {
+  position: absolute;
+  top: -8px;
+  right: -6px;
+  background: linear-gradient(90deg, #ef4444, #f59e0b);
+  color: #fff;
+  font-size: 0.58rem;
+  font-weight: 900;
+  padding: 2px 6px;
+  border-radius: 99px;
+  border: 1px solid #fff;
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.8);
+  animation: pulse 1.5s infinite;
+}
+
+/* ==========================================================================
+   MAILBOX MODAL STYLES
+   ========================================================================== */
+.mailbox-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 540px;
+  margin: 0 auto;
+}
+.mailbox-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+  padding-bottom: 8px;
+}
+.mailbox-head h2 { margin: 0; font-size: 1.35rem; color: #fff; display: flex; align-items: center; gap: 8px; }
+.mailbox-count-pill {
+  background: rgba(251, 191, 36, 0.18);
+  border: 1px solid #fbbf24;
+  color: #fde047;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 99px;
+}
+.mailbox-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 380px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.mail-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  padding: 10px 14px;
+  transition: all 0.2s ease;
+}
+.mail-item.unread {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.12), rgba(245, 158, 11, 0.05));
+  border-color: rgba(251, 191, 36, 0.4);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+.mail-item.claimed {
+  opacity: 0.65;
+  filter: grayscale(0.25);
+}
+.mail-icon-box {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  flex-shrink: 0;
+  border: 1px solid rgba(255,255,255,0.15);
+}
+.mail-info {
+  flex: 1;
+  min-width: 0;
+}
+.mail-info h4 {
+  margin: 0 0 3px;
+  font-size: 0.95rem;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.mail-info p {
+  margin: 0 0 6px;
+  font-size: 0.76rem;
+  color: #cbd5e1;
+  line-height: 1.3;
+}
+.mail-reward-tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.reward-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+.reward-tag.gold {
+  background: rgba(251, 191, 36, 0.2);
+  color: #fde047;
+  border: 1px solid rgba(251, 191, 36, 0.4);
+}
+.reward-tag.diamond {
+  background: rgba(56, 189, 248, 0.2);
+  color: #7dd3fc;
+  border: 1px solid rgba(56, 189, 248, 0.4);
+}
+.mail-action {
+  flex-shrink: 0;
+}
+.claimed-badge {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.06);
+}
+.mailbox-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 8px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  padding-top: 10px;
+}
+
+/* ==========================================================================
+   GACHA MODAL & SUMMON SYSTEM
+   ========================================================================== */
+.gacha-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 620px;
+  margin: 0 auto;
+}
+.gacha-banner {
+  border-radius: 20px;
+  background: radial-gradient(circle at 50% 30%, #31115e 0%, #15052c 60%, #070110 100%);
+  border: 2px solid #a855f7;
+  box-shadow: 0 0 25px rgba(168, 85, 247, 0.45), inset 0 0 20px rgba(147, 51, 234, 0.3);
+  padding: 18px 16px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.gacha-banner::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(236,72,153,0.15) 0%, transparent 60%);
+  animation: rotate-bg 12s linear infinite;
+  pointer-events: none;
+}
+@keyframes rotate-bg { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+.gacha-title-wrap {
+  position: relative;
+  z-index: 2;
+  margin-bottom: 12px;
+}
+.gacha-title-wrap h2 {
+  margin: 0;
+  font-size: 1.55rem;
+  color: #fff;
+  text-shadow: 0 0 12px #c084fc, 0 2px 4px #000;
+}
+.gacha-title-wrap p {
+  margin: 4px 0 0;
+  font-size: 0.82rem;
+  color: #f3e8ff;
+  font-weight: 600;
+}
+.gacha-featured-row {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin: 12px 0 16px;
+  position: relative;
+  z-index: 2;
+  flex-wrap: wrap;
+}
+.gacha-featured-card {
+  width: 100px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1.5px solid #fbbf24;
+  border-radius: 12px;
+  padding: 8px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.5);
+  position: relative;
+}
+.gacha-featured-card .g-tier-tag {
+  position: absolute;
+  top: -6px;
+  right: -4px;
+  font-size: 0.6rem;
+  font-weight: 900;
+  padding: 1px 5px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #ef4444, #f59e0b);
+  color: #fff;
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.8);
+}
+.gacha-featured-card .g-icon { font-size: 2.2rem; }
+.gacha-featured-card .g-name { font-size: 0.72rem; font-weight: 800; color: #fff; line-height: 1.2; text-align: center; }
+
+.gacha-controls {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.gacha-roll-btn {
+  padding: 12px 24px;
+  border-radius: 16px;
+  font-family: inherit;
+  font-size: 1.05rem;
+  font-weight: 800;
+  cursor: pointer;
+  border: 2px solid #fff;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 160px;
+  transition: all 0.15s ease;
+  user-select: none;
+  touch-action: manipulation;
+}
+.gacha-roll-btn.single {
+  background: linear-gradient(180deg, #0284c7 0%, #0369a1 100%);
+  border-color: #38bdf8;
+  box-shadow: 0 6px 0 #075985, 0 8px 20px rgba(2, 132, 199, 0.6);
+}
+.gacha-roll-btn.multi {
+  background: linear-gradient(180deg, #d97706 0%, #b45309 100%);
+  border-color: #fde047;
+  box-shadow: 0 6px 0 #78350f, 0 8px 24px rgba(217, 119, 6, 0.7);
+}
+.gacha-roll-btn:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.1);
+}
+.gacha-roll-btn:active {
+  transform: translateY(4px);
+  box-shadow: none;
+}
+.gacha-roll-btn small {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #bae6fd;
+}
+.gacha-roll-btn.multi small {
+  color: #fef08a;
+}
+
+/* Gacha Results Showcase Grid */
+.gacha-results-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(105px, 1fr));
+  gap: 10px;
+  max-height: 380px;
+  overflow-y: auto;
+  padding: 8px 4px;
+}
+.gacha-card-reveal {
+  background: rgba(20, 15, 38, 0.95);
+  border-radius: 14px;
+  padding: 10px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.6);
+  border: 2px solid transparent;
+  animation: popIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+@keyframes popIn {
+  0% { transform: scale(0.6); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.gacha-card-reveal.tier-UR {
+  border-color: #f59e0b;
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.8), inset 0 0 10px rgba(245, 158, 11, 0.4);
+  animation: popIn 0.35s, hue-rainbow 4s linear infinite;
+}
+.gacha-card-reveal.tier-SSR {
+  border-color: #fbbf24;
+  box-shadow: 0 0 16px rgba(251, 191, 36, 0.7);
+}
+.gacha-card-reveal.tier-SR {
+  border-color: #c084fc;
+  box-shadow: 0 0 12px rgba(192, 132, 252, 0.6);
+}
+.gacha-card-reveal.tier-R {
+  border-color: #38bdf8;
+}
+
+.g-badge-tier {
+  position: absolute;
+  top: -7px;
+  left: 6px;
+  font-size: 0.62rem;
+  font-weight: 900;
+  padding: 1px 6px;
+  border-radius: 6px;
+  color: #fff;
+}
+.tier-UR .g-badge-tier { background: linear-gradient(90deg, #ec4899, #f59e0b); }
+.tier-SSR .g-badge-tier { background: linear-gradient(90deg, #f59e0b, #d97706); }
+.tier-SR .g-badge-tier { background: linear-gradient(90deg, #a855f7, #6366f1); }
+.tier-R .g-badge-tier { background: linear-gradient(90deg, #0284c7, #2563eb); }
+
+.g-new-tag {
+  position: absolute;
+  top: -7px;
+  right: 6px;
+  font-size: 0.58rem;
+  font-weight: 900;
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: #22c55e;
+  color: #fff;
+  box-shadow: 0 0 8px #22c55e;
+}
+.g-card-icon {
+  font-size: 2.2rem;
+  margin: 6px 0 2px;
+}
+.g-card-title {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.2;
+}
+.g-card-sub {
+  font-size: 0.68rem;
+  color: #94a3b8;
+}
+.g-card-sub.gold { color: #fde047; font-weight: 700; }
