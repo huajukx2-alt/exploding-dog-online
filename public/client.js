@@ -689,16 +689,18 @@
     if (shake) { document.body.classList.remove('shake'); void document.body.offsetWidth; document.body.classList.add('shake'); }
   }
   function confetti(coins) {
-    const box = $('#confetti'); box.innerHTML = '';
-    const items = coins ? ['🪙', '💰', '🦴', '✨'] : ['🎉', '🎊', '🦴', '🐶', '🐾'];
-    const count = window.innerWidth <= 860 ? 24 : 60;
+    const box = $('#confetti'); if (!box) return; box.innerHTML = '';
+    const isPerf = localStorage.getItem('ek_perf_mode') === '1';
+    if (isPerf) return; // Skip DOM particle spam in performance mode
+    const items = coins ? ['🪙', '💰', '✨'] : ['🎉', '🎊', '🐶'];
+    const count = window.innerWidth <= 860 ? 12 : 24;
     for (let i = 0; i < count; i++) {
       const s = document.createElement('span'); s.textContent = items[i % items.length];
-      s.style.left = Math.random() * 100 + 'vw'; s.style.animationDelay = Math.random() * 1.2 + 's'; s.style.fontSize = (16 + Math.random() * 20) + 'px';
-      s.style.setProperty('--dx', (Math.random() * 160 - 80) + 'px');
+      s.style.left = Math.random() * 100 + 'vw'; s.style.animationDelay = Math.random() * 0.8 + 's'; s.style.fontSize = (16 + Math.random() * 16) + 'px';
+      s.style.setProperty('--dx', (Math.random() * 120 - 60) + 'px');
       box.appendChild(s);
     }
-    setTimeout(() => { box.innerHTML = ''; }, 4500);
+    setTimeout(() => { if (box) box.innerHTML = ''; }, 2800);
   }
   function seatEl(id) {
     if (id === S?.me?.id) {
@@ -1993,14 +1995,26 @@
   }
 
   function openSettingsModal() {
+    const isPerf = localStorage.getItem('ek_perf_mode') === '1';
     openModal(`<h2>⚙️ ${t('settings') || 'การตั้งค่า / Settings'}</h2>
       <div class="menu-list">
+        <button class="btn ${isPerf ? 'green' : 'gold'}" id="stPerf">
+          ⚡ ${isPerf ? (lang === 'th' ? 'โหมดลดความแลค (60 FPS): เปิดอยู่ ✅' : 'Low Lag Mode (60 FPS): ON ✅') : (lang === 'th' ? 'โหมดลดความแลค (60 FPS): ปิดอยู่ ❌' : 'Low Lag Mode (60 FPS): OFF ❌')}
+        </button>
         <button class="btn" id="stSound">${A.opt.sound ? '🔊' : '🔇'} ${t('sound')}</button>
         <button class="btn" id="stVoice">${A.opt.voice ? '🗣️' : '🤐'} ${t('voice')}</button>
         <button class="btn" id="stLang">🌐 ${t('lang')}: ${lang.toUpperCase()}</button>
         <button class="btn" id="stRules">📖 ${t('rules')}</button>
         ${user ? `<button class="btn red" id="stLogout">🚪 ${t('logout')}</button>` : `<button class="btn gold" id="stLogin">🔑 ${t('login')}</button>`}
       </div>`);
+    $('#stPerf').onclick = () => {
+      const next = localStorage.getItem('ek_perf_mode') === '1' ? '0' : '1';
+      localStorage.setItem('ek_perf_mode', next);
+      document.body.classList.toggle('perf-mode', next === '1');
+      A.sfx('select');
+      toast(lang === 'th' ? (next === '1' ? '⚡ เปิดโหมดลดความแลคแล้ว (ลื่นไหล 60 FPS)' : '🎨 ปิดโหมดลดความแลคแล้ว') : (next === '1' ? '⚡ Low Lag Mode: ON' : '🎨 Low Lag Mode: OFF'), 'good');
+      openSettingsModal();
+    };
     $('#stSound').onclick = () => { A.set('sound', !A.opt.sound); syncToggles(); openSettingsModal(); };
     $('#stVoice').onclick = () => { A.set('voice', !A.opt.voice); syncToggles(); openSettingsModal(); };
     $('#stLang').onclick = () => { lang = lang === 'th' ? 'en' : 'th'; localStorage.setItem('ek_lang', lang); lastSettingsKey = ''; lastSettingsStructKey = ''; applyI18n(); openSettingsModal(); };
@@ -5957,8 +5971,10 @@
           }
         }
       }
+      requestAnimationFrame(tickLoop);
+    } else {
+      setTimeout(() => requestAnimationFrame(tickLoop), 250);
     }
-    requestAnimationFrame(tickLoop);
   }
   requestAnimationFrame(tickLoop);
 
@@ -5990,12 +6006,22 @@
     $$('[data-sk]', p).forEach(b => b.onclick = () => { p.classList.add('hidden'); if (b.dataset.sk === 'shop') { shopTab = 'sticker'; return openShop(); } socket.emit('sticker', { id: b.dataset.sk }); });
   };
   $('#btnGameMenu').onclick = () => {
+    const isPerf = localStorage.getItem('ek_perf_mode') === '1';
     openModal(`<h2>☰</h2><div class="menu-list">
+      <button class="btn ${isPerf ? 'green' : 'gold'}" id="gmPerf">⚡ ${isPerf ? (lang === 'th' ? 'โหมดลดความแลค: เปิดอยู่ ✅' : 'Low Lag Mode: ON ✅') : (lang === 'th' ? 'โหมดลดความแลค: ปิดอยู่ ❌' : 'Low Lag Mode: OFF ❌')}</button>
       <button class="btn" id="gmRules">📖 ${t('rules')}</button>
       <button class="btn" id="gmSound">${A.opt.sound ? '🔊' : '🔇'} ${t('sound')}</button>
       <button class="btn" id="gmVoice">${A.opt.voice ? '🗣️' : '🤐'} ${t('voice')}</button>
       <button class="btn" id="gmLang">🌐 ${t('lang')}: ${lang.toUpperCase()}</button>
       <button class="btn red" id="gmLeave">🚪 ${t('leave')}</button></div>`);
+    $('#gmPerf').onclick = () => {
+      const next = localStorage.getItem('ek_perf_mode') === '1' ? '0' : '1';
+      localStorage.setItem('ek_perf_mode', next);
+      document.body.classList.toggle('perf-mode', next === '1');
+      A.sfx('select');
+      toast(lang === 'th' ? (next === '1' ? '⚡ เปิดโหมดลดความแลคแล้ว (ลื่นไหล 60 FPS)' : '🎨 ปิดโหมดลดความแลคแล้ว') : (next === '1' ? '⚡ Low Lag Mode: ON' : '🎨 Low Lag Mode: OFF'), 'good');
+      $('#btnGameMenu').click();
+    };
     $('#gmRules').onclick = openRules;
     $('#gmSound').onclick = () => { $('#btnSound').click(); $('#btnGameMenu').click(); };
     $('#gmVoice').onclick = () => { $('#btnVoice').click(); $('#btnGameMenu').click(); };
@@ -6004,6 +6030,9 @@
   };
 
   // ------------------------------------------------------------ boot
+  if (localStorage.getItem('ek_perf_mode') === '1') {
+    document.body.classList.add('perf-mode');
+  }
   // Initialize Auth Screen IMMEDIATELY so buttons and tabs are clickable from the first millisecond
   try { initAuthScreen(); } catch (err) { console.error('Early initAuthScreen error:', err); }
 

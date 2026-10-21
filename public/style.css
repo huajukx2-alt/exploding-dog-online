@@ -7384,3 +7384,126 @@ html, body {
   box-shadow: 0 0 8px #ef4444;
   animation: dailyDotPulse 1.4s infinite ease-in-out;
 }
+
+
+/* ============================================================
+   ULTRA PERFORMANCE & ZERO-LAG OVERRIDES (60 FPS ENGINE)
+   ============================================================ */
+
+/* 1. Eliminate GPU-exhausting backdrop-filter blurs globally across all browsers */
+*,
+*::before,
+*::after {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* 2. Completely freeze animations on inactive screens to prevent hidden background lag */
+.screen:not(.active),
+.screen:not(.active) * {
+  animation: none !important;
+}
+
+/* 3. Strip expensive real-time filter: blur shaders from spotlights & ambient glow layers */
+.spotlight,
+.stage-glow,
+.mascot-halo,
+.stage-lighting,
+.auth-sunburst,
+.auth-ambient-particles,
+.floating-confetti,
+.stage-fx {
+  filter: none !important;
+  -webkit-filter: none !important;
+}
+
+/* 4. Natural soft feathered spotlights without GPU blur */
+.spot-center {
+  background: conic-gradient(from 180deg at 50% 0%, transparent 40%, rgba(254,240,138,0.25) 50%, transparent 60%) !important;
+}
+.spot-left {
+  background: conic-gradient(from 180deg at 50% 0%, transparent 42%, rgba(192,132,252,0.2) 50%, transparent 58%) !important;
+}
+.spot-right {
+  background: conic-gradient(from 180deg at 50% 0%, transparent 42%, rgba(56,189,248,0.2) 50%, transparent 58%) !important;
+}
+
+/* 5. Clean, fast solid/semi-opaque backgrounds for panels and modals */
+#modal {
+  background: rgba(8, 4, 18, 0.85) !important;
+}
+.modal-box {
+  background: #191130 !important;
+  border: 2px solid #581c87 !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7) !important;
+}
+.stage-topbar,
+.stage-bottom-bar {
+  background: #140828 !important;
+}
+.stage-stakes-container {
+  background: #1c0d38 !important;
+}
+.coach-container {
+  background: #1a1036 !important;
+}
+
+/* 6. Hardware acceleration & composite layer isolation */
+#topbar,
+.bottom-dock-nav,
+.lobby-stage-layout,
+.stage-center,
+.stage-mascot,
+#table,
+#hand,
+.modal-box,
+.coach-container,
+.card {
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* 7. Replace repaint-heavy box-shadow animations with lightweight transform compositing */
+@keyframes activeCardGlow {
+  0%, 100% { transform: translateY(-2px) scale(1.01); }
+  50% { transform: translateY(-4px) scale(1.03); }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.03); }
+}
+
+@keyframes mascotHover {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+/* 8. Dedicated Low-Lag / 60 FPS Performance Mode */
+body.perf-mode .stage-fx,
+body.perf-mode .stage-lighting,
+body.perf-mode .confetti-layer,
+body.perf-mode .floating-confetti,
+body.perf-mode .auth-bg-fx,
+body.perf-mode .auth-ambient-particles,
+body.perf-mode .auth-float-confetti,
+body.perf-mode .auth-float-bone,
+body.perf-mode .auth-float-sparkle,
+body.perf-mode .auth-float-paw,
+body.perf-mode .fan-sparkle,
+body.perf-mode .stage-card-fan,
+body.perf-mode .neon-rail,
+body.perf-mode .spotlight {
+  display: none !important;
+}
+
+body.perf-mode .stage-mascot,
+body.perf-mode .daily-mascot,
+body.perf-mode .pulse-gold,
+body.perf-mode .dock-badge-pulse,
+body.perf-mode .btn.pulse,
+body.perf-mode .logo-bomb-icon {
+  animation: none !important;
+}
