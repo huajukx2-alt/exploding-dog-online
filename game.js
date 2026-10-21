@@ -21,7 +21,7 @@ class Game {
   constructor(code, io, onEnd) {
     this.code = code; this.io = io; this.onEnd = onEnd;
     this.players = []; this.spectators = []; this.state = 'LOBBY'; this.phase = 'idle';
-    this.settings = { version: 'original', stake: 'casual', custom: false, counts: { ...VERSIONS.original.counts }, turnSeconds: 25, nopeSeconds: 4, botLevel: 'normal', maxPlayers: 8 };
+    this.settings = { version: 'original', stake: 'casual', custom: false, counts: { ...VERSIONS.original.counts }, turnSeconds: 28, nopeSeconds: 6, botLevel: 'normal', maxPlayers: 8 };
     this.deck = []; this.discard = []; this.log = [];
     this.timers = {}; this.seq = 1; this.deckRev = 0;
     this.lastResults = null;
@@ -183,6 +183,8 @@ class Game {
     } else {
       p.auto = true;
       this.fx('disconnected', { playerId: p.id });
+    const hasHuman = this.players.some(x => !x.isBot && x.connected);
+    if (!hasHuman) { this.clear('bot'); this.clear('turn'); }
       if (p.isHost) { const h = this.players.find(x => !x.isBot && x.connected); if (h) { p.isHost = false; h.isHost = true; } }
       // if the disconnected player is acting, let autopilot take over
       if (this.prompt && this.prompt.playerId === p.id) this.later('prompt', 1200, () => this.finishPrompt(null));
@@ -425,7 +427,7 @@ class Game {
         return;
       }
       this.fx('bomb_drawn', { playerId: p.id, cardId: card.id });
-      return this.later('bomb_reveal', 900, () => {
+      return this.later('bomb_reveal', 1400, () => {
         this.explodeOrDefuse(p, card, () => this.endTurnOnce());
       });
     }
@@ -561,7 +563,7 @@ class Game {
     if (effect !== 'pair' && effect !== 'triple') this.lastActionId = effect;
     this.pending = { playerId: p.id, effect, cardIds: cards.map(c => c.id), targetId: needsTarget ? t.id : null, namedId: effect === 'triple' ? namedId : null, nopes: 0 };
     this.fx('play', { playerId: p.id, targetId: this.pending.targetId, cardIds: this.pending.cardIds, effect, namedId: this.pending.namedId });
-    this.openNopeWindow(1800);
+    this.openNopeWindow(2200);
     return { ok: true };
   }
 
@@ -569,7 +571,7 @@ class Game {
     this.pauseTurnTimer();
     this.phase = 'nope';
     const anyNope = this.alive().some(x => x.hand.some(c => c.id === 'nope'));
-    const duration = anyNope ? Math.max(3500, this.settings.nopeSeconds * 1000) : 1800;
+    const duration = anyNope ? Math.max(5500, this.settings.nopeSeconds * 1000) : 2200;
     this.clear('nope');
     this.clear('botnope');
     this.clear('botnope_start');
@@ -651,7 +653,7 @@ class Game {
       case 'see_the_future': case 'see_future_5': {
         const count = pa.effect === 'see_future_5' ? 5 : 3;
         const ids = this.deck.slice(0, count).map(c => c.id);
-        const timeoutMs = count === 5 ? 7000 : 5000;
+        const timeoutMs = count === 5 ? 14000 : 9000;
         this.remember(p, ids);
         this.fx('peek', { playerId: p.id, n: ids.length });
         return this.setPrompt(p, 'see_future', { cardIds: ids, count: ids.length },
@@ -664,6 +666,7 @@ class Game {
         const n = pa.effect === 'alter_future_5' ? 5 : 3;
         const top = this.deck.slice(0, n); const share = pa.effect === 'share_the_future';
         if (!top.length) return this.backToTurn();
+        const alterTimeout = n === 5 ? 30000 : 22000;
         return this.setPrompt(p, 'alter', { cardIds: top.map(c => c.id), share },
           (pl) => {
             let order = Array.isArray(pl && pl.order) ? pl.order.map(Number) : null;
@@ -674,20 +677,24 @@ class Game {
             if (share) { const nx = this.players[this.nextAliveIdx(this.turnIdx)]; this.priv(nx, 'future', { cardIds: ids, fromId: p.id }); this.remember(nx, ids); }
             this.backToTurn();
           },
-          () => { const idx = top.map((_, i) => i); return { order: [...idx.filter(i => !isBomb(top[i].id)), ...idx.filter(i => isBomb(top[i].id))] }; });
+          () => { const idx = top.map((_, i) => i); return { order: [...idx.filter(i => !isBomb(top[i].id)), ...idx.filter(i => isBomb(top[i].id))] }; },
+          alterTimeout
+        );
       }
       case 'dig_deeper': {
         if (this.deck.length < 2) return this.drawCard(p, false);
         return this.setPrompt(p, 'dig', { cardId: this.deck[0].id },
           (pl) => this.drawCard(p, false, pl && pl.keep === false ? 1 : 0),
-          () => ({ keep: !isBomb(this.deck[0].id) }));
+          () => ({ keep: !isBomb(this.deck[0].id) }),
+          22000);
       }
       case 'bury': {
         if (!this.deck.length) return this.endTurnOnce();
         const card = this.deck.shift(); this.deckChanged('mut');
         return this.setPrompt(p, 'bury', { deckSize: this.deck.length },
           (pl) => { this.deck.splice(this.clampPos(pl && pl.pos), 0, card); this.fx('buried', { playerId: p.id }); this.endTurnOnce(); },
-          () => ({ pos: rand(this.deck.length + 1) }));
+          () => ({ pos: rand(this.deck.length + 1) }),
+          22000);
       }
       case 'clairvoyance': {
         const pos = this.deck.findIndex(c => isBomb(c.id));
@@ -707,7 +714,9 @@ class Game {
             }
             this.checkStreak(p, () => this.backToTurn());
           },
-          () => ({ uid: pickable[pickable.length - 1]?.uid }));
+          () => ({ uid: pickable[pickable.length - 1]?.uid }),
+          30000
+        );
       }
       case 'barking_kitten': {
         const other = this.players.find(x => x !== p && x.alive && x.hand.some(c => c.id === 'barking_kitten'));
@@ -743,7 +752,9 @@ class Game {
             this.priv(t, 'lost', { cardId: card.id, toId: p.id }); this.priv(p, 'received', { cardId: card.id, fromId: t.id });
             this.checkStreak(t, () => this.checkStreak(p, () => this.backToTurn()));
           },
-          () => ({ uid: this.botFavorCard(t)?.uid }));
+          () => ({ uid: this.botFavorCard(t)?.uid }),
+          24000
+        );
       case 'pair':
         if (!t.hand.length) return this.backToTurn();
         shuffle(t.hand);
@@ -757,7 +768,9 @@ class Game {
             this.priv(t, 'lost', { cardId: card.id, toId: p.id }); this.priv(p, 'received', { cardId: card.id, fromId: t.id });
             this.checkStreak(t, () => this.checkStreak(p, () => this.backToTurn()));
           },
-          () => ({ index: rand(Math.max(1, t.hand.length)) }));
+          () => ({ index: rand(Math.max(1, t.hand.length)) }),
+          22000
+        );
       case 'triple': {
         if (!t.hand.length) return this.backToTurn();
         const i = t.hand.findIndex(c => c.id === pa.namedId);
@@ -780,11 +793,11 @@ class Game {
   }
 
   // ---------------------------------------------------------------- prompts
-  setPrompt(p, type, data, onResolve, autoFn, timeoutMs = 15000) {
+  setPrompt(p, type, data, onResolve, autoFn, timeoutMs = 22000) {
     this.pauseTurnTimer();
     this.phase = 'prompt';
     this.prompt = { playerId: p.id, type, data, onResolve, autoFn, deadline: Date.now() + timeoutMs };
-    const ms = this.isAuto(p) ? 1100 + rand(900) : timeoutMs;
+    const ms = this.isAuto(p) ? 2200 + rand(1200) : timeoutMs;
     this.later('prompt', ms, () => this.finishPrompt(null));
     this.sync();
   }
@@ -811,7 +824,7 @@ class Game {
     const p = this.cur();
     if (this.state === 'PLAYING' && this.phase === 'turn' && p && p.alive && this.isAuto(p)) {
       // Natural deliberate delay so humans can watch the game unfold
-      this.later('bot', 2000 + rand(1000), () => this.botTurn(p));
+      this.later('bot', 2200 + rand(1200), () => this.botTurn(p));
     }
   }
 
@@ -988,7 +1001,7 @@ class Game {
     const isVictim = b.id === victimId;
     const prob = isVictim ? (lvl === 'easy' ? 0.65 : lvl === 'normal' ? 0.85 : 0.95) : { easy: 0.2, normal: 0.5, hard: 0.8 }[lvl];
     if (Math.random() > prob) return;
-    this.later('botnope', 800 + rand(Math.max(300, this.settings.nopeSeconds * 1000 - 1200)), () => {
+    this.later('botnope', 1800 + rand(Math.max(400, this.settings.nopeSeconds * 1000 - 2400)), () => {
       if (this.pending === pa && pa.nopes === snapshot && b.alive) {
         const c = b.hand.find(x => x.id === 'nope'); if (c) this.playNope(b, c);
       }

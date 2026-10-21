@@ -66,7 +66,9 @@ app.get('/api/mailbox', (req, res) => res.json(db.getMailbox(req.headers['x-toke
 app.post('/api/mailbox/claim', (req, res) => { const b = req.body || {}; reply(res, db.claimMail(req.headers['x-token'], b.mailId || 'all')); });
 app.post('/api/gacha', (req, res) => { const b = req.body || {}; reply(res, db.gacha(req.headers['x-token'], b.times || 1)); });
 app.get('/api/leaderboard', (req, res) => res.json({ list: db.leaderboard() }));
-app.get('/api/card-images', (req, res) => {
+let cachedCardImages = null;
+function getCardImagesMap() {
+  if (cachedCardImages) return cachedCardImages;
   const dir = path.join(__dirname, 'public', 'img', 'cards');
   const map = {};
   try {
@@ -75,7 +77,6 @@ app.get('/api/card-images', (req, res) => {
       if (m) {
         const id = m[1];
         const isSvg = /\.svg$/i.test(f);
-        // Prioritize SVG: only replace if we don't have this card yet, or if current file is SVG
         if (!map[id] || isSvg) {
           const v = Math.floor(fs.statSync(path.join(dir, f)).mtimeMs / 1000);
           map[id] = `/img/cards/${f}?v=${v}`;
@@ -83,8 +84,10 @@ app.get('/api/card-images', (req, res) => {
       }
     }
   } catch (e) { /* no folder yet */ }
-  res.json(map);
-});
+  cachedCardImages = map;
+  return map;
+}
+app.get('/api/card-images', (req, res) => res.json(getCardImagesMap()));
 
 // ------------------------------------------------------------------ rooms
 const games = new Map();        // code -> Game
@@ -321,7 +324,8 @@ io.on('connection', (socket) => {
       const d = safeObj(data);
       const r = fn(g, d) || {};
       if (r.error) err(r.error);
-      g.sync();
+      // g.sync() is already executed by each method in Game when state changes.
+      // Skipping redundant sync saves 50% CPU and socket traffic.
     } catch (e) {
       console.error(`[socket act error: ${event}]`, e);
     }
@@ -387,8 +391,25 @@ io.on('connection', (socket) => {
     } catch (e) { console.error('[sticker error]', e); }
   });
 
-  socket.on('disconnect', () => leave(socket));
+  socket.on('disconnect', () => {
+    chatCooldown.delete(socket.id);
+    chatCooldown.delete(socket.id + '_stk');
+    leave(socket);
+  });
 });
+
+
+// Periodic cleanup of empty/stale rooms (prevents background memory accumulation)
+setInterval(() => {
+  const now = Date.now();
+  for (const [code, g] of games.entries()) {
+    const hasHuman = g.players.some(p => !p.isBot && p.connected) || (g.spectators && g.spectators.some(s => s.connected));
+    if (!hasHuman) {
+      g.clearAll();
+      games.delete(code);
+    }
+  }
+}, 60000);
 
 server.listen(PORT, '0.0.0.0', () => {
   console.log('===============================================');

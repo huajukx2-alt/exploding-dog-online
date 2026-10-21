@@ -63,7 +63,7 @@ function save(userKey) {
     try {
       fs.mkdirSync(DATA_DIR, { recursive: true });
       const tempFile = `${FILE}.${Date.now()}.${Math.random().toString(36).slice(2)}.tmp`;
-      fs.writeFileSync(tempFile, JSON.stringify(db, null, 1), 'utf8');
+      fs.writeFileSync(tempFile, JSON.stringify(db), 'utf8');
       try {
         fs.renameSync(tempFile, FILE);
       } catch (renameErr) {
@@ -73,7 +73,7 @@ function save(userKey) {
     } catch (err) {
       console.error('[db] save error:', err);
     }
-  }, 300);
+  }, 400);
 
   // Sync to Firebase Cloud
   if (firebaseDb && firebaseDb.isEnabled) {
