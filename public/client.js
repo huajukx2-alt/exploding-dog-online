@@ -1061,6 +1061,7 @@
 
         show('home');
         renderHome();
+        setTimeout(() => checkDailyLoginStatus(true), 600);
         checkMailboxStatus();
       } catch (err) {
         console.error('Register submit error:', err);
@@ -1123,6 +1124,7 @@
 
         show('home');
         renderHome();
+        setTimeout(() => checkDailyLoginStatus(true), 600);
         checkMailboxStatus();
       } catch (err) {
         console.error('Login submit error:', err);
@@ -1462,10 +1464,14 @@
 
   function setupStageSelectScreen() {
     renderUserChip();
+    checkDailyLoginStatus(false);
 
     // 1. Topbar actions
     const btnBack = $('#btnBrowserBack');
     if (btnBack) btnBack.onclick = () => { A.sfx('click'); show('home'); };
+
+    const btnStageDaily = $('#btnStageDaily');
+    if (btnStageDaily) btnStageDaily.onclick = () => { A.sfx('click'); openDailyStreakModal(); };
 
     const btnMail = $('#btnStageMail');
     if (btnMail) btnMail.onclick = () => { A.sfx('click'); openMailboxModal(); };
@@ -2020,7 +2026,7 @@
     const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
 
     if (user) {
-      const last = user.lastDaily || '';
+      const last = user.lastDailyStreak || '';
       let streak = user.dailyStreak || 0;
       const claimedToday = last === today;
       if (last && last !== yesterday && last !== today) {
@@ -2040,12 +2046,18 @@
 
   function checkDailyLoginStatus(autoOpen = false) {
     const { streak, claimedToday } = getDailyStreakData();
-    const dot = $('#dailyDot');
-    if (dot) dot.style.display = claimedToday ? 'none' : 'block';
+    const dots = [$('#dailyDot'), $('#stageDailyDot')];
+    dots.forEach(d => { if (d) d.style.display = claimedToday ? 'none' : 'block'; });
+
+    const dockBadge = $('#dockDailyBadge');
+    if (dockBadge) {
+      dockBadge.style.display = claimedToday ? 'none' : 'block';
+      dockBadge.textContent = lang === 'th' ? 'รับรางวัล!' : 'CLAIM';
+    }
 
     if (autoOpen && !claimedToday) {
-      if (screen === 'home') {
-        setTimeout(() => openDailyStreakModal(), 600);
+      if (screen === 'home' || screen === 'browser') {
+        setTimeout(() => openDailyStreakModal(), 500);
       }
     }
   }
@@ -2115,9 +2127,11 @@
 
         if (user) {
           try {
-            const r = await api('/api/daily', 'POST');
+            const r = await api('/api/daily', {});
             if (r.error) {
               toast('⚠️ ' + (r.error === 'claimed' ? (isTh ? 'คุณรับรางวัลของวันนี้ไปแล้ว' : 'Already claimed today') : r.error), 'err');
+              btnClaim.disabled = false;
+              btnClaim.textContent = isTh ? '✦ รับรางวัลฟรี! ✦' : '✦ CLAIM REWARD! ✦';
               closeModal(true);
               return;
             }
@@ -2130,6 +2144,8 @@
             openDailyStreakModal();
           } catch (e) {
             toast(isTh ? '⚠️ การเชื่อมต่อขัดข้อง' : 'Connection error', 'err');
+            btnClaim.disabled = false;
+            btnClaim.textContent = isTh ? '✦ รับรางวัลฟรี! ✦' : '✦ CLAIM REWARD! ✦';
           }
         } else {
           // Guest
@@ -2182,9 +2198,9 @@
       const guestDailyClaimed = localStorage.getItem('ek_guest_last_daily') === today;
       mails = [
         {
-          id: 'mail_welcome',
+          id: 'mail_starter_gift',
           icon: '🎁',
-          title: { th: 'ของขวัญต้อนรับ & รางวัลประจำวัน', en: 'Welcome & Daily Bonus' },
+          title: { th: 'ของขวัญต้อนรับผู้เล่นใหม่', en: 'New Player Welcome Gift' },
           body: { th: 'ยินดีต้อนรับสู่หมาระเบิดออนไลน์! ล็อกอินทุกวันเพื่อรับเหรียญและเพชรฟรี', en: 'Welcome to Exploding Puppies Online! Log in daily to get free coins & gems.' },
           coins: 500,
           diamonds: 20,
@@ -2531,6 +2547,8 @@
   // Bindings for top bar and main navigation
   const pCard = $('#playerProfileCard'); if (pCard) pCard.onclick = () => openProfile();
   const bDaily = $('#btnDaily'); if (bDaily) bDaily.onclick = openDailyStreakModal;
+  const bDockDaily = $('#dockBtnDaily'); if (bDockDaily) bDockDaily.onclick = openDailyStreakModal;
+  const bStageDaily = $('#btnStageDaily'); if (bStageDaily) bStageDaily.onclick = openDailyStreakModal;
   const bMail = $('#btnMail'); if (bMail) bMail.onclick = openMailboxModal;
   const bSettings = $('#btnSettings'); if (bSettings) bSettings.onclick = openSettingsModal;
 
@@ -6004,6 +6022,7 @@
     } else {
       show('home');
       renderHome();
+      setTimeout(() => checkDailyLoginStatus(true), 700);
     }
 
     const room = new URLSearchParams(location.search).get('room');

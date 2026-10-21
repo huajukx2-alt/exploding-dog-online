@@ -128,6 +128,7 @@ function generateVault(u) {
     equipped: u.equipped || { frame: null, skin: null, avatar: null, title: 'title_rookie' },
     title: u.equipped?.title || u.title || 'title_rookie',
     dailyStreak: u.dailyStreak || 0,
+    lastDailyStreak: u.lastDailyStreak || '',
     lastDaily: u.lastDaily || '',
     claimedMail: u.claimedMail || [],
     recoveryPin: u.recoveryPin || '1234',
@@ -263,6 +264,7 @@ function publicUser(u) {
     equipped: u.equipped || { frame: null, skin: null, avatar: null, title: 'title_rookie' },
     title: u.equipped?.title || u.title || 'title_rookie',
     dailyStreak: u.dailyStreak || 0,
+    lastDailyStreak: u.lastDailyStreak || u.lastDaily || '',
     lastDaily: u.lastDaily || '',
     claimedMail: u.claimedMail || [],
     recoveryPin: u.recoveryPin || '1234',
@@ -415,14 +417,15 @@ const STREAK_REWARDS = [
 function dailyBonus(token) {
   const u = byToken(token); if (!u) return { error: 'auth' };
   const today = new Date().toISOString().slice(0, 10);
-  if (u.lastDaily === today) return { error: 'claimed' };
+  if (u.lastDailyStreak === today) return { error: 'claimed' };
 
   const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
-  if (u.lastDaily === yesterday) {
+  if (u.lastDailyStreak === yesterday) {
     u.dailyStreak = ((u.dailyStreak || 0) % 7) + 1;
   } else {
     u.dailyStreak = 1;
   }
+  u.lastDailyStreak = today;
   u.lastDaily = today;
 
   const curReward = STREAK_REWARDS[u.dailyStreak - 1] || STREAK_REWARDS[0];
@@ -487,8 +490,8 @@ function gacha(token, times = 1) {
 
 // ---------------------------------------------------------------- MAILBOX
 const SYSTEM_MAILS = [
-  { id: 'mail_welcome', icon: '🎁', title: { th: 'ของขวัญต้อนรับ & รางวัลประจำวัน', en: 'Welcome & Daily Bonus' },
-    body: { th: 'ยินดีต้อนรับสู่หมาระเบิดออนไลน์! ล็อกอินทุกวันเพื่อรับเหรียญและเพชรฟรี', en: 'Welcome to Exploding Puppies Online! Log in daily to get free coins & gems.' },
+  { id: 'mail_starter_gift', icon: '🎁', title: { th: 'ของขวัญต้อนรับผู้เล่นใหม่', en: 'New Player Welcome Gift' },
+    body: { th: 'ยินดีต้อนรับสู่หมาระเบิดออนไลน์! รับเหรียญและเพชรฟรีเพื่อเริ่มต้นการผจญภัย', en: 'Welcome to Exploding Puppies Online! Get free coins & gems to start your journey.' },
     coins: 500, diamonds: 20 },
   { id: 'mail_gacha_fest_v2', icon: '🌟', title: { th: 'ฉลองเปิดตู้สุ่มกาชาจ่าฝูงลิมิเต็ด (แจกเพชรฟรี 100 เม็ด!)', en: 'Celestial Alpha Gacha Launch (Free 100 💎!)' },
     body: { th: 'รับเพชรฟรี 100 เม็ดสำหรับทดลองสุ่มตู้กาชาจ่าฝูง 10 ครั้งทันที! ลุ้นรับของระดับ UR ลิมิเต็ด!', en: '100 free diamonds to summon 10x immediately from the limited Celestial Alpha Gacha!' },
@@ -507,32 +510,22 @@ const SYSTEM_MAILS = [
 function getMailbox(token) {
   const u = byToken(token);
   const claimed = u ? (u.claimedMail || []) : [];
-  const today = new Date().toISOString().slice(0, 10);
-  const dailyClaimed = u ? (u.lastDaily === today) : false;
   return {
     mails: SYSTEM_MAILS.map(m => ({
       ...m,
-      claimed: m.id === 'mail_welcome' ? dailyClaimed : claimed.includes(m.id)
-    })),
-    dailyClaimed
+      claimed: claimed.includes(m.id)
+    }))
   };
 }
 
 function claimMail(token, mailId) {
   const u = byToken(token); if (!u) return { error: 'auth' };
   u.claimedMail = u.claimedMail || [];
-  const today = new Date().toISOString().slice(0, 10);
   let totalCoins = 0, totalDiamonds = 0;
 
   if (mailId === 'all') {
     for (const m of SYSTEM_MAILS) {
-      if (m.id === 'mail_welcome') {
-        if (u.lastDaily !== today) {
-          u.lastDaily = today;
-          totalCoins += m.coins || 0;
-          totalDiamonds += m.diamonds || 0;
-        }
-      } else if (!u.claimedMail.includes(m.id)) {
+      if (!u.claimedMail.includes(m.id)) {
         u.claimedMail.push(m.id);
         totalCoins += m.coins || 0;
         totalDiamonds += m.diamonds || 0;
@@ -541,13 +534,8 @@ function claimMail(token, mailId) {
   } else {
     const m = SYSTEM_MAILS.find(x => x.id === mailId);
     if (!m) return { error: 'no_mail' };
-    if (m.id === 'mail_welcome') {
-      if (u.lastDaily === today) return { error: 'claimed' };
-      u.lastDaily = today;
-    } else {
-      if (u.claimedMail.includes(mailId)) return { error: 'claimed' };
-      u.claimedMail.push(mailId);
-    }
+    if (u.claimedMail.includes(mailId)) return { error: 'claimed' };
+    u.claimedMail.push(mailId);
     totalCoins += m.coins || 0;
     totalDiamonds += m.diamonds || 0;
   }
