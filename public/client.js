@@ -1192,94 +1192,154 @@
   }
 
   
-  // ------------------------------------------------------------ BOSS SHIBA MASCOT
+  // ------------------------------------------------------------ BOSS SHIBA MASCOT (UNMISTAKABLY A DOG)
   function bossShibaMascotSVG() {
     return `<svg class="boss-mascot-svg" viewBox="0 0 280 340" fill="none" xmlns="http://www.w3.org/2000/svg">
       <defs>
+        <!-- Shiba Golden Fur -->
         <radialGradient id="shibaFur" cx="45%" cy="35%" r="65%">
-          <stop offset="0%" stop-color="#fb923c"/>
-          <stop offset="60%" stop-color="#ea580c"/>
+          <stop offset="0%" stop-color="#fdba74"/>
+          <stop offset="45%" stop-color="#fb923c"/>
+          <stop offset="80%" stop-color="#ea580c"/>
           <stop offset="100%" stop-color="#c2410c"/>
         </radialGradient>
-        <linearGradient id="shibaWhite" x1="0" y1="0" x2="0" y2="1">
+        <!-- Cream Muzzle & Chest -->
+        <linearGradient id="shibaCream" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stop-color="#ffffff"/>
+          <stop offset="70%" stop-color="#fff7ed"/>
           <stop offset="100%" stop-color="#fed7aa"/>
         </linearGradient>
+        <!-- Soft Ear Pink -->
+        <radialGradient id="earPink" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#fdf2f8"/>
+          <stop offset="60%" stop-color="#fbcfe8"/>
+          <stop offset="100%" stop-color="#f472b6"/>
+        </radialGradient>
+        <!-- Gold Crown & Medal -->
         <linearGradient id="goldCrown" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0%" stop-color="#fef08a"/>
-          <stop offset="50%" stop-color="#f59e0b"/>
+          <stop offset="40%" stop-color="#facc15"/>
+          <stop offset="75%" stop-color="#eab308"/>
           <stop offset="100%" stop-color="#b45309"/>
         </linearGradient>
-        <linearGradient id="goldCape" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#dc2626"/>
-          <stop offset="70%" stop-color="#991b1b"/>
-          <stop offset="100%" stop-color="#450a0a"/>
+        <!-- Royal Cape -->
+        <linearGradient id="royalCape" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#ef4444"/>
+          <stop offset="60%" stop-color="#dc2626"/>
+          <stop offset="100%" stop-color="#7f1d1d"/>
+        </linearGradient>
+        <!-- Cape White Ermine Trim -->
+        <linearGradient id="ermineTrim" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stop-color="#ffffff"/>
+          <stop offset="50%" stop-color="#f1f5f9"/>
+          <stop offset="100%" stop-color="#e2e8f0"/>
         </linearGradient>
         <filter id="bossShadow" x="-20%" y="-15%" width="140%" height="135%">
-          <feDropShadow dx="0" dy="14" stdDeviation="10" flood-color="#180628" flood-opacity="0.6"/>
+          <feDropShadow dx="0" dy="12" stdDeviation="10" flood-color="#180628" flood-opacity="0.55"/>
         </filter>
       </defs>
 
       <g filter="url(#bossShadow)">
-        <!-- Cape -->
-        <path d="M55 170 C40 220 30 280 20 325 C80 340 200 340 260 325 C250 280 240 220 225 170 Z" fill="url(#goldCape)" stroke="#f59e0b" stroke-width="4"/>
-        <path d="M55 170 C90 190 190 190 225 170 L220 200 C185 215 95 215 60 200 Z" fill="#b91c1c"/>
+        <!-- 1. Shiba Curled Tail (Wagging on right) -->
+        <path d="M205 235 C240 220 262 175 242 145 C226 122 195 138 202 170 C206 188 220 195 210 215 Z" fill="url(#shibaFur)" stroke="#7c2d12" stroke-width="4" stroke-linejoin="round"/>
+        <!-- Fluffy White Tail Tip -->
+        <path d="M242 145 C248 155 238 170 225 160 C216 150 226 135 238 132 C244 134 246 140 242 145 Z" fill="#ffffff" stroke="#7c2d12" stroke-width="3"/>
 
-        <!-- Ears -->
-        <path d="M70 120 L40 40 L110 80 Z" fill="url(#shibaFur)" stroke="#7c2d12" stroke-width="4" stroke-linejoin="round"/>
-        <path d="M72 105 L52 56 L100 80 Z" fill="#fda4af"/>
-        <path d="M210 120 L240 40 L170 80 Z" fill="url(#shibaFur)" stroke="#7c2d12" stroke-width="4" stroke-linejoin="round"/>
-        <path d="M208 105 L228 56 L180 80 Z" fill="#fda4af"/>
+        <!-- 2. Royal Velvet Cape (Behind body) -->
+        <path d="M60 180 C40 230 32 290 22 328 C85 342 195 342 258 328 C248 290 240 230 220 180 Z" fill="url(#royalCape)" stroke="#7f1d1d" stroke-width="4"/>
+        <path d="M42 324 Q140 342 238 324" stroke="#facc15" stroke-width="5" fill="none" stroke-linecap="round"/>
 
-        <!-- Head / Body Base -->
-        <ellipse cx="140" cy="155" rx="88" ry="76" fill="url(#shibaFur)" stroke="#7c2d12" stroke-width="4"/>
-        <!-- White Cheeks -->
-        <path d="M70 160 C70 205 105 225 140 225 C175 225 210 205 210 160 C210 135 195 125 175 125 C155 125 145 135 140 135 C135 135 125 125 105 125 C85 125 70 135 70 160 Z" fill="url(#shibaWhite)"/>
+        <!-- 3. Natural Fluffy Shiba Dog Ears -->
+        <!-- Left Ear -->
+        <path d="M55 125 C32 82 48 38 78 44 C96 48 108 82 98 120 Z" fill="url(#shibaFur)" stroke="#7c2d12" stroke-width="4.5" stroke-linejoin="round"/>
+        <path d="M62 112 C44 80 56 52 76 56 C88 60 94 85 86 108 Z" fill="url(#earPink)"/>
+        <!-- Fluffy ear fur tufts -->
+        <path d="M85 75 C80 82 85 92 78 98" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
 
-        <!-- Eyebrows (Doge dots) -->
-        <ellipse cx="106" cy="115" rx="9" ry="11" fill="url(#shibaWhite)"/>
-        <ellipse cx="174" cy="115" rx="9" ry="11" fill="url(#shibaWhite)"/>
+        <!-- Right Ear -->
+        <path d="M225 125 C248 82 232 38 202 44 C184 48 172 82 182 120 Z" fill="url(#shibaFur)" stroke="#7c2d12" stroke-width="4.5" stroke-linejoin="round"/>
+        <path d="M218 112 C236 80 224 52 204 56 C192 60 186 85 194 108 Z" fill="url(#earPink)"/>
+        <!-- Fluffy ear fur tufts -->
+        <path d="M195 75 C200 82 195 92 202 98" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
 
-        <!-- Eyes -->
-        <ellipse cx="108" cy="142" rx="9" ry="12" fill="#1e1b4b"/>
-        <ellipse cx="172" cy="142" rx="9" ry="12" fill="#1e1b4b"/>
-        <circle cx="105" cy="138" r="4" fill="#ffffff"/>
-        <circle cx="169" cy="138" r="4" fill="#ffffff"/>
-        <circle cx="111" cy="146" r="2" fill="#ffffff"/>
-        <circle cx="175" cy="146" r="2" fill="#ffffff"/>
+        <!-- 4. Dog Body & Fluffy Chest -->
+        <path d="M72 175 C58 220 62 285 70 318 C115 328 165 328 210 318 C218 285 222 220 208 175 Z" fill="url(#shibaFur)" stroke="#7c2d12" stroke-width="4"/>
+        <!-- White Chest Fur -->
+        <path d="M95 185 C95 240 115 285 140 285 C165 285 185 240 185 185 C170 198 155 204 140 204 C125 204 110 198 95 185 Z" fill="url(#shibaCream)"/>
 
-        <!-- Snout & Nose -->
-        <ellipse cx="140" cy="172" rx="20" ry="15" fill="#ffffff"/>
-        <path d="M131 165 C131 161 149 161 149 165 C149 173 143 178 140 178 C137 178 131 173 131 165 Z" fill="#1e1b4b"/>
-        <path d="M140 178 L140 188" stroke="#1e1b4b" stroke-width="3" stroke-linecap="round"/>
-        <path d="M128 186 C134 192 146 192 152 186" stroke="#1e1b4b" stroke-width="3" stroke-linecap="round" fill="none"/>
-        <path d="M134 188 C137 197 143 197 146 188 Z" fill="#f43f5e"/>
+        <!-- 5. Royal Gold Cape Collar with Ermine Trim & Bone Medal -->
+        <path d="M68 180 C90 204 190 204 212 180 L204 208 C175 224 105 224 76 208 Z" fill="url(#ermineTrim)" stroke="#7c2d12" stroke-width="3"/>
+        <circle cx="95" cy="198" r="2.5" fill="#0f172a"/><circle cx="140" cy="208" r="2.5" fill="#0f172a"/><circle cx="185" cy="198" r="2.5" fill="#0f172a"/>
+        <!-- Golden Dog Bone Medallion -->
+        <g transform="translate(140, 230)">
+          <circle cx="0" cy="0" r="16" fill="url(#goldCrown)" stroke="#78350f" stroke-width="2.5"/>
+          <rect x="-8" y="-2.5" width="16" height="5" rx="2.5" fill="#ffffff"/>
+          <circle cx="-8" cy="-3.5" r="3" fill="#ffffff"/><circle cx="-8" cy="3.5" r="3" fill="#ffffff"/>
+          <circle cx="8" cy="-3.5" r="3" fill="#ffffff"/><circle cx="8" cy="3.5" r="3" fill="#ffffff"/>
+        </g>
 
-        <!-- King's Golden Chain & Medallion -->
-        <path d="M72 210 C95 240 185 240 208 210" stroke="url(#goldCrown)" stroke-width="10" stroke-linecap="round" fill="none"/>
-        <circle cx="140" cy="242" r="18" fill="url(#goldCrown)" stroke="#78350f" stroke-width="3"/>
-        <circle cx="140" cy="242" r="12" fill="#dc2626"/>
-        <text x="140" y="248" font-size="14" font-weight="900" fill="#fde047" text-anchor="middle" font-family="'Fredoka', sans-serif">★</text>
+        <!-- 6. Cute Chubby Shiba Head -->
+        <ellipse cx="140" cy="148" rx="78" ry="68" fill="url(#shibaFur)" stroke="#7c2d12" stroke-width="4.5"/>
+        <!-- White Shiba Cheek Fur -->
+        <path d="M72 152 C72 195 102 214 140 214 C178 214 208 195 208 152 C208 132 192 122 174 122 C155 122 145 130 140 130 C135 130 125 122 106 122 C88 122 72 132 72 152 Z" fill="url(#shibaCream)"/>
 
-        <!-- Paws holding podium -->
-        <ellipse cx="90" cy="235" rx="18" ry="14" fill="url(#shibaWhite)" stroke="#7c2d12" stroke-width="3"/>
-        <path d="M82 232 L82 242 M90 230 L90 244 M98 232 L98 242" stroke="#7c2d12" stroke-width="2.5" stroke-linecap="round"/>
+        <!-- 7. Iconic White Doge Eyebrow Dots -->
+        <ellipse cx="108" cy="108" rx="10" ry="12" fill="#ffffff"/>
+        <ellipse cx="172" cy="108" rx="10" ry="12" fill="#ffffff"/>
 
-        <ellipse cx="190" cy="235" rx="18" ry="14" fill="url(#shibaWhite)" stroke="#7c2d12" stroke-width="3"/>
-        <path d="M182 232 L182 242 M190 230 L190 244 M198 232 L198 242" stroke="#7c2d12" stroke-width="2.5" stroke-linecap="round"/>
+        <!-- 8. Blushing Cheeks -->
+        <circle cx="85" cy="162" r="11" fill="#fb7185" opacity="0.55"/>
+        <circle cx="195" cy="162" r="11" fill="#fb7185" opacity="0.55"/>
 
-        <!-- King's 3D Crown on Head -->
-        <g transform="translate(90, 32)">
-          <path d="M8 44 L0 10 L28 26 L50 0 L72 26 L100 10 L92 44 Z" fill="url(#goldCrown)" stroke="#78350f" stroke-width="3.5" stroke-linejoin="round"/>
-          <ellipse cx="50" cy="44" rx="42" ry="7" fill="#b45309"/>
-          <ellipse cx="50" cy="42" rx="42" ry="7" fill="url(#goldCrown)"/>
-          <circle cx="0" cy="10" r="5" fill="#f43f5e" stroke="#78350f" stroke-width="2"/>
-          <circle cx="50" cy="0" r="6" fill="#38bdf8" stroke="#78350f" stroke-width="2"/>
-          <circle cx="100" cy="10" r="5" fill="#f43f5e" stroke="#78350f" stroke-width="2"/>
-          <!-- Ruby jewels on crown band -->
-          <circle cx="28" cy="42" r="4" fill="#ef4444"/>
-          <circle cx="50" cy="42" r="5" fill="#22c55e"/>
-          <circle cx="72" cy="42" r="4" fill="#ef4444"/>
+        <!-- 9. Big Bright Happy Dog Eyes -->
+        <ellipse cx="106" cy="136" rx="10" ry="13" fill="#1e1b4b"/>
+        <circle cx="102" cy="131" r="4.5" fill="#ffffff"/>
+        <circle cx="109" cy="142" r="2" fill="#ffffff"/>
+        <ellipse cx="174" cy="136" rx="10" ry="13" fill="#1e1b4b"/>
+        <circle cx="170" cy="131" r="4.5" fill="#ffffff"/>
+        <circle cx="177" cy="142" r="2" fill="#ffffff"/>
+
+        <!-- 10. Distinct Dog Snout / Muzzle (3D Doggy Muzzle) -->
+        <ellipse cx="140" cy="168" rx="34" ry="24" fill="url(#shibaCream)" stroke="#7c2d12" stroke-width="3"/>
+        <!-- Black Puppy Button Nose with Gloss -->
+        <path d="M128 158 C128 151 152 151 152 158 C152 168 140 174 140 174 C140 174 128 168 128 158 Z" fill="#0f172a"/>
+        <ellipse cx="135" cy="155" rx="3" ry="1.5" fill="#ffffff" opacity="0.8"/>
+        <!-- Dog Whisker Dots -->
+        <circle cx="118" cy="168" r="1.8" fill="#a16207"/><circle cx="123" cy="172" r="1.8" fill="#a16207"/>
+        <circle cx="162" cy="168" r="1.8" fill="#a16207"/><circle cx="157" cy="172" r="1.8" fill="#a16207"/>
+        <!-- Dog Smile & Panting Tongue -->
+        <path d="M126 172 Q140 180 154 172" stroke="#0f172a" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+        <path d="M132 176 C132 198 148 198 148 176 Z" fill="#e11d48" stroke="#0f172a" stroke-width="2.5"/>
+        <path d="M135 184 C135 194 145 194 145 184 Z" fill="#fb7185"/>
+
+        <!-- 11. Front Puppy Paws resting on podium -->
+        <g transform="translate(86, 255)">
+          <ellipse cx="20" cy="16" rx="22" ry="17" fill="url(#shibaCream)" stroke="#7c2d12" stroke-width="3.5"/>
+          <ellipse cx="9" cy="9" rx="5" ry="4" fill="#fb7185"/>
+          <ellipse cx="20" cy="6" rx="5" ry="4" fill="#fb7185"/>
+          <ellipse cx="31" cy="9" rx="5" ry="4" fill="#fb7185"/>
+          <ellipse cx="20" cy="18" rx="9" ry="7" fill="#fb7185"/>
+        </g>
+        <g transform="translate(154, 255)">
+          <ellipse cx="20" cy="16" rx="22" ry="17" fill="url(#shibaCream)" stroke="#7c2d12" stroke-width="3.5"/>
+          <ellipse cx="9" cy="9" rx="5" ry="4" fill="#fb7185"/>
+          <ellipse cx="20" cy="6" rx="5" ry="4" fill="#fb7185"/>
+          <ellipse cx="31" cy="9" rx="5" ry="4" fill="#fb7185"/>
+          <ellipse cx="20" cy="18" rx="9" ry="7" fill="#fb7185"/>
+        </g>
+
+        <!-- 12. Majestic King Crown -->
+        <g transform="translate(92, 16)">
+          <path d="M8 48 L0 12 L26 28 L48 0 L70 28 L96 12 L88 48 Z" fill="url(#goldCrown)" stroke="#78350f" stroke-width="3.5" stroke-linejoin="round"/>
+          <ellipse cx="48" cy="48" rx="44" ry="8" fill="#b45309"/>
+          <ellipse cx="48" cy="46" rx="44" ry="8" fill="url(#goldCrown)"/>
+          <circle cx="0" cy="12" r="5.5" fill="#ef4444" stroke="#78350f" stroke-width="2"/>
+          <circle cx="48" cy="0" r="7" fill="#38bdf8" stroke="#78350f" stroke-width="2.5"/>
+          <polygon points="48,-6 50,-1 55,-1 51,2 53,7 48,4 43,7 45,2 41,-1 46,-1" fill="#fef08a"/>
+          <circle cx="96" cy="12" r="5.5" fill="#ef4444" stroke="#78350f" stroke-width="2"/>
+          <circle cx="26" cy="46" r="4.5" fill="#22c55e" stroke="#14532d" stroke-width="1.5"/>
+          <circle cx="48" cy="46" r="5.5" fill="#ef4444" stroke="#7f1d1d" stroke-width="1.5"/>
+          <circle cx="70" cy="46" r="4.5" fill="#3b82f6" stroke="#1e3a8a" stroke-width="1.5"/>
         </g>
       </g>
     </svg>`;
