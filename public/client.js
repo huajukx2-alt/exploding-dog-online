@@ -26,7 +26,27 @@
   const terr = (e) => I18N[lang].err[e] || e;
   const cname = (id) => CARDS[id] ? CARDS[id].name[lang] : id;
   const cdesc = (id) => CARDS[id] ? CARDS[id].desc[lang] : '';
-  const me = () => S && S.me && S.players.find(p => p.id === S.me.id);
+  const me = () => {
+    if (!S || !S.me) return null;
+    const pl = S.players.find(p => p.id === S.me.id);
+    if (pl) return pl;
+    if (S.me.isSpectator) {
+      return {
+        id: S.me.id,
+        name: S.me.name || myName(),
+        avatar: S.me.avatar || myAvatar(),
+        frame: S.me.frame || myFrame(),
+        skin: S.me.skin || mySkin(),
+        title: S.me.title || myTitle(),
+        hand: S.me.hand || [],
+        alive: false,
+        isSpectator: true,
+        isHost: !!S.me.isHost,
+        rp: user ? user.rp : 0
+      };
+    }
+    return S.me;
+  };
   const pl = (id) => S && S.players.find(p => p.id === id);
   const now = () => Date.now() + timeOffset;
   const FALLBACK = { favor: '/img/favor.jpg', see_the_future: '/img/future.jpg', nope: '/img/nope.jpg' };
@@ -653,6 +673,14 @@
   socket.on('left', () => {
     sessionStorage.removeItem('ek_room');
     S = null;
+    lastSeatsKey = '';
+    lastHeroKey = '';
+    lastDiscardKey = '';
+    sel = [];
+    draggingUid = null;
+    const box = $('#hand'); if (box) box.innerHTML = '';
+    const hero = $('#myHeroSeat'); if (hero) hero.innerHTML = '';
+    const seats = $('#seats'); if (seats) seats.innerHTML = '';
     A.stopHeartbeat();
     A.stopFuse();
     document.body.classList.remove('emergency-alarm');
@@ -2394,9 +2422,10 @@
 
   function renderGame() {
     const m = me(); if (!m) return;
-    const others = S.players.filter(p => p.id !== m.id);
+    const isSpectator = !!m.isSpectator;
+    const others = isSpectator ? S.players : S.players.filter(p => p.id !== m.id);
     // seats around the table (only rebuild when seat state changes)
-    const seatsKey = JSON.stringify([others, S.turnId, S.turnsLeft, S.pending?.targetId, S.prompt?.playerId, lang]);
+    const seatsKey = JSON.stringify([others, S.turnId, S.turnsLeft, S.pending?.targetId, S.prompt?.playerId, isSpectator, lang]);
     if (seatsKey !== lastSeatsKey) {
       lastSeatsKey = seatsKey;
       $('#seats').innerHTML = others.map((p, idx) => {
@@ -2433,26 +2462,51 @@
     }
 
     // my own bottom-left hero seat
-    const myTurn = S.state === 'PLAYING' && S.turnId === m.id && m.alive;
+    const myTurn = S.state === 'PLAYING' && S.turnId === m.id && m.alive && !isSpectator;
     const myTheme = themeForPlayer(m, 3);
     const curMyTitle = m.title || myTitle();
-    const heroKey = JSON.stringify([m.id, m.name, m.avatar || myAvatar(), m.frame || myFrame(), m.skin || mySkin(), curMyTitle, m.rp, m.alive, myTurn, S.turnsLeft, user?.coins, lang]);
+    const heroKey = JSON.stringify([m.id, m.name, m.avatar || myAvatar(), m.frame || myFrame(), m.skin || mySkin(), curMyTitle, m.rp, m.alive, isSpectator, myTurn, S.turnsLeft, user?.coins, lang]);
     if (heroKey !== lastHeroKey) {
       lastHeroKey = heroKey;
       const heroEl = $('#myHeroSeat');
       if (heroEl) {
-        heroEl.innerHTML = `<div class="my-hero theme-${myTheme} ${myTurn ? 'turn' : ''} ${m.alive ? '' : 'dead'}">
-          <div class="my-hero-ring ${m.frame || myFrame() || ''}">
-            <div class="my-hero-dog">${renderAvatarSVG(m.avatar || myAvatar(), myTheme)}</div>
-          </div>
-          <div class="my-hero-stars">⭐⭐⭐⭐⭐</div>
-          <div class="my-hero-plate">
-            <div class="mh-title-row">${titleBadgeHTML(curMyTitle, lang)}</div>
-            <div class="mh-name">${esc(m.name)}</div>
-            <div class="mh-sub">🪙 ${user ? user.coins : 0} · ${rankBadge(m.rp)} ${m.rp || 0} RP</div>
-          </div>
-          ${myTurn ? `<div class="my-turn-ribbon ${S.turnsLeft > 1 ? 'combo-multi' : ''}">⟳ ${t('yourTurn')} ${S.turnsLeft > 1 ? `<b class="turn-multi-tag">🔥 x${S.turnsLeft} ${t('turnsLeft')}</b>` : ''} <span id="myTurnSec"></span></div>` : ''}
-        </div>`;
+        if (isSpectator) {
+          heroEl.innerHTML = `<div class="my-hero spectator-hero">
+            <div class="my-hero-ring">
+              <div class="my-hero-dog" style="display:flex;align-items:center;justify-content:center;font-size:2.2rem;background:rgba(56,189,248,0.18);">👀</div>
+            </div>
+            <div class="my-hero-plate">
+              <div class="mh-name">${lang === 'th' ? 'โหมดผู้ชม' : 'Spectator'}</div>
+              <div class="mh-sub" style="color:#38bdf8;font-weight:bold;">${lang === 'th' ? 'กำลังรับชมการแข่งขัน' : 'Watching Match'}</div>
+            </div>
+          </div>`;
+        } else if (!m.alive) {
+          heroEl.innerHTML = `<div class="my-hero theme-${myTheme} dead">
+            <div class="my-hero-ring ${m.frame || myFrame() || ''}">
+              <div class="my-hero-dog">${renderAvatarSVG(m.avatar || myAvatar(), myTheme)}</div>
+              <div class="dead-mark">${m.elimReason === 'imploded' ? '🌀' : '💥'}</div>
+            </div>
+            <div class="my-hero-stars">⭐⭐⭐⭐⭐</div>
+            <div class="my-hero-plate">
+              <div class="mh-title-row">${titleBadgeHTML(curMyTitle, lang)}</div>
+              <div class="mh-name">${esc(m.name)}</div>
+              <div class="my-dead-tag">💀 ${lang === 'th' ? 'คุณระเบิดแล้ว' : 'ELIMINATED'}</div>
+            </div>
+          </div>`;
+        } else {
+          heroEl.innerHTML = `<div class="my-hero theme-${myTheme} ${myTurn ? 'turn' : ''}">
+            <div class="my-hero-ring ${m.frame || myFrame() || ''}">
+              <div class="my-hero-dog">${renderAvatarSVG(m.avatar || myAvatar(), myTheme)}</div>
+            </div>
+            <div class="my-hero-stars">⭐⭐⭐⭐⭐</div>
+            <div class="my-hero-plate">
+              <div class="mh-title-row">${titleBadgeHTML(curMyTitle, lang)}</div>
+              <div class="mh-name">${esc(m.name)}</div>
+              <div class="mh-sub">🪙 ${user ? user.coins : 0} · ${rankBadge(m.rp)} ${m.rp || 0} RP</div>
+            </div>
+            ${myTurn ? `<div class="my-turn-ribbon ${S.turnsLeft > 1 ? 'combo-multi' : ''}">⟳ ${t('yourTurn')} ${S.turnsLeft > 1 ? `<b class="turn-multi-tag">🔥 x${S.turnsLeft} ${t('turnsLeft')}</b>` : ''} <span id="myTurnSec"></span></div>` : ''}
+          </div>`;
+        }
       }
     }
 
@@ -2580,7 +2634,11 @@
     }
 
     const handArea = $('#handArea');
-    if (handArea) handArea.classList.toggle('my-turn', myTurn);
+    if (handArea) {
+      handArea.classList.toggle('my-turn', myTurn);
+      handArea.classList.toggle('is-spectator', isSpectator);
+      handArea.classList.toggle('is-eliminated', !m.alive && !isSpectator);
+    }
     const canAct = myTurn && S.phase === 'turn';
     const pv = playValidity();
     const canPlay = pv.ok && (canAct || pv.nope) && !isSpectator;

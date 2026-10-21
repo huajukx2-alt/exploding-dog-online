@@ -220,7 +220,7 @@ io.on('connection', (socket) => {
         r = g.addHuman(socket.id, d.name, user(), d);
       } else {
         // Room is currently playing/ended: join as spectator
-        r = g.addSpectator(socket.id, d.name, user());
+        r = g.addSpectator(socket.id, d.name, user(), d);
       }
       if (r.error) return err(r.error);
       enter(socket, g, r.player);

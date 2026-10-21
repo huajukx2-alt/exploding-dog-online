@@ -3624,3 +3624,50 @@ body.shake-heavy {
   font-size: 0.65rem;
   padding: 1px 6px;
 }
+
+
+/* SPECTATOR MODE & DEAD HERO STYLES */
+.my-hero.dead {
+  opacity: 0.65;
+  filter: grayscale(60%);
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 16px rgba(239, 68, 68, 0.5) !important;
+}
+.my-hero.dead .my-hero-ring {
+  box-shadow: 0 0 16px rgba(239, 68, 68, 0.7) !important;
+  background: linear-gradient(135deg, #ef4444, #7f1d1d) !important;
+  position: relative;
+}
+.my-hero.dead .dead-mark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 2.2rem;
+  filter: drop-shadow(0 2px 8px #000);
+  pointer-events: none;
+}
+.my-hero.spectator-hero {
+  border-color: #38bdf8 !important;
+  box-shadow: 0 0 18px rgba(56, 189, 248, 0.45) !important;
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.95), rgba(8, 47, 73, 0.98)) !important;
+}
+.my-hero.spectator-hero .my-hero-ring {
+  background: linear-gradient(135deg, #38bdf8, #0284c7) !important;
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.6) !important;
+}
+.my-dead-tag {
+  color: #ef4444;
+  font-weight: 800;
+  font-size: 0.72rem;
+  letter-spacing: 0.5px;
+  margin-top: 2px;
+}
+#handArea.is-spectator {
+  background: rgba(15, 23, 42, 0.78);
+  border-top: 1.5px solid rgba(56, 189, 248, 0.35);
+}
+#handArea.is-eliminated {
+  background: rgba(30, 10, 10, 0.78);
+  border-top: 1.5px solid rgba(239, 68, 68, 0.35);
+}

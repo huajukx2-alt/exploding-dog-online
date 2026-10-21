@@ -91,7 +91,13 @@ class Game {
     return { player: p };
   }
 
-  addSpectator(socketId, name, user) {
+  addSpectator(socketId, name, user, guestData = {}) {
+    // If this player was already an active human player in this game and left/disconnected, eliminate them cleanly
+    const existingPlayer = this.players.find(p => !p.isBot && p.alive && ((user && p.userId === user.username) || p.name === name));
+    if (existingPlayer) {
+      this.eliminate(existingPlayer, 'exploded');
+      this.afterElim(existingPlayer, null);
+    }
     const p = {
       id: 'spec_' + (this.seq++),
       key: crypto.randomBytes(8).toString('hex'),
@@ -106,9 +112,10 @@ class Game {
       isBot: false,
       name: String((user && user.displayName) || name || 'Spectator').trim().slice(0, 16) || 'Spectator',
       userId: user ? user.username : null,
-      avatar: user ? user.avatar : '👀',
-      frame: user ? user.equipped.frame : null,
-      skin: user ? user.equipped.skin : null,
+      avatar: user ? (user.avatar || '🐶') : (guestData?.avatar || '🐶'),
+      frame: user ? (user.equipped?.frame || null) : (guestData?.frame || null),
+      skin: user ? (user.equipped?.skin || null) : (guestData?.skin || null),
+      title: user ? (user.equipped?.title || user.title || 'title_rookie') : (guestData?.title || 'title_rookie'),
       rp: user ? user.rp : 0,
       inventory: user ? user.inventory : []
     };
@@ -1049,7 +1056,20 @@ class Game {
       pending: pa ? { playerId: pa.playerId, effect: pa.effect, cardIds: pa.cardIds, targetId: pa.targetId, namedId: pa.namedId, nopes: pa.nopes, deadline: pa.deadline } : null,
       prompt: pr ? { playerId: pr.playerId, type: pr.type, deadline: pr.deadline, data: pr.playerId === me?.id ? pr.data : null } : null,
       winnerId: this.winnerId, results: this.lastResults, log: this.log.slice(-30),
-      me: me ? { id: me.id, key: me.key, hand: me.hand || [], isHost: !!me.isHost, isSpectator: !!me.isSpectator } : null,
+      me: me ? {
+        id: me.id,
+        key: me.key,
+        name: me.name,
+        avatar: me.avatar,
+        frame: me.frame,
+        skin: me.skin,
+        title: me.title || 'title_rookie',
+        alive: !!me.alive,
+        elimReason: me.elimReason,
+        hand: me.hand || [],
+        isHost: !!me.isHost,
+        isSpectator: !!me.isSpectator
+      } : null,
       spectatorCount: this.spectators.length,
       serverNow: Date.now()
     };
