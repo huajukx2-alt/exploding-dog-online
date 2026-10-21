@@ -154,6 +154,7 @@
   // Purchasable and Limited Titles / Ranks (ยศ & ฉายา)
   const TITLES = [
     { id: 'title_rookie', type: 'title', icon: '🐾', price: 0, tag: 'rookie', name: { th: 'ลูกหมาฝึกหัด', en: 'Rookie Pup' }, desc: { th: 'ยศเริ่มต้นของตูบน้อยไร้เดียงสา', en: 'Starting rank of innocent pups' } },
+    { id: 'title_trained_pup', type: 'title', icon: '🎓', price: 0, cost: 0, rarity: 'rare', tag: 'trained', name: { th: 'เด็กเนิร์ดตำราหมา', en: 'Trained Pup' }, desc: { th: 'สำเร็จหลักสูตรฝึกสอน 1v1', en: 'Completed 1v1 Training Course' } },
     { id: 'title_bomb_master', type: 'title', icon: '💣', price: 350, tag: 'bomb', name: { th: 'มือวางระเบิดตัวพ่อ', en: 'Bomb Master' }, desc: { th: 'ผู้เชี่ยวชาญการวางระเบิดยัดไส้กองจั่ว', en: 'Expert at planting bombs in draw pile' } },
     { id: 'title_nope_king', type: 'title', icon: '🛑', price: 500, tag: 'nope', name: { th: 'ราชาแห่งการ Nope', en: 'Nope King' }, desc: { th: 'มือขัดจังหวะตัวท็อป ปฏิเสธทุกการกระทำ', en: 'Denies everything with lightning nopes' } },
     { id: 'title_rich_doge', type: 'title', icon: '🪙', price: 600, tag: 'rich', name: { th: 'มหาเศรษฐีตูบ', en: 'Rich Doge' }, desc: { th: 'รวยล้นฟ้า กระดูกทองคำกองพะเนิน', en: 'Wealthy canine swimming in gold coins' } },

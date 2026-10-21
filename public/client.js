@@ -766,13 +766,20 @@
 
   // ------------------------------------------------------------ screens
   function show(name) {
+    if (name !== 'auth' && !user && !isGuestSessionActive) {
+      name = 'auth';
+    }
     screen = name;
-    $$('.screen').forEach(s => s.classList.toggle('active', s.id === 'screen-' + name));
+    $('.screen').forEach(s => s.classList.toggle('active', s.id === 'screen-' + name));
     document.body.dataset.screen = name;
   }
 
   function render() {
     if (!S) {
+      if (!user && !isGuestSessionActive) {
+        show('auth');
+        return;
+      }
       if (screen !== 'browser') show('home');
       return;
     }
@@ -783,6 +790,192 @@
   socket.on('roomsList', (rooms) => {
     if (screen === 'browser') renderRoomBrowser(rooms);
   });
+
+  
+  // ------------------------------------------------------------ AUTH SCREEN (หมาระเบิด Online)
+  let isGuestSessionActive = false;
+  window.onNewAccountCreated = window.onNewAccountCreated || null;
+
+  function initAuthScreen() {
+    const tabRegister = $('#tabRegister');
+    const tabLogin = $('#tabLogin');
+    const authRegForm = $('#authRegisterForm');
+    const authLoginForm = $('#authLoginForm');
+
+    function switchAuthTab(mode) {
+      A.sfx('click');
+      if (mode === 'register') {
+        tabRegister?.classList.add('active');
+        tabLogin?.classList.remove('active');
+        authRegForm?.classList.remove('hidden');
+        authRegForm?.classList.add('active');
+        authLoginForm?.classList.add('hidden');
+        authLoginForm?.classList.remove('active');
+      } else {
+        tabLogin?.classList.add('active');
+        tabRegister?.classList.remove('active');
+        authLoginForm?.classList.remove('hidden');
+        authLoginForm?.classList.add('active');
+        authRegForm?.classList.add('hidden');
+        authRegForm?.classList.remove('active');
+      }
+    }
+
+    if (tabRegister) tabRegister.onclick = () => switchAuthTab('register');
+    if (tabLogin) tabLogin.onclick = () => switchAuthTab('login');
+    const linkToLogin = $('#linkSwitchToLogin');
+    if (linkToLogin) linkToLogin.onclick = () => switchAuthTab('login');
+    const linkToReg = $('#linkSwitchToRegister');
+    if (linkToReg) linkToReg.onclick = () => switchAuthTab('register');
+
+    const linkForgot = $('#linkAuthForgot');
+    if (linkForgot) {
+      linkForgot.onclick = (e) => {
+        e.preventDefault();
+        openAuth('forgot');
+      };
+    }
+
+    function doGuestLogin() {
+      A.sfx('coin');
+      isGuestSessionActive = true;
+      let gName = localStorage.getItem('ek_name');
+      if (!gName || gName === 'Guest' || gName.startsWith('ผู้เล่นทั่วไป')) {
+        gName = 'Doggy_' + Math.floor(1000 + Math.random() * 9000);
+        localStorage.setItem('ek_name', gName);
+      }
+      if (!localStorage.getItem('ek_guest_coins')) localStorage.setItem('ek_guest_coins', '500');
+      if (!localStorage.getItem('ek_guest_diamonds')) localStorage.setItem('ek_guest_diamonds', '30');
+      if (!localStorage.getItem('ek_guest_avatar')) localStorage.setItem('ek_guest_avatar', '🐶');
+      renderUserChip();
+      show('home');
+      renderHome();
+      toast(lang === 'th' ? `⚡ เข้าเล่นด่วนในฐานะ ${gName}` : `Quick playing as ${gName}`, 'good');
+    }
+
+    const bGuest = $('#btnAuthGuest');
+    if (bGuest) bGuest.onclick = doGuestLogin;
+    const bGuestLogin = $('#btnAuthGuestLogin');
+    if (bGuestLogin) bGuestLogin.onclick = doGuestLogin;
+
+    const socialMsg = () => toast(lang === 'th' ? '🐶 เข้าสู่ระบบโซเชียลจำลอง: กรุณาสมัครสมาชิกหรือเข้าเล่นด่วน' : 'Demo social login: please register or quick play!', 'info');
+    $('#btnAuthFb')?.addEventListener('click', socialMsg);
+    $('#btnAuthFbLogin')?.addEventListener('click', socialMsg);
+    $('#btnAuthGoogle')?.addEventListener('click', socialMsg);
+    $('#btnAuthGoogleLogin')?.addEventListener('click', socialMsg);
+
+    // Easter egg: Click on mascots to bark!
+    $('.peeking-corgi-headset')?.addEventListener('click', () => {
+      A.sfx('bark');
+      toast(lang === 'th' ? '🐶 โฮ่งๆ! คอร์กี้เกมเมอร์พร้อมลุย!' : 'Woof! Gamer Corgi is ready!', 'good');
+    });
+    $('.peeking-golden-party')?.addEventListener('click', () => {
+      A.sfx('squeakToy');
+      toast(lang === 'th' ? '🐾 แฮ่กๆ! น้องโกลเด้นโบกมือทักทาย!' : 'Wag wag! Golden party pup says hi!', 'good');
+    });
+
+    // Register submit
+    if (authRegForm) {
+      authRegForm.onsubmit = async (e) => {
+        e.preventDefault();
+        const username = $('#authRegUsername')?.value.trim();
+        const email = $('#authRegEmail')?.value.trim();
+        const password = $('#authRegPassword')?.value;
+        const confirm = $('#authRegConfirm')?.value;
+        const terms = $('#authTermsCheck')?.checked;
+
+        if (!terms) {
+          return toast(lang === 'th' ? '⚠️ กรุณายอมรับข้อตกลงและกติกาการเล่น 🦴' : 'Please accept terms and rules', 'err');
+        }
+        if (!username || username.length < 3) {
+          return toast(lang === 'th' ? '⚠️ ชื่อผู้ใช้ต้องมีอย่างน้อย 3 ตัวอักษร' : 'Username min 3 chars', 'err');
+        }
+        if (!password || password.length < 4) {
+          return toast(lang === 'th' ? '⚠️ รหัสผ่านต้องมีอย่างน้อย 4 ตัวอักษร' : 'Password min 4 chars', 'err');
+        }
+        if (password !== confirm) {
+          return toast(lang === 'th' ? '⚠️ รหัสผ่านและการยืนยันไม่ตรงกัน' : 'Passwords do not match', 'err');
+        }
+
+        const r = await api('/api/register', { username, password, displayName: username, email });
+        if (r.error) {
+          return toast('⚠️ ' + terr(r.error), 'err');
+        }
+
+        token = r.token;
+        localStorage.setItem('ek_token', token);
+        socket.emit('auth', token);
+        setUser(r.user, r.vault);
+        A.sfx('win');
+        confetti(true);
+        toast(lang === 'th' ? `🎉 ยินดีต้อนรับ ${esc(r.user.displayName)}! สมัครสมาชิกสำเร็จ` : `Welcome ${esc(r.user.displayName)}!`, 'good');
+
+        // Hook for tutorial agent
+        if (typeof window.onNewAccountCreated === 'function') {
+          try {
+            window.onNewAccountCreated(r.user);
+          } catch (err) {
+            console.error('onNewAccountCreated error:', err);
+          }
+        }
+
+        show('home');
+        renderHome();
+      };
+    }
+
+    // Login submit
+    if (authLoginForm) {
+      authLoginForm.onsubmit = async (e) => {
+        e.preventDefault();
+        const username = $('#authLoginUsername')?.value.trim();
+        const password = $('#authLoginPassword')?.value;
+
+        if (!username || !password) {
+          return toast(lang === 'th' ? '⚠️ กรุณากรอกชื่อผู้ใช้และรหัสผ่าน' : 'Please enter username and password', 'err');
+        }
+
+        const r = await api('/api/login', { username, password });
+        if (r.error) {
+          return toast('⚠️ ' + terr(r.error), 'err');
+        }
+
+        token = r.token;
+        localStorage.setItem('ek_token', token);
+        socket.emit('auth', token);
+        setUser(r.user, r.vault);
+        A.sfx('coin');
+        toast('👋 ' + (lang === 'th' ? `ยินดีต้อนรับกลับ ${esc(r.user.displayName)}!` : `Welcome back ${esc(r.user.displayName)}!`), 'good');
+
+        show('home');
+        renderHome();
+      };
+    }
+
+    // BGM footer button
+    const btnBgm = $('#btnFooterBgm');
+    function updateBgmBtn() {
+      if (!btnBgm) return;
+      const on = !!A.opt.sound;
+      btnBgm.innerHTML = on
+        ? `<span class="bgm-icon">🔊</span><span class="bgm-text">${lang === 'th' ? 'เพลงประกอบ: เปิด' : 'BGM: ON'}</span>`
+        : `<span class="bgm-icon">🔇</span><span class="bgm-text">${lang === 'th' ? 'เพลงประกอบ: ปิด' : 'BGM: OFF'}</span>`;
+    }
+    updateBgmBtn();
+
+    if (btnBgm) {
+      btnBgm.onclick = () => {
+        const nextState = !A.opt.sound;
+        A.set('sound', nextState);
+        if (nextState) {
+          A.startBGM();
+        } else {
+          A.stopBGM();
+        }
+        updateBgmBtn();
+      };
+    }
+  }
 
   // ------------------------------------------------------------ BOSS SHIBA MASCOT
   function bossShibaMascotSVG() {
@@ -1452,7 +1645,7 @@
     $('#stVoice').onclick = () => { A.set('voice', !A.opt.voice); syncToggles(); openSettingsModal(); };
     $('#stLang').onclick = () => { lang = lang === 'th' ? 'en' : 'th'; localStorage.setItem('ek_lang', lang); lastSettingsKey = ''; lastSettingsStructKey = ''; applyI18n(); openSettingsModal(); };
     $('#stRules').onclick = openRules;
-    if ($('#stLogout')) $('#stLogout').onclick = async () => { await api('/api/logout', {}); token = ''; localStorage.removeItem('ek_token'); socket.emit('auth', ''); setUser(null); closeModal(); };
+    if ($('#stLogout')) $('#stLogout').onclick = async () => { await api('/api/logout', {}); token = ''; localStorage.removeItem('ek_token'); socket.emit('auth', ''); setUser(null); isGuestSessionActive = false; closeModal(); show('auth'); };
     if ($('#stLogin')) $('#stLogin').onclick = () => { closeModal(); openAuth('login'); };
   }
 
@@ -1802,7 +1995,7 @@
   const bFullGame = $('#btnFullscreenGame'); if (bFullGame) bFullGame.onclick = toggleFullscreen;
 
   const bMatch = $('#btnMatchBrowser'); if (bMatch) bMatch.onclick = openMatchBrowser;
-  const bTutorial = $('#btnTutorial'); if (bTutorial) bTutorial.onclick = () => openTutorialModal(0);
+  const bTutorial = $('#btnTutorial'); if (bTutorial) bTutorial.onclick = () => startTutorialGame();
   const bFriends = $('#btnPlayFriends'); if (bFriends) bFriends.onclick = openPlayFriendsModal;
   const bBot = $('#btnCustomBot'); if (bBot) bBot.onclick = openCustomBotModal;
 
@@ -1943,6 +2136,12 @@
       closeModal();
       A.sfx('coin');
       toast('👋 ' + esc(r.user.displayName));
+      if (reg) {
+        setTimeout(() => {
+          if (window.onNewAccountCreated) window.onNewAccountCreated(r.user);
+          else showNewAccountTutorialPrompt(r.user);
+        }, 500);
+      }
     };
   }
 
@@ -2540,6 +2739,836 @@
     });
     renderChapter(startChapter);
   }
+
+  
+  // ------------------------------------------------------------ 1v1 INTERACTIVE TUTORIAL ENGINE & ONBOARDING
+  let tutorialActive = false;
+  let tutTimers = [];
+  function addTutTimer(fn, delay) {
+    const t = setTimeout(fn, delay);
+    tutTimers.push(t);
+    return t;
+  }
+  function clearTutTimers() {
+    tutTimers.forEach(t => clearTimeout(t));
+    tutTimers = [];
+  }
+
+  const tutorialEngine = {
+    step: 1,
+    substep: '',
+
+    clearHighlights() {
+      $('.tutorial-highlight-target').forEach(el => el.classList.remove('tutorial-highlight-target'));
+      $('.pulse-card-guide').forEach(el => el.classList.remove('pulse-card-guide'));
+    },
+
+    setStep(step, substep = '') {
+      this.step = step;
+      this.substep = substep;
+      this.renderCoach();
+    },
+
+    canDraw() {
+      return (this.step === 1) || (this.step === 3 && this.substep === 'draw');
+    },
+
+    canNope() {
+      return this.step === 4;
+    },
+
+    onCardSelect(uid, el) {
+      const card = S?.me?.hand?.find(c => c.uid === uid);
+      if (!card) return true;
+
+      // Input guard per step
+      if (this.step === 1 || (this.step === 3 && this.substep === 'draw')) {
+        this.wobbleCoach(lang === 'th' ? 'โฮ่ง! ในบทนี้ให้ลองฝึกจั่วการ์ดจบเทิร์นก่อนนะ แตะที่กองการ์ดด้านบนเลย!' : 'Woof! In this step, tap the draw pile above to end your turn!');
+        A.sfx('nope');
+        this.wobbleEl(el);
+        return false;
+      }
+      if (this.step === 2 && card.id !== 'see_the_future') {
+        this.wobbleCoach(lang === 'th' ? 'ในบทนี้ลองใช้การ์ด 🔮 "ดมกลิ่นอนาคต" ดูก่อนนะ!' : 'Try playing 🔮 "See the Future" first!');
+        A.sfx('nope');
+        this.wobbleEl(el);
+        return false;
+      }
+      if (this.step === 3 && this.substep !== 'draw' && card.id !== 'shuffle') {
+        this.wobbleCoach(lang === 'th' ? 'รีบใช้การ์ด 🔀 "สับกอง" เพื่อเปลี่ยนตำแหน่งระเบิดเร็วเข้า!' : 'Play 🔀 "Shuffle" to move the bomb away!');
+        A.sfx('nope');
+        this.wobbleEl(el);
+        return false;
+      }
+      if (this.step === 4) {
+        this.wobbleCoach(lang === 'th' ? 'บ็อบบี้กำลังใช้ Favor! แตะปุ่มสีแดง 🛑 NOPE ตรงกลางจอเพื่อสั่งห้าม!' : 'Tap the red 🛑 NOPE button in the center to cancel Bobby\'s favor!');
+        A.sfx('nope');
+        this.wobbleEl(el);
+        return false;
+      }
+      if (this.step === 5 && card.id !== 'skip') {
+        this.wobbleCoach(lang === 'th' ? 'ในบทนี้ลองใช้การ์ด ⏩ "ข้ามเทิร์น (Skip)" เพื่อหนีการจั่วดูนะ!' : 'Try playing ⏩ "Skip" to end your turn without drawing!');
+        A.sfx('nope');
+        this.wobbleEl(el);
+        return false;
+      }
+      if (this.step === 6 && card.id !== 'tacocat') {
+        this.wobbleCoach(lang === 'th' ? 'เลือกการ์ด 🌮 "ทาโก้แคท" ทั้ง 2 ใบเพื่อเล่นคอมโบไพ่คู่ขโมยการ์ดนะ!' : 'Select both 🌮 "Tacocat" cards to perform a pair steal combo!');
+        A.sfx('nope');
+        this.wobbleEl(el);
+        return false;
+      }
+      if (this.step === 7 && card.id !== 'favor') {
+        this.wobbleCoach(lang === 'th' ? 'ใช้การ์ด 🙏 "ขอร้อง (Favor)" เพื่อบีบให้บ็อบบี้มอบการ์ดให้นะ!' : 'Play 🙏 "Favor" to force Bobby to surrender a card!');
+        A.sfx('nope');
+        this.wobbleEl(el);
+        return false;
+      }
+      if (this.step === 8 && card.id !== 'attack') {
+        this.wobbleCoach(lang === 'th' ? 'ใช้การ์ด ⚡ "โจมตี (Attack)" เพื่อโยนระเบิดให้บ็อบบี้เล่น 2 เทิร์นรวด!' : 'Play ⚡ "Attack" to force Bobby to take 2 consecutive turns!');
+        A.sfx('nope');
+        this.wobbleEl(el);
+        return false;
+      }
+      return true;
+    },
+
+    wobbleEl(el) {
+      if (!el) return;
+      el.style.animation = 'shake 0.4s ease';
+      setTimeout(() => { if (el) el.style.animation = ''; }, 450);
+    },
+
+    wobbleCoach(alertMsg) {
+      const sp = $('#tutSpeechText');
+      if (sp && alertMsg) {
+        const orig = sp.innerHTML;
+        sp.innerHTML = '<span style="color:#f87171;font-weight:bold;">' + esc(alertMsg) + '</span>';
+        setTimeout(() => {
+          if (sp && tutorialActive) sp.innerHTML = orig;
+        }, 2800);
+      }
+      const coach = $('#tutorialCoachOverlay');
+      if (coach) {
+        coach.style.animation = 'shake 0.4s ease';
+        setTimeout(() => { if (coach) coach.style.animation = ''; }, 450);
+      }
+    },
+
+    onDraw() {
+      if (this.step === 1) {
+        this.clearHighlights();
+        A.sfx('draw');
+        sel = [];
+        const drawn = { uid: 'tut_stf_' + Date.now(), id: 'see_the_future' };
+        S.me.hand.push(drawn);
+        S.deckCount--;
+        toast(lang === 'th' ? '🔮 คุณจั่วได้การ์ด "ดมกลิ่นอนาคต" (See the Future)!' : '🔮 Drew "See the Future"!', 'good');
+        renderGame();
+        this.setStep(2);
+        return;
+      }
+
+      if (this.step === 3 && this.substep === 'draw') {
+        this.clearHighlights();
+        A.sfx('draw');
+        sel = [];
+        const drawn = { uid: 'tut_skip_' + Date.now(), id: 'skip' };
+        S.me.hand.push(drawn);
+        S.deckCount--;
+        toast(lang === 'th' ? '⏩ คุณจั่วได้การ์ด "ข้ามเทิร์น" (Skip) อย่างปลอดภัย!' : '⏩ Drew "Skip" safely!', 'good');
+        renderGame();
+        this.setStep(4);
+        this.runStep4BotTurn();
+        return;
+      }
+
+      this.wobbleCoach(lang === 'th' ? '⚠️ เดี๋ยวก่อน! ในขั้นตอนนี้ยังไม่ต้องจั่วการ์ดนะ ลองทำตามคำแนะนำของครูฝึกก่อน!' : 'Hold on! Follow Coach Bobby\'s instructions for this step!');
+      A.sfx('nope');
+    },
+
+    onPlay() {
+      const uids = [...sel];
+      const cards = (S?.me?.hand || []).filter(c => uids.includes(c.uid));
+      if (!cards.length) return;
+
+      // STEP 2: Play see_the_future
+      if (this.step === 2) {
+        if (cards.length !== 1 || cards[0].id !== 'see_the_future') {
+          return this.wobbleCoach(lang === 'th' ? 'ในบทนี้ต้องลงการ์ด 🔮 "ดมกลิ่นอนาคต" นะ!' : 'Please play 🔮 "See the Future"!');
+        }
+        this.clearHighlights();
+        sel = [];
+        S.me.hand = S.me.hand.filter(c => c.uid !== cards[0].uid);
+        S.discardTop = 'see_the_future';
+        A.sfx('play');
+        showCardSpotlight('see_the_future', 'see_the_future', myName());
+        renderGame();
+        this.showPeekModal();
+        return;
+      }
+
+      // STEP 3: Play shuffle
+      if (this.step === 3 && this.substep !== 'draw') {
+        if (cards.length !== 1 || cards[0].id !== 'shuffle') {
+          return this.wobbleCoach(lang === 'th' ? 'ในบทนี้ต้องลงการ์ด 🔀 "สับกอง" นะ!' : 'Please play 🔀 "Shuffle"!');
+        }
+        this.clearHighlights();
+        sel = [];
+        S.me.hand = S.me.hand.filter(c => c.uid !== cards[0].uid);
+        S.discardTop = 'shuffle';
+        A.sfx('shuffle');
+        shakeDeck();
+        showCardSpotlight('shuffle', 'shuffle', myName());
+        renderGame();
+        addTutTimer(() => {
+          this.setStep(3, 'draw');
+        }, 1000);
+        return;
+      }
+
+      // STEP 5: Play skip
+      if (this.step === 5) {
+        if (cards.length !== 1 || cards[0].id !== 'skip') {
+          return this.wobbleCoach(lang === 'th' ? 'ในบทนี้ต้องลงการ์ด ⏩ "ข้ามเทิร์น (Skip)" นะ!' : 'Please play ⏩ "Skip"!');
+        }
+        this.clearHighlights();
+        sel = [];
+        S.me.hand = S.me.hand.filter(c => c.uid !== cards[0].uid);
+        S.discardTop = 'skip';
+        A.sfx('play');
+        showCardSpotlight('skip', 'skip', myName());
+        toast(lang === 'th' ? '⏩ คุณข้ามเทิร์นสำเร็จ! รอดปลอดภัยโดยไม่ต้องจั่วการ์ด!' : '⏩ Turn skipped! Safely ended without drawing!', 'good');
+        renderGame();
+        addTutTimer(() => {
+          this.runStep5BotTurn();
+        }, 1200);
+        return;
+      }
+
+      // STEP 6: Play 2x tacocat (Pair combo)
+      if (this.step === 6) {
+        if (cards.length !== 2 || !cards.every(c => c.id === 'tacocat')) {
+          return this.wobbleCoach(lang === 'th' ? 'ในบทนี้ต้องเลือกการ์ด 🌮 "ทาโก้แคท" ทั้ง 2 ใบนะ!' : 'Please select both 🌮 "Tacocat" cards!');
+        }
+        this.clearHighlights();
+        sel = [];
+        const uidsToRemove = cards.map(c => c.uid);
+        S.me.hand = S.me.hand.filter(c => !uidsToRemove.includes(c.uid));
+        S.discardTop = 'tacocat';
+        A.sfx('play');
+        showCardSpotlight('tacocat', 'pair', myName(), lang === 'th' ? 'ครูฝึกบ็อบบี้' : 'Coach Bobby');
+        renderGame();
+        addTutTimer(() => {
+          const stolen = { uid: 'tut_atk_' + Date.now(), id: 'attack' };
+          S.me.hand.push(stolen);
+          A.sfx('coin');
+          toast(lang === 'th' ? '⚡ คอมโบไพ่คู่สำเร็จ! ขโมยการ์ด ⚡ Attack จากครูฝึกบ็อบบี้มาได้!' : '⚡ Pair Combo! Stole ⚡ Attack from Coach Bobby!', 'good');
+          renderGame();
+          addTutTimer(() => {
+            this.setStep(7);
+          }, 1200);
+        }, 1000);
+        return;
+      }
+
+      // STEP 7: Play favor
+      if (this.step === 7) {
+        if (cards.length !== 1 || cards[0].id !== 'favor') {
+          return this.wobbleCoach(lang === 'th' ? 'ในบทนี้ต้องลงการ์ด 🙏 "ขอร้อง (Favor)" นะ!' : 'Please play 🙏 "Favor"!');
+        }
+        this.clearHighlights();
+        sel = [];
+        S.me.hand = S.me.hand.filter(c => c.uid !== cards[0].uid);
+        S.discardTop = 'favor';
+        A.sfx('play');
+        showCardSpotlight('favor', 'favor', myName(), lang === 'th' ? 'ครูฝึกบ็อบบี้' : 'Coach Bobby');
+        renderGame();
+        addTutTimer(() => {
+          const defuseStolen = { uid: 'tut_def2_' + Date.now(), id: 'defuse' };
+          S.me.hand.push(defuseStolen);
+          A.sfx('coin');
+          toast(lang === 'th' ? '🛠️ บ็อบบี้ถูกบังคับส่งการ์ด 🛠️ Defuse ให้คุณ!' : '🛠️ Bobby surrendered his Defuse card to you!', 'good');
+          renderGame();
+          addTutTimer(() => {
+            this.setStep(8);
+          }, 1400);
+        }, 1000);
+        return;
+      }
+
+      // STEP 8: Play attack
+      if (this.step === 8) {
+        if (cards.length !== 1 || cards[0].id !== 'attack') {
+          return this.wobbleCoach(lang === 'th' ? 'ในบทนี้ต้องลงการ์ด ⚡ "โจมตี (Attack)" นะ!' : 'Please play ⚡ "Attack"!');
+        }
+        this.clearHighlights();
+        sel = [];
+        S.me.hand = S.me.hand.filter(c => c.uid !== cards[0].uid);
+        S.discardTop = 'attack';
+        A.sfx('attack');
+        showCardSpotlight('attack', 'attack', myName(), lang === 'th' ? 'ครูฝึกบ็อบบี้' : 'Coach Bobby');
+        toast(lang === 'th' ? '⚡ โจมตีสำเร็จ! บ็อบบี้โดนบังคับเล่น 2 เทิร์นรวด!' : '⚡ Attack successful! Bobby must take 2 turns!', 'good');
+        renderGame();
+        addTutTimer(() => {
+          this.runStep8FinalShowdown();
+        }, 1400);
+        return;
+      }
+    },
+
+    onNope() {
+      if (this.step !== 4) return;
+      this.clearHighlights();
+      sel = [];
+      const nopeCard = S.me.hand.find(c => c.id === 'nope');
+      if (nopeCard) {
+        S.me.hand = S.me.hand.filter(c => c.uid !== nopeCard.uid);
+      }
+      S.discardTop = 'nope';
+      S.pending = null;
+      A.sfx('nope');
+      showNopeStamp('me_tut');
+      toast(lang === 'th' ? '🛑 NOPE สำเร็จ! ปฏิเสธ Favor ของบ็อบบี้เรียบร้อย!' : '🛑 NOPE! Bobby\'s Favor cancelled!', 'good');
+      renderGame();
+
+      // Bot is now forced to draw to end its turn
+      addTutTimer(() => {
+        S.deckCount--;
+        A.sfx('draw');
+        toast(lang === 'th' ? 'ครูฝึกบ็อบบี้จั่วการ์ดจบเทิร์นอย่างปลอดภัย' : 'Coach Bobby drew safely to end his turn.');
+        addTutTimer(() => {
+          S.turnId = 'me_tut';
+          renderGame();
+          this.setStep(5);
+        }, 1200);
+      }, 1400);
+    },
+
+    showPeekModal() {
+      const peekOverlay = document.createElement('div');
+      peekOverlay.className = 'tut-peek-overlay';
+      peekOverlay.id = 'tutPeekOverlay';
+      peekOverlay.innerHTML = `
+        <div class="tut-peek-box">
+          <h3 style="color:#c084fc;font-size:1.4rem;margin:0 0 8px;">🔮 ${lang === 'th' ? 'ดมกลิ่นอนาคต: การ์ด 3 ใบบนสุด' : 'See the Future: Top 3 Cards'}</h3>
+          <p style="color:#cbd5e1;font-size:0.95rem;margin:4px 0 16px;">
+            ${lang === 'th' ? 'แอบส่องการ์ดที่จะถูกจั่วในลำดับถัดไปจากซ้ายไปขวา:' : 'Intel from the top of the draw deck:'}
+          </p>
+          <div class="tut-peek-cards">
+            <div style="text-align:center;">
+              <small style="color:#ef4444;font-weight:900;display:block;margin-bottom:4px;">1. ${lang === 'th' ? 'บนสุด (Danger!)' : 'Top (Danger!)'}</small>
+              ${cardHTML('exploding_kitten', { cls: 'mini' })}
+            </div>
+            <div style="text-align:center;">
+              <small style="color:#38bdf8;font-weight:800;display:block;margin-bottom:4px;">2. ${lang === 'th' ? 'ใบที่ 2' : '#2'}</small>
+              ${cardHTML('shuffle', { cls: 'mini' })}
+            </div>
+            <div style="text-align:center;">
+              <small style="color:#38bdf8;font-weight:800;display:block;margin-bottom:4px;">3. ${lang === 'th' ? 'ใบที่ 3' : '#3'}</small>
+              ${cardHTML('skip', { cls: 'mini' })}
+            </div>
+          </div>
+          <div style="background:rgba(239,68,68,0.2);border:1px dashed #ef4444;color:#fca5a5;padding:8px 14px;border-radius:10px;font-size:0.9rem;font-weight:bold;margin-bottom:16px;">
+            🚨 ${lang === 'th' ? 'คำเตือนฉุกเฉิน! การ์ดใบถัดไปคือ หมาระเบิด 100%!' : 'EMERGENCY: The next card is an Exploding Dog!'}
+          </div>
+          <button class="btn gold big" id="btnTutPeekClose" style="padding:10px 28px;">
+            ${lang === 'th' ? 'เข้าใจแล้ว / วางแผนรับมือ ➔' : 'Got it! / Prepare Countermeasure ➔'}
+          </button>
+        </div>
+      `;
+      document.body.appendChild(peekOverlay);
+
+      const closePeek = () => {
+        if (!peekOverlay.parentElement) return;
+        peekOverlay.remove();
+        // Give player shuffle card
+        const shuf = { uid: 'tut_shuf_' + Date.now(), id: 'shuffle' };
+        S.me.hand.push(shuf);
+        toast(lang === 'th' ? '🔀 ได้รับการ์ด "สับกอง" (Shuffle) จากครูฝึกบ็อบบี้!' : '🔀 Received "Shuffle" from Coach Bobby!', 'good');
+        renderGame();
+        this.setStep(3);
+      };
+
+      $('#btnTutPeekClose').onclick = closePeek;
+      addTutTimer(closePeek, 5000);
+    },
+
+    runStep4BotTurn() {
+      S.turnId = 'bot_bobby';
+      renderGame();
+
+      addTutTimer(() => {
+        if (!tutorialActive) return;
+        // Bot plays favor
+        S.discardTop = 'favor';
+        A.sfx('play');
+        showCardSpotlight('favor', 'favor', lang === 'th' ? 'ครูฝึกบ็อบบี้' : 'Coach Bobby', myName());
+        S.pending = {
+          playerId: 'bot_bobby',
+          targetId: 'me_tut',
+          effect: 'favor',
+          cardIds: ['favor'],
+          nopes: 0
+        };
+
+        // Give player Nope card
+        const nope = { uid: 'tut_nope_' + Date.now(), id: 'nope' };
+        S.me.hand.push(nope);
+        renderGame();
+        this.renderCoach();
+      }, 1200);
+    },
+
+    runStep5BotTurn() {
+      S.turnId = 'bot_bobby';
+      renderGame();
+      addTutTimer(() => {
+        if (!tutorialActive) return;
+        S.deckCount--;
+        A.sfx('draw');
+        toast(lang === 'th' ? 'ครูฝึกบ็อบบี้จั่วการ์ดจบเทิร์นอย่างปลอดภัย' : 'Coach Bobby drew safely to end his turn.');
+        addTutTimer(() => {
+          S.turnId = 'me_tut';
+          // Give player second tacocat for pair combo
+          const taco2 = { uid: 'tut_taco2_' + Date.now(), id: 'tacocat' };
+          S.me.hand.push(taco2);
+          renderGame();
+          this.setStep(6);
+        }, 1200);
+      }, 1200);
+    },
+
+    runStep8FinalShowdown() {
+      S.turnId = 'bot_bobby';
+      S.turnsLeft = 2;
+      renderGame();
+
+      // Bot Turn 1:
+      addTutTimer(() => {
+        if (!tutorialActive) return;
+        S.deckCount--;
+        A.sfx('alarm');
+        flash('rgba(239,68,68,0.7)', true);
+        toast('🚨 BOMB DRAWN! ครูฝึกบ็อบบี้จั่วโดนหมาระเบิด!', 'err');
+        renderGame();
+
+        addTutTimer(() => {
+          if (!tutorialActive) return;
+          // Bot uses its last defuse
+          A.sfx('defuse');
+          showDefuseStamp('bot_bobby');
+          toast('🛠️ ครูฝึกบ็อบบี้ใช้การ์ดกู้ระเบิดใบสุดท้าย และยัดระเบิดไว้บนสุดตามเดิม!', 'warn');
+          S.deckCount++;
+          renderGame();
+
+          // Bot Turn 2:
+          addTutTimer(() => {
+            if (!tutorialActive) return;
+            S.turnsLeft = 1;
+            renderGame();
+            toast('⚡ บ็อบบี้ยังไม่รอด! โดน Attack บังคับต้องจั่วอีก 1 ใบ!', 'warn');
+
+            addTutTimer(() => {
+              if (!tutorialActive) return;
+              // Bot draws bomb again!
+              S.deckCount--;
+              flash('rgba(239,68,68,0.85)', true);
+              A.sfx('alarm');
+              toast('🚨 หมาระเบิดอีกรอบ! บ็อบบี้ไม่มี Defuse เหลือแล้ว!', 'err');
+              renderGame();
+
+              addTutTimer(() => {
+                if (!tutorialActive) return;
+                // BOOM!
+                A.stopHeartbeat();
+                A.sfx('boom');
+                flash('rgba(255,80,0,0.95)', true);
+                const bot = S.players.find(p => p.id === 'bot_bobby');
+                if (bot) { bot.alive = false; bot.elimReason = 'exploded'; }
+                S.state = 'ENDED';
+                renderGame();
+
+                addTutTimer(() => {
+                  this.showVictoryModal();
+                }, 1600);
+              }, 1800);
+            }, 1800);
+          }, 2400);
+        }, 2200);
+      }, 1500);
+    },
+
+    showVictoryModal() {
+      confetti();
+      A.sfx('win');
+      localStorage.setItem('ek_tutorial_completed', 'true');
+
+      // Award rewards
+      if (token) {
+        api('/api/tutorial/complete', {}).then(res => {
+          if (res.user) setUser(res.user, res.vault);
+        }).catch(console.error);
+      } else {
+        const c = parseInt(localStorage.getItem('ek_guest_coins') || '100') + 200;
+        const d = parseInt(localStorage.getItem('ek_guest_diamonds') || '20') + 15;
+        localStorage.setItem('ek_guest_coins', c.toString());
+        localStorage.setItem('ek_guest_diamonds', d.toString());
+        const inv = JSON.parse(localStorage.getItem('ek_guest_inventory') || '[]');
+        if (!inv.includes('title_trained_pup')) inv.push('title_trained_pup');
+        localStorage.setItem('ek_guest_inventory', JSON.stringify(inv));
+        localStorage.setItem('ek_guest_title', 'title_trained_pup');
+        renderUserChip();
+      }
+
+      const isTh = lang === 'th';
+      const modalHTML = `
+        <div class="tutorial-victory-modal">
+          <div class="tut-victory-crown">🎓🏆✨</div>
+          <h2 style="color:#34d399;font-size:1.8rem;margin:0 0 6px;">
+            ${isTh ? '🎓 บัณฑิตจบการฝึกสอนหมาป่วน!' : '🎓 Puppy Academy Graduate!'}
+          </h2>
+          <p class="tut-victory-sub" style="color:#cbd5e1;font-size:1.05rem;max-width:540px;margin:8px auto 18px;line-height:1.5;">
+            ${isTh
+              ? 'ยินดีด้วย! คุณผ่านหลักสูตรฝึกสอน 1v1 ครบทุกกระบวนท่า ได้เรียนรู้วิธีการจั่วการ์ด, ดูอนาคต, สับกอง, Nope, ข้ามเทิร์น, คอมโบไพ่คู่ และการใช้ Attack พิชิตคู่แข่งแล้ว!'
+              : 'Congratulations! You mastered all cards and tactics: peeking future, shuffles, Nope counter, skip, pair steal combos, and the deadly attack finisher!'}
+          </p>
+          <div class="tut-rewards-box">
+            <div class="tut-reward-item">
+              <span class="rw-icon">🪙</span>
+              <b class="rw-val">+200</b>
+              <small class="rw-lbl">${isTh ? 'เหรียญทอง' : 'Coins'}</small>
+            </div>
+            <div class="tut-reward-item">
+              <span class="rw-icon">💎</span>
+              <b class="rw-val">+15</b>
+              <small class="rw-lbl">${isTh ? 'เพชรล้ำค่า' : 'Diamonds'}</small>
+            </div>
+            <div class="tut-reward-item highlight-title">
+              <span class="rw-icon">🎓</span>
+              <b class="rw-val" style="font-size:1rem;color:#c084fc;">เด็กเนิร์ดตำราหมา</b>
+              <small class="rw-lbl">${isTh ? 'ฉายาพิเศษ (RARE)' : 'Special Title'}</small>
+            </div>
+          </div>
+          <div class="tut-victory-btns" style="display:flex;flex-direction:column;gap:10px;margin-top:20px;">
+            <button class="btn big gold pulse" id="btnTutVictoryLobby" style="font-size:1.15rem;padding:14px;border-radius:16px;">
+              🏠 ${isTh ? 'กลับสู่ล็อบบี้หลัก (GO TO LOBBY)' : 'GO TO LOBBY'}
+            </button>
+            <button class="btn" id="btnTutVictoryQuickPlay" style="background:rgba(255,255,255,0.08);color:#cbd5e1;padding:10px;border-radius:14px;">
+              ⚔️ ${isTh ? 'เริ่มแมตช์จริง 1v1 กับบอท (1v1 BOT DUEL)' : 'PRACTICE 1v1 BOT DUEL'}
+            </button>
+          </div>
+        </div>
+      `;
+
+      openModal(modalHTML, { locked: true, cls: 'medium' });
+
+      $('#btnTutVictoryLobby').onclick = () => {
+        closeModal(true);
+        exitTutorialGame();
+      };
+
+      $('#btnTutVictoryQuickPlay').onclick = () => {
+        closeModal(true);
+        exitTutorialGame();
+        setTimeout(() => {
+          toast(lang === 'th' ? '🎮 กำลังเข้าสู่แมตช์ 1v1...' : 'Entering 1v1 match...', 'good');
+          socket.emit('quickSolo', { name: myName(), avatar: myAvatar(), frame: myFrame(), skin: mySkin(), title: myTitle(), bots: 1, settings: { version: homeVersion || 'original' } });
+        }, 300);
+      };
+    },
+
+    renderCoach() {
+      let overlay = $('#tutorialCoachOverlay');
+      if (!overlay) return;
+      overlay.classList.remove('hidden');
+
+      const isTh = lang === 'th';
+      let title = '';
+      let text = '';
+      let guide = '';
+
+      this.clearHighlights();
+
+      switch (this.step) {
+        case 1:
+          title = isTh ? 'บทที่ 1/8: การจั่วการ์ดจบเทิร์น' : 'Lesson 1/8: Draw to End Turn';
+          text = isTh
+            ? 'ยินดีต้อนรับสู่สนามฝึกหมาระเบิด! 🎓 <b>กฎเหล็กข้อสำคัญที่สุด:</b> ในแต่ละเทิร์น คุณต้อง <b>"จั่วการ์ด 1 ใบจากกอง"</b> เพื่อจบเทิร์น แต่ถ้าเผลอจั่วได้หมาระเบิด คุณจะแพ้ทันที!'
+            : 'Welcome to Exploding Dog 1v1 Training! 🎓 <b>The Golden Rule:</b> On each turn, you must <b>"Draw a Card"</b> to end your turn. But if you draw a bomb without Defuse, you lose immediately!';
+          guide = isTh ? '👉 แตะที่ <b>กองการ์ด (DRAW PILE)</b> ด้านบนเพื่อจั่วการ์ดใบแรก...' : '👉 Tap the <b>DRAW PILE</b> above to draw your first card...';
+          $('#deckPile')?.classList.add('tutorial-highlight-target');
+          break;
+
+        case 2:
+          title = isTh ? 'บทที่ 2/8: ดมกลิ่นอนาคต' : 'Lesson 2/8: See the Future';
+          text = isTh
+            ? 'ยอดเยี่ยม! คุณได้การ์ด <b>🔮 ดมกลิ่นอนาคต (See the Future)</b> การ์ดนี้จะแอบส่องการ์ด 3 ใบบนสุดของกอง ทำให้คุณรู้ล่วงหน้าว่ามีระเบิดซุ่มรออยู่หรือไม่!'
+            : 'Awesome! You drew <b>🔮 See the Future</b>! This lets you peek at the top 3 cards so you can see if a bomb is waiting!';
+          guide = isTh ? '👉 แตะเลือกการ์ด <b>See the Future</b> ในมือ แล้วกดปุ่ม <b>🚀 ลงไพ่</b>' : '👉 Select <b>See the Future</b> in your hand, then tap <b>🚀 Play Card</b>';
+          this.highlightCardInHand('see_the_future');
+          break;
+
+        case 3:
+          if (this.substep === 'draw') {
+            title = isTh ? 'บทที่ 3/8: จั่วการ์ดหลังสับกอง' : 'Lesson 3/8: Safe Draw After Shuffle';
+            text = isTh
+              ? 'การ์ดทั้งกองถูกสับเปลี่ยนตำแหน่งเรียบร้อยแล้ว! ตอนนี้ระเบิดย้ายตำแหน่งไปแล้ว จั่วการ์ดจบเทิร์นได้อย่างปลอดภัย!'
+              : 'Deck reshuffled successfully! The bomb moved away from the top. Tap the deck to draw safely!';
+            guide = isTh ? '👉 แตะที่ <b>กองการ์ด (DRAW PILE)</b> เพื่อจั่วการ์ดจบเทิร์น...' : '👉 Tap the <b>DRAW PILE</b> to end your turn safely...';
+            $('#deckPile')?.classList.add('tutorial-highlight-target');
+          } else {
+            title = isTh ? 'บทที่ 3/8: สับกองหนีระเบิด' : 'Lesson 3/8: Shuffle Away Danger';
+            text = isTh
+              ? '🚨 อันตรายมาก! ใบถัดไปคือหมาระเบิดตูมตามแน่ๆ! ครูฝึกมอบการ์ด <b>🔀 สับกอง (Shuffle)</b> ให้คุณ 1 ใบ รีบใช้สับกองเพื่อเปลี่ยนชะตากรรมด่วน!'
+              : '🚨 Danger! An Exploding Dog was on top! Coach Bobby gave you a <b>🔀 Shuffle</b> card. Play it to scramble the deck immediately!';
+            guide = isTh ? '👉 เลือกการ์ด <b>Shuffle</b> ในมือ แล้วกดปุ่ม <b>🚀 ลงไพ่</b>' : '👉 Select <b>Shuffle</b> in your hand and tap <b>🚀 Play Card</b>';
+            this.highlightCardInHand('shuffle');
+          }
+          break;
+
+        case 4:
+          title = isTh ? 'บทที่ 4/8: ขัดจังหวะด้วย NOPE' : 'Lesson 4/8: Counter with NOPE';
+          text = isTh
+            ? '🚨 ระวัง! บ็อบบี้กำลังใช้การ์ด <b>🙏 Favor (ขอร้อง)</b> เพื่อบังคับขโมยการ์ดในมือคุณ! อย่ายอมแพ้! นี่คือการ์ด <b>🛑 NOPE</b> ใช้สกัดกั้นทันที!'
+            : '🚨 Warning! Bobby played <b>🙏 Favor</b> to take a card from your hand! Don\'t let him! Here is a <b>🛑 NOPE</b> card to block him!';
+          guide = isTh ? '👉 แตะปุ่มสีแดง <b>🛑 NOPE</b> ตรงกลางจอเพื่อสั่งห้ามบ็อบบี้!' : '👉 Tap the red <b>🛑 NOPE</b> button in the center to cancel Bobby!';
+          $('#btnNope')?.classList.add('tutorial-highlight-target');
+          break;
+
+        case 5:
+          title = isTh ? 'บทที่ 5/8: ข้ามเทิร์นชิ่งหนี' : 'Lesson 5/8: Skip Turn Escape';
+          text = isTh
+            ? 'ตาคุณแล้ว! ในสถานการณ์ที่คุณไม่ต้องการเสี่ยงจั่วการ์ด คุณสามารถใช้การ์ด <b>⏩ ข้ามเทิร์น (Skip)</b> เพื่อจบเทิร์นทันทีโดย <b>ไม่ต้องจั่วการ์ดจากกอง</b>!'
+            : 'Your turn! When you don\'t want to risk drawing, play <b>⏩ Skip</b> to end your turn immediately <b>without drawing any card</b>!';
+          guide = isTh ? '👉 เลือกการ์ด <b>Skip</b> ในมือ แล้วกดปุ่ม <b>🚀 ลงไพ่</b>' : '👉 Select <b>Skip</b> in hand and tap <b>🚀 Play Card</b>';
+          this.highlightCardInHand('skip');
+          break;
+
+        case 6:
+          title = isTh ? 'บทที่ 6/8: คอมโบการ์ดแมวคู่' : 'Lesson 6/8: Pair Cat Combo';
+          text = isTh
+            ? 'รู้หรือไม่? การ์ดแมวสามารถจับคู่ 2 ใบเหมือนกัน (Pair) เพื่อ <b>ขโมยการ์ด 1 ใบจากมือคู่แข่ง</b> ได้! ครูฝึกมอบการ์ด ทาโก้แคท ให้คุณอีก 1 ใบ ลองจับคู่ขโมยการ์ดบ็อบบี้เลย!'
+            : 'Did you know? Matching 2 identical cat cards (Pair Combo) lets you <b>steal a card from your opponent</b>! Coach Bobby gave you a 2nd Tacocat. Select both to steal from Bobby!';
+          guide = isTh ? '👉 เลือกการ์ด <b>Tacocat ทั้ง 2 ใบ</b> ในมือ แล้วกด <b>🚀 ลงไพ่คู่</b>' : '👉 Select <b>both Tacocats</b> in hand and tap <b>🚀 Play Pair Combo</b>';
+          this.highlightCardInHand('tacocat', true);
+          break;
+
+        case 7:
+          title = isTh ? 'บทที่ 7/8: บังคับส่งการ์ดด้วย Favor' : 'Lesson 7/8: Force Card with Favor';
+          text = isTh
+            ? 'คราวนี้ถึงตาคุณใช้การ์ด <b>🙏 ขอร้อง (Favor)</b> บ้าง! การ์ดนี้จะบังคับให้คู่ต่อสู้ต้องส่งการ์ดในมือมาให้คุณ 1 ใบ! ครูฝึกเตรียมการ์ด Favor ให้คุณแล้ว ลองใช้เลย!'
+            : 'Now it\'s your turn to play <b>🙏 Favor</b>! This forces your rival to hand over a card to you! Play Favor on Bobby now!';
+          guide = isTh ? '👉 เลือกการ์ด <b>Favor</b> ในมือ แล้วกดปุ่ม <b>🚀 ลงไพ่</b>' : '👉 Select <b>Favor</b> in hand and tap <b>🚀 Play Card</b>';
+          this.highlightCardInHand('favor');
+          break;
+
+        case 8:
+          title = isTh ? 'บทที่ 8/8: เผด็จศึกด้วย Attack' : 'Lesson 8/8: Strike with Attack';
+          text = isTh
+            ? '💣 หมาระเบิดอยู่ที่บนสุดของกองจั่วแล้ว! โอกาสเผด็จศึกมาถึงแล้ว! ใช้การ์ด <b>⚡ โจมตี (Attack)</b> เพื่อจบเทิร์นคุณทันที และ <b>โยนเคราะห์ให้บ็อบบี้ต้องเล่น 2 เทิร์นรวด</b>!'
+            : '💣 The Exploding Dog is right on top! Play <b>⚡ Attack</b> to immediately end your turn and <b>force Bobby to take 2 consecutive turns</b>! Close the game!';
+          guide = isTh ? '👉 เลือกการ์ด <b>Attack</b> ในมือ แล้วกดปุ่ม <b>🚀 ลงไพ่</b>' : '👉 Select <b>Attack</b> in hand and tap <b>🚀 Play Card</b>';
+          this.highlightCardInHand('attack');
+          break;
+      }
+
+      overlay.innerHTML = `
+        <div class="coach-container">
+          <div class="coach-avatar-wrap">
+            <div class="coach-avatar">🎓🐶</div>
+            <div class="coach-badge">COACH BOBBY</div>
+          </div>
+          <div class="coach-bubble">
+            <div class="coach-bubble-header">
+              <span class="coach-step-indicator" id="tutStepIndicator">${title}</span>
+              <button class="tutorial-exit-btn" id="btnTutExit" title="ออกจากการฝึก">🚪 ${isTh ? 'ออกจากการฝึก' : 'Exit Training'}</button>
+            </div>
+            <div class="coach-speech-text" id="tutSpeechText">${text}</div>
+            <div class="coach-action-guide" id="tutActionGuide">${guide}</div>
+          </div>
+        </div>
+      `;
+
+      $('#btnTutExit').onclick = () => {
+        openModal(`
+          <div style="text-align:center;padding:12px;">
+            <h3>🚪 ${isTh ? 'ต้องการออกจากการฝึกสอนหรือไม่?' : 'Exit Training Mode?'}</h3>
+            <p style="color:#cbd5e1;margin:10px 0 20px;">
+              ${isTh ? 'คุณสามารถกลับมาฝึกสอนใหม่ได้ตลอดเวลาจากปุ่มบนหน้าหลัก' : 'You can restart the tutorial anytime from the home screen.'}
+            </p>
+            <div style="display:flex;gap:12px;justify-content:center;">
+              <button class="btn red" id="btnConfirmExitTut">${isTh ? 'ออกจากการฝึก' : 'Exit to Lobby'}</button>
+              <button class="btn gold" id="btnResumeTut">${isTh ? 'ฝึกต่อ' : 'Continue'}</button>
+            </div>
+          </div>
+        `);
+        $('#btnConfirmExitTut').onclick = () => {
+          closeModal(true);
+          exitTutorialGame();
+        };
+        $('#btnResumeTut').onclick = () => closeModal(true);
+      };
+    },
+
+    highlightCardInHand(cardId, allMatches = false) {
+      const cards = $('#hand .card');
+      let found = false;
+      cards.forEach(c => {
+        if (c.dataset.id === cardId && (!found || allMatches)) {
+          c.classList.add('tutorial-highlight-target', 'pulse-card-guide');
+          found = true;
+        }
+      });
+      $('#btnPlayAction')?.classList.add('pulse-card-guide');
+    }
+  };
+
+  function startTutorialGame() {
+    clearTutTimers();
+    tutorialActive = true;
+
+    const myId = 'me_tut';
+    const botId = 'bot_bobby';
+    const pName = myName();
+    const pAvatar = myAvatar();
+    const pFrame = myFrame();
+    const pSkin = mySkin();
+    const pTitle = myTitle();
+
+    S = {
+      code: 'TUTORIAL',
+      state: 'PLAYING',
+      phase: 'turn',
+      direction: 1,
+      deckCount: 16,
+      bombsLeft: 1,
+      discardTop: null,
+      faceUp: [],
+      turnsLeft: 1,
+      turnId: myId,
+      turnDeadline: Date.now() + 99999999,
+      log: [
+        { t: 'game_start' },
+        { t: 'turn', pid: myId, name: pName }
+      ],
+      players: [
+        {
+          id: myId,
+          name: pName,
+          avatar: pAvatar,
+          frame: pFrame,
+          skin: pSkin,
+          title: pTitle,
+          alive: true,
+          handCount: 3,
+          isBot: false,
+          rp: 100
+        },
+        {
+          id: botId,
+          name: lang === 'th' ? 'ครูฝึกบ็อบบี้' : 'Coach Bobby',
+          avatar: 'av_shiba_sensei',
+          frame: 'frame_gold',
+          skin: '',
+          title: 'title_trained_pup',
+          alive: true,
+          handCount: 3,
+          isBot: true,
+          rp: 999
+        }
+      ],
+      me: {
+        id: myId,
+        name: pName,
+        avatar: pAvatar,
+        frame: pFrame,
+        skin: pSkin,
+        title: pTitle,
+        alive: true,
+        isHost: true,
+        rp: 100,
+        hand: [
+          { uid: 'tut_defuse_1', id: 'defuse' },
+          { uid: 'tut_taco_1', id: 'tacocat' },
+          { uid: 'tut_rain_1', id: 'rainbow_cat' }
+        ]
+      },
+      pending: null,
+      prompt: null
+    };
+
+    sel = [];
+    show('game');
+    renderGame();
+    tutorialEngine.setStep(1);
+  }
+
+  function exitTutorialGame() {
+    clearTutTimers();
+    tutorialActive = false;
+    const overlay = $('#tutorialCoachOverlay');
+    if (overlay) overlay.classList.add('hidden');
+    const peek = $('#tutPeekOverlay');
+    if (peek) peek.remove();
+    tutorialEngine.clearHighlights();
+    A.stopHeartbeat();
+    A.stopFuse();
+    document.body.classList.remove('emergency-alarm');
+    S = null;
+    show('home');
+    renderHome();
+    renderUserChip();
+  }
+
+  function showNewAccountTutorialPrompt(u) {
+    const isTh = lang === 'th';
+    const modalHTML = `
+      <div class="tutorial-onboarding-modal">
+        <div class="tut-onboarding-icon">🎓🐶</div>
+        <h2 style="color:#fbbf24;font-size:1.6rem;margin:0 0 8px;">
+          ${isTh ? 'ยินดีต้อนรับสู่หมาระเบิด!' : 'Welcome to Exploding Dog!'}
+        </h2>
+        <p class="tut-onboarding-text" style="color:#f1f5f9;font-size:1.05rem;line-height:1.5;max-width:520px;margin:10px auto 16px;">
+          ${isTh
+            ? '🎓 ยินดีต้อนรับสู่หมาระเบิด! คุณเป็นผู้เล่นใหม่ ต้องการเข้าสู่โหมดฝึกสอนเล่น 1v1 กับบอทเพื่อเรียนรู้วิธีเล่นและการ์ดทั้งหมดหรือไม่?'
+            : '🎓 Welcome to Exploding Dog! You are a new player. Would you like to enter the 1v1 interactive tutorial with Coach Bobby to learn how to play and master all cards?'}
+        </p>
+        <div class="tut-reward-preview">
+          <div class="tut-reward-title" style="color:#fbbf24;font-weight:800;font-size:0.95rem;">
+            🎁 ${isTh ? 'ของรางวัลเมื่อสำเร็จหลักสูตร:' : 'Graduation Rewards:'}
+          </div>
+          <div class="tut-reward-chips">
+            <span class="tut-reward-chip">🪙 +200 ${isTh ? 'เหรียญ' : 'Coins'}</span>
+            <span class="tut-reward-chip">💎 +15 ${isTh ? 'เพชร' : 'Diamonds'}</span>
+            <span class="tut-reward-chip">🎓 ${isTh ? 'ฉายา: เด็กเนิร์ดตำราหมา' : 'Title: Trained Pup'}</span>
+          </div>
+        </div>
+        <div class="tut-onboarding-actions" style="display:flex;flex-direction:column;gap:10px;margin-top:20px;">
+          <button class="btn big gold pulse" id="btnStartTutorialAction" style="font-size:1.15rem;padding:14px;border-radius:16px;">
+            🎓 ${isTh ? 'เข้าสู่โหมดฝึกสอน (START TUTORIAL)' : 'START TUTORIAL (RECOMMENDED)'}
+          </button>
+          <button class="btn" id="btnSkipTutorialAction" style="background:rgba(255,255,255,0.08);color:#94a3b8;border-radius:14px;padding:10px;">
+            🏠 ${isTh ? 'ข้ามไปยังล็อบบี้หลัก (SKIP TO LOBBY)' : 'SKIP TO LOBBY'}
+          </button>
+        </div>
+      </div>
+    `;
+
+    openModal(modalHTML, { cls: 'medium' });
+
+    $('#btnStartTutorialAction').onclick = () => {
+      closeModal(true);
+      startTutorialGame();
+    };
+
+    $('#btnSkipTutorialAction').onclick = () => {
+      closeModal(true);
+      show('home');
+    };
+  }
+
+  window.onNewAccountCreated = (u) => showNewAccountTutorialPrompt(u);
 
   function openRules() {
     const vers = Object.entries(VERSIONS).map(([id, v]) => `<div class="ver-card"><h4>${v.icon} ${esc(v.name[lang])}</h4><p>${esc(v.desc[lang])}</p></div>`).join('');
@@ -3275,6 +4304,9 @@
       if (!wasMode) {
         // Clean tap / click: toggle selection instantly without erratic sliding
         const u = el.dataset.uid;
+        if (tutorialActive && typeof tutorialEngine !== 'undefined' && !tutorialEngine.onCardSelect(u, el)) {
+          return;
+        }
         sel = sel.includes(u) ? sel.filter(x => x !== u) : [...sel, u];
         el.classList.toggle('sel', sel.includes(u));
         A.sfx('select');
@@ -3386,6 +4418,7 @@
   });
 
   function canNopeNow() {
+    if (tutorialActive && typeof tutorialEngine !== 'undefined') return tutorialEngine.canNope();
     if (!S || !S.pending || S.phase !== 'nope') return false;
     const m = me();
     if (!m || !m.alive) return false;
@@ -3399,12 +4432,14 @@
 
   let drawActionLock = false;
   function canDrawNow() {
+    if (tutorialActive && typeof tutorialEngine !== 'undefined') return tutorialEngine.canDraw();
     if (!S || !S.me || drawActionLock) return false;
     const m = me();
     return S.state === 'PLAYING' && S.turnId === m?.id && m?.alive && S.phase === 'turn';
   }
 
   function doDraw() {
+    if (tutorialActive && typeof tutorialEngine !== 'undefined') return tutorialEngine.onDraw();
     if (!canDrawNow() || drawActionLock) return;
     drawActionLock = true;
     setTimeout(() => { drawActionLock = false; }, 2500);
@@ -3414,6 +4449,7 @@
   }
 
   function doQuickNope() {
+    if (tutorialActive && typeof tutorialEngine !== 'undefined') return tutorialEngine.onNope();
     if (!canNopeNow()) return;
     const c = S?.me?.hand?.find(x => x.id === 'nope');
     if (c) {
@@ -3424,6 +4460,7 @@
   }
 
   function doPlay() {
+    if (tutorialActive && typeof tutorialEngine !== 'undefined') return tutorialEngine.onPlay();
     if (!S || !S.me) return;
     const m = me();
     const canAct = S.state === 'PLAYING' && S.turnId === m?.id && m?.alive && S.phase === 'turn';
@@ -4270,7 +5307,18 @@
   (async () => {
     imgMap = await fetch('/api/card-images').then(r => r.json()).catch(() => ({}));
     if (imgMap.card_back) document.documentElement.style.setProperty('--back-img', `url(${imgMap.card_back})`);
-    syncToggles(); await loadMe(); applyI18n();
+    syncToggles();
+    await loadMe();
+    applyI18n();
+    initAuthScreen();
+
+    if (!user && !isGuestSessionActive) {
+      show('auth');
+    } else {
+      show('home');
+      renderHome();
+    }
+
     const room = new URLSearchParams(location.search).get('room');
     if (room) {
       const code = room.trim().toUpperCase();

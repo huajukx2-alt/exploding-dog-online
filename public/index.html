@@ -15,8 +15,467 @@
 <body>
   <div id="bg-fx"></div>
 
+    <!-- ================= AUTH SCREEN (LOGIN & REGISTER) ================= -->
+  <section id="screen-auth" class="screen active">
+    <!-- Atmosphere & Sunburst Layer -->
+    <div class="auth-bg-fx">
+      <div class="auth-sunburst"></div>
+      <div class="auth-ambient-particles">
+        <span class="auth-float-bone b1">🦴</span>
+        <span class="auth-float-bone b2">🦴</span>
+        <span class="auth-float-bone b3">🦴</span>
+        <span class="auth-float-bone b4">🦴</span>
+        <span class="auth-float-sparkle s1">✨</span>
+        <span class="auth-float-sparkle s2">✨</span>
+        <span class="auth-float-sparkle s3">✨</span>
+        <span class="auth-float-sparkle s4">✨</span>
+        <span class="auth-float-paw p1">🐾</span>
+        <span class="auth-float-paw p2">🐾</span>
+        <span class="auth-float-confetti c1"></span>
+        <span class="auth-float-confetti c2"></span>
+        <span class="auth-float-confetti c3"></span>
+        <span class="auth-float-confetti c4"></span>
+        <span class="auth-float-confetti c5"></span>
+      </div>
+
+      <!-- Floating Cards matching user reference image -->
+      <div class="auth-floating-cards">
+        <!-- Left Side Cards Column -->
+        <div class="card-float-col col-left">
+          <!-- 1. Corgi puppy card -->
+          <div class="auth-card-fan card-corgi" style="--rot: -14deg;">
+            <div class="fc-inner gold-card">
+              <span class="fc-corner-icon">🐾</span>
+              <div class="fc-graphic">🐶</div>
+              <div class="fc-label">CORGI</div>
+            </div>
+          </div>
+          <!-- 2. Dark red NO! card -->
+          <div class="auth-card-fan card-nope-dark" style="--rot: -7deg;">
+            <div class="fc-inner red-card">
+              <div class="fc-graphic">🐕</div>
+              <div class="fc-title-bold">NO!</div>
+              <div class="fc-paw-row">🐾 🐾</div>
+            </div>
+          </div>
+          <!-- 3. Blue circle NO! card -->
+          <div class="auth-card-fan card-nope-blue" style="--rot: -18deg;">
+            <div class="fc-inner blue-card">
+              <div class="fc-no-sign">NO!</div>
+              <div class="fc-bottom-paws">🐾</div>
+            </div>
+          </div>
+          <!-- 4. Hugging puppy card -->
+          <div class="auth-card-fan card-hug" style="--rot: -9deg;">
+            <div class="fc-inner brown-card">
+              <div class="fc-graphic">🦮❤️</div>
+              <div class="fc-label-small">FRIENDS</div>
+            </div>
+          </div>
+          <!-- 5. Bomb card -->
+          <div class="auth-card-fan card-bomb-left" style="--rot: -12deg;">
+            <div class="fc-inner orange-card">
+              <div class="fc-bomb-art">💣<span class="fc-spark">💥</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Side Cards Column -->
+        <div class="card-float-col col-right">
+          <!-- 1. Black puppy bomb card -->
+          <div class="auth-card-fan card-black-pup" style="--rot: 15deg;">
+            <div class="fc-inner gold-card">
+              <span class="fc-corner-bomb">💣</span>
+              <div class="fc-graphic">🐕‍🦺</div>
+            </div>
+          </div>
+          <!-- 2. Greenish bomb defuse card -->
+          <div class="auth-card-fan card-defuse-green" style="--rot: 8deg;">
+            <div class="fc-inner green-card">
+              <span class="fc-corner-icon">💣</span>
+              <div class="fc-graphic">💣✂️</div>
+              <div class="fc-thai-label">กู้ระเบิด</div>
+            </div>
+          </div>
+          <!-- 3. Light blue defuse card with pliers -->
+          <div class="auth-card-fan card-defuse-pliers" style="--rot: 18deg;">
+            <div class="fc-inner cyan-card">
+              <span class="fc-corner-icon">⚡</span>
+              <div class="fc-graphic">💣🔧</div>
+              <div class="fc-thai-label">กู้ระเบิด</div>
+            </div>
+          </div>
+          <!-- 4. Green defuse bowl card -->
+          <div class="auth-card-fan card-defuse-bowl" style="--rot: 10deg;">
+            <div class="fc-inner emerald-card">
+              <span class="fc-corner-icon">🦴</span>
+              <div class="fc-graphic">💣🥣</div>
+              <div class="fc-thai-label">กู้ระเบิด</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="auth-stage-container">
+      <!-- Top Branding Logo & Ribbon -->
+      <header class="auth-logo-header">
+        <div class="auth-logo-wrap">
+          <div class="logo-title-3d">
+            <span class="logo-paw-left">🐾</span>
+            <span class="logo-word-mha">หมา</span>
+            <span class="logo-word-raboed">ระเบิด</span>
+            <div class="logo-bomb-icon">
+              <span class="lbi-body">💣</span>
+              <span class="lbi-spark">💥</span>
+            </div>
+            <span class="logo-paw-right">🐾</span>
+          </div>
+          <div class="auth-ribbon-banner">
+            <span class="ribbon-tail left"></span>
+            <div class="ribbon-center">
+              <span class="ribbon-heart">💖</span>
+              <span class="ribbon-text">★ by เพชร อยากลองสร้างเกม ★</span>
+              <span class="ribbon-heart">💖</span>
+            </div>
+            <span class="ribbon-tail right"></span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Center Box with Peeking Mascots -->
+      <div class="auth-center-wrapper">
+        <!-- Peeking Mascot Left: Corgi with Gaming Headset -->
+        <div class="peeking-mascot mascot-left peeking-corgi-headset" title="Corgi Gamer Mascot">
+          <svg class="mascot-corgi-headset-svg" viewBox="0 0 220 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="cgFur" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#fb923c"/>
+      <stop offset="70%" stop-color="#ea580c"/>
+      <stop offset="100%" stop-color="#c2410c"/>
+    </radialGradient>
+    <linearGradient id="cgWhite" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#ffedd5"/>
+    </linearGradient>
+    <linearGradient id="headsetBand" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="50%" stop-color="#334155"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <filter id="corgiShadow" x="-10%" y="-10%" width="125%" height="125%">
+      <feDropShadow dx="-4" dy="6" stdDeviation="4" flood-color="#3b0764" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#corgiShadow)">
+    <!-- Ears -->
+    <path d="M52 110 C25 65, 38 18, 68 32 C82 40, 90 75, 84 105 Z" fill="url(#cgFur)" stroke="#7c2d12" stroke-width="4" stroke-linejoin="round"/>
+    <path d="M50 92 C38 60, 48 35, 66 42 C76 48, 78 75, 72 90 Z" fill="#f472b6"/>
+    <path d="M152 105 C146 75, 154 40, 168 32 C198 18, 211 65, 184 110 Z" fill="url(#cgFur)" stroke="#7c2d12" stroke-width="4" stroke-linejoin="round"/>
+    <path d="M164 90 C158 75, 160 48, 170 42 C188 35, 198 60, 186 92 Z" fill="#f472b6"/>
+
+    <!-- Head Base -->
+    <ellipse cx="118" cy="126" rx="56" ry="50" fill="url(#cgFur)" stroke="#7c2d12" stroke-width="4"/>
+
+    <!-- White blaze & snout -->
+    <path d="M118 80 C110 98, 104 115, 94 125 C84 135, 88 158, 118 160 C148 158, 152 135, 142 125 C132 115, 126 98, 118 80 Z" fill="url(#cgWhite)" stroke="#7c2d12" stroke-width="3"/>
+    
+    <!-- Cheeks Blush -->
+    <circle cx="82" cy="138" r="9" fill="#fb7185" opacity="0.6"/>
+    <circle cx="154" cy="138" r="9" fill="#fb7185" opacity="0.6"/>
+
+    <!-- Big Happy Eyes -->
+    <ellipse cx="94" cy="116" rx="8" ry="11" fill="#1e1b4b"/>
+    <circle cx="91" cy="112" r="3.5" fill="#ffffff"/>
+    <circle cx="96" cy="120" r="1.5" fill="#ffffff"/>
+    <ellipse cx="142" cy="116" rx="8" ry="11" fill="#1e1b4b"/>
+    <circle cx="139" cy="112" r="3.5" fill="#ffffff"/>
+    <circle cx="144" cy="120" r="1.5" fill="#ffffff"/>
+
+    <!-- Cute Nose -->
+    <path d="M112 130 C112 126, 124 126, 124 130 C124 135, 118 139, 118 139 C118 139, 112 135, 112 130 Z" fill="#0f172a"/>
+    <ellipse cx="116" cy="129" rx="2" ry="1" fill="#ffffff" opacity="0.7"/>
+
+    <!-- Open Smiling Mouth & Pink Tongue -->
+    <path d="M110 137 C114 141, 118 141, 118 141 C118 141, 122 141, 126 137" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/>
+    <path d="M112 141 C112 152, 124 152, 124 141 Z" fill="#f43f5e" stroke="#0f172a" stroke-width="2"/>
+    <path d="M115 146 C115 150, 121 150, 121 146 Z" fill="#fb7185"/>
+
+    <!-- Gaming Headset -->
+    <path d="M66 112 C64 54, 172 54, 170 112" stroke="url(#headsetBand)" stroke-width="8" stroke-linecap="round"/>
+    <path d="M72 108 C70 60, 164 60, 164 108" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/>
+    <ellipse cx="64" cy="116" rx="10" ry="16" fill="#0f172a" stroke="#38bdf8" stroke-width="3"/>
+    <ellipse cx="64" cy="116" rx="6" ry="10" fill="#1e293b"/>
+    <ellipse cx="172" cy="116" rx="10" ry="16" fill="#0f172a" stroke="#38bdf8" stroke-width="3"/>
+    <ellipse cx="172" cy="116" rx="6" ry="10" fill="#1e293b"/>
+    <path d="M64 126 C62 148, 88 156, 102 150" stroke="#0f172a" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+    <circle cx="104" cy="150" r="4.5" fill="#ef4444" stroke="#0f172a" stroke-width="2"/>
+    <circle cx="104" cy="150" r="2" fill="#fca5a5"/>
+
+    <!-- Front Left Peeking Paw resting on box border -->
+    <g transform="translate(142, 140)">
+      <ellipse cx="28" cy="22" rx="20" ry="16" fill="url(#cgWhite)" stroke="#7c2d12" stroke-width="3.5"/>
+      <ellipse cx="16" cy="14" rx="5" ry="4" fill="#fb7185"/>
+      <ellipse cx="28" cy="11" rx="5" ry="4" fill="#fb7185"/>
+      <ellipse cx="39" cy="14" rx="5" ry="4" fill="#fb7185"/>
+      <ellipse cx="28" cy="24" rx="9" ry="7" fill="#fb7185"/>
+    </g>
+  </g>
+</svg>
+        </div>
+
+        <!-- Main Central Parchment Box -->
+        <div class="auth-card">
+          <!-- 4 Rivet Corner Brackets -->
+          <div class="card-bracket tl"></div>
+          <div class="card-bracket tr"></div>
+          <div class="card-bracket bl"></div>
+          <div class="card-bracket br"></div>
+
+          <!-- Tabs at Top -->
+          <div class="auth-tabs">
+            <button type="button" class="auth-tab active" id="tabRegister" data-target="register">
+              <span class="tab-main-text">สมัครสมาชิกใหม่</span>
+              <span class="tab-sub-text">(Create Account)</span>
+            </button>
+            <button type="button" class="auth-tab" id="tabLogin" data-target="login">
+              <span class="tab-main-text">เข้าสู่ระบบ</span>
+              <span class="tab-sub-text">(Login)</span>
+            </button>
+          </div>
+
+          <!-- 1. REGISTER FORM (Active by default) -->
+          <form id="authRegisterForm" class="auth-form active" autocomplete="on">
+            <!-- Row 1: Username -->
+            <div class="auth-input-row">
+              <label class="auth-label-badge" for="authRegUsername">
+                <span class="alb-icon">🐾</span>
+                <span class="alb-text">ชื่อผู้ใช้งาน (Username)</span>
+              </label>
+              <input type="text" id="authRegUsername" name="username" placeholder="กรอกชื่อผู้เล่นใหม่..." autocomplete="username" required minlength="3" maxlength="16">
+            </div>
+
+            <!-- Row 2: Email (Optional) -->
+            <div class="auth-input-row">
+              <label class="auth-label-badge" for="authRegEmail">
+                <span class="alb-icon">✉️</span>
+                <span class="alb-text">อีเมล (Email)</span>
+              </label>
+              <input type="email" id="authRegEmail" name="email" placeholder="example@email.com (ไม่บังคับ)" autocomplete="email">
+            </div>
+
+            <!-- Row 3: Password -->
+            <div class="auth-input-row">
+              <label class="auth-label-badge" for="authRegPassword">
+                <span class="alb-icon">🔒</span>
+                <span class="alb-text">รหัสผ่าน (Password)</span>
+              </label>
+              <input type="password" id="authRegPassword" name="password" placeholder="รหัสผ่านอย่างน้อย 6 ตัว..." autocomplete="new-password" required minlength="4">
+            </div>
+
+            <!-- Row 4: Confirm Password -->
+            <div class="auth-input-row">
+              <label class="auth-label-badge" for="authRegConfirm">
+                <span class="alb-icon">🔐</span>
+                <span class="alb-text">ยืนยันรหัสผ่าน (Confirm Password)</span>
+              </label>
+              <input type="password" id="authRegConfirm" name="confirmPassword" placeholder="กรอกรหัสผ่านอีกครั้ง..." autocomplete="new-password" required minlength="4">
+            </div>
+
+            <!-- Terms Checkbox -->
+            <div class="auth-terms-row">
+              <label class="auth-checkbox-label" for="authTermsCheck">
+                <input type="checkbox" id="authTermsCheck" checked required>
+                <span class="auth-custom-check"></span>
+                <span class="auth-terms-text">ฉันยอมรับข้อตกลงและกติกาการเล่น 🦴</span>
+              </label>
+            </div>
+
+            <!-- 3D Submit Action Button -->
+            <button type="submit" class="auth-btn-submit" id="btnAuthSubmitRegister">
+              <span class="btn-star">✦</span>
+              <span class="btn-text">สร้างบัญชี &amp; เข้าสู่ระบบ (CREATE &amp; PLAY!)</span>
+              <span class="btn-star">✦</span>
+            </button>
+
+            <!-- Switch Link -->
+            <div class="auth-switch-row">
+              <span>มีบัญชีอยู่แล้ว?</span>
+              <button type="button" class="auth-link-switch" id="linkSwitchToLogin">กดที่นี่เพื่อเข้าสู่ระบบ</button>
+            </div>
+
+            <!-- Social & Quick Play Buttons -->
+            <div class="auth-social-row">
+              <button type="button" class="social-btn btn-facebook" id="btnAuthFb" title="Facebook">
+                <span class="soc-icon">f</span>
+              </button>
+              <button type="button" class="social-btn btn-google" id="btnAuthGoogle" title="Google">
+                <span class="soc-icon">G</span>
+              </button>
+              <button type="button" class="auth-quick-btn" id="btnAuthGuest" title="เข้าเล่นด่วน">
+                <span class="qb-bolt">⚡</span>
+                <span class="qb-text">เข้าเล่นด่วน</span>
+              </button>
+            </div>
+          </form>
+
+          <!-- 2. LOGIN FORM (Hidden by default) -->
+          <form id="authLoginForm" class="auth-form hidden" autocomplete="on">
+            <!-- Row 1: Username -->
+            <div class="auth-input-row">
+              <label class="auth-label-badge" for="authLoginUsername">
+                <span class="alb-icon">🐾</span>
+                <span class="alb-text">ชื่อผู้ใช้งาน (Username)</span>
+              </label>
+              <input type="text" id="authLoginUsername" name="username" placeholder="กรอกชื่อผู้เล่น..." autocomplete="username" required>
+            </div>
+
+            <!-- Row 2: Password -->
+            <div class="auth-input-row">
+              <label class="auth-label-badge" for="authLoginPassword">
+                <span class="alb-icon">🔒</span>
+                <span class="alb-text">รหัสผ่าน (Password)</span>
+              </label>
+              <input type="password" id="authLoginPassword" name="password" placeholder="กรอกรหัสผ่าน..." autocomplete="current-password" required>
+            </div>
+
+            <!-- Forgot Password Link -->
+            <div class="auth-forgot-row">
+              <button type="button" class="auth-link-forgot" id="linkAuthForgot">ลืมรหัสผ่าน?</button>
+            </div>
+
+            <!-- 3D Submit Action Button -->
+            <button type="submit" class="auth-btn-submit" id="btnAuthSubmitLogin">
+              <span class="btn-star">✦</span>
+              <span class="btn-text">เข้าสู่ระบบ (LOGIN)</span>
+              <span class="btn-star">✦</span>
+            </button>
+
+            <!-- Switch Link -->
+            <div class="auth-switch-row">
+              <span>ยังไม่มีบัญชี?</span>
+              <button type="button" class="auth-link-switch" id="linkSwitchToRegister">สมัครสมาชิกที่นี่</button>
+            </div>
+
+            <!-- Social & Quick Play Buttons -->
+            <div class="auth-social-row">
+              <button type="button" class="social-btn btn-facebook" id="btnAuthFbLogin" title="Facebook">
+                <span class="soc-icon">f</span>
+              </button>
+              <button type="button" class="social-btn btn-google" id="btnAuthGoogleLogin" title="Google">
+                <span class="soc-icon">G</span>
+              </button>
+              <button type="button" class="auth-quick-btn" id="btnAuthGuestLogin" title="เข้าเล่นด่วน">
+                <span class="qb-bolt">⚡</span>
+                <span class="qb-text">เข้าเล่นด่วน</span>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Peeking Mascot Right: Golden Retriever with Party Hat -->
+        <div class="peeking-mascot mascot-right peeking-golden-party" title="Golden Retriever Mascot">
+          <svg class="mascot-golden-party-svg" viewBox="0 0 220 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="gdFur" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#fde047"/>
+      <stop offset="65%" stop-color="#eab308"/>
+      <stop offset="100%" stop-color="#ca8a04"/>
+    </radialGradient>
+    <linearGradient id="gdMuzzle" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fef08a"/>
+      <stop offset="100%" stop-color="#fde68a"/>
+    </linearGradient>
+    <linearGradient id="partyHatGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#c084fc"/>
+      <stop offset="60%" stop-color="#9333ea"/>
+      <stop offset="100%" stop-color="#6b21a8"/>
+    </linearGradient>
+    <filter id="goldenShadow" x="-10%" y="-10%" width="125%" height="125%">
+      <feDropShadow dx="4" dy="6" stdDeviation="4" flood-color="#3b0764" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#goldenShadow)">
+    <!-- Floppy Left Ear -->
+    <path d="M68 95 C52 105, 42 145, 58 165 C68 175, 78 160, 78 135 Z" fill="url(#gdFur)" stroke="#78350f" stroke-width="4" stroke-linejoin="round"/>
+    <!-- Floppy Right Ear -->
+    <path d="M148 95 C164 105, 174 145, 158 165 C148 175, 138 160, 138 135 Z" fill="url(#gdFur)" stroke="#78350f" stroke-width="4" stroke-linejoin="round"/>
+
+    <!-- Head Base -->
+    <ellipse cx="108" cy="124" rx="54" ry="48" fill="url(#gdFur)" stroke="#78350f" stroke-width="4"/>
+
+    <!-- Muzzle -->
+    <ellipse cx="108" cy="140" rx="30" ry="22" fill="url(#gdMuzzle)" stroke="#78350f" stroke-width="3"/>
+
+    <!-- Cheeks Blush -->
+    <circle cx="75" cy="136" r="9" fill="#f43f5e" opacity="0.45"/>
+    <circle cx="141" cy="136" r="9" fill="#f43f5e" opacity="0.45"/>
+
+    <!-- Big Happy Puppy Eyes -->
+    <ellipse cx="88" cy="115" rx="8" ry="11" fill="#1e1b4b"/>
+    <circle cx="85" cy="111" r="3.5" fill="#ffffff"/>
+    <circle cx="90" cy="119" r="1.5" fill="#ffffff"/>
+    <ellipse cx="128" cy="115" rx="8" ry="11" fill="#1e1b4b"/>
+    <circle cx="125" cy="111" r="3.5" fill="#ffffff"/>
+    <circle cx="130" cy="119" r="1.5" fill="#ffffff"/>
+
+    <!-- Puppy Eyebrows -->
+    <path d="M82 101 C86 98, 92 98, 96 101" stroke="#92400e" stroke-width="3" stroke-linecap="round"/>
+    <path d="M120 101 C124 98, 130 98, 134 101" stroke="#92400e" stroke-width="3" stroke-linecap="round"/>
+
+    <!-- Black Shiny Nose -->
+    <path d="M102 130 C102 125, 114 125, 114 130 C114 135, 108 138, 108 138 C108 138, 102 135, 102 130 Z" fill="#0f172a"/>
+    <ellipse cx="106" cy="128" rx="2" ry="1" fill="#ffffff" opacity="0.7"/>
+
+    <!-- Big Open Smile & Tongue -->
+    <path d="M100 137 C104 140, 108 140, 108 140 C108 140, 112 140, 116 137" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/>
+    <path d="M100 140 C100 156, 116 156, 116 140 Z" fill="#e11d48" stroke="#0f172a" stroke-width="2.5"/>
+    <path d="M103 146 C103 154, 113 154, 113 146 Z" fill="#fb7185"/>
+
+    <!-- Party Cone Hat (Tilted Cute Angle) -->
+    <g transform="rotate(12, 112, 65)">
+      <path d="M85 82 L112 20 L139 82 Z" fill="url(#partyHatGrad)" stroke="#4a044e" stroke-width="3" stroke-linejoin="round"/>
+      <circle cx="108" cy="45" r="4.5" fill="#f472b6"/>
+      <circle cx="98" cy="65" r="5" fill="#f472b6"/>
+      <circle cx="124" cy="62" r="4.5" fill="#f472b6"/>
+      <circle cx="112" cy="76" r="4" fill="#f472b6"/>
+      <circle cx="112" cy="18" r="8" fill="#fde047" stroke="#ca8a04" stroke-width="2"/>
+      <polygon points="112,10 114,16 120,16 115,19 117,25 112,21 107,25 109,19 104,16 110,16" fill="#facc15"/>
+    </g>
+
+    <!-- Waving Front Paw -->
+    <g class="mascot-waving-paw" transform="translate(148, 115)">
+      <ellipse cx="26" cy="26" rx="20" ry="17" fill="url(#gdFur)" stroke="#78350f" stroke-width="3.5"/>
+      <ellipse cx="14" cy="17" rx="5" ry="4" fill="#fb7185"/>
+      <ellipse cx="26" cy="14" rx="5" ry="4" fill="#fb7185"/>
+      <ellipse cx="37" cy="17" rx="5" ry="4" fill="#fb7185"/>
+      <ellipse cx="26" cy="28" rx="9" ry="7" fill="#fb7185"/>
+    </g>
+  </g>
+</svg>
+        </div>
+      </div>
+
+      <!-- Footer Bar -->
+      <footer class="auth-footer">
+        <div class="auth-footer-left">
+          <span>© 2026 by เพชร อยากลองสร้างเกม | v1.0.1</span>
+        </div>
+        <div class="auth-footer-right">
+          <button type="button" class="auth-bgm-btn" id="btnFooterBgm">
+            <span class="bgm-icon">🔊</span>
+            <span class="bgm-text">เพลงประกอบ: เปิด</span>
+          </button>
+        </div>
+      </footer>
+    </div>
+  </section>
+
   <!-- HOME / CASINO LOBBY -->
-  <section id="screen-home" class="screen active">
+  <section id="screen-home" class="screen">
     <!-- TOPBAR / CASINO HEADER (Only shown on Home Lobby) -->
     <header id="topbar">
       <!-- Left: Player Profile Badge -->
@@ -348,6 +807,7 @@
 
   <!-- GAME -->
   <section id="screen-game" class="screen">
+    <div id="tutorialCoachOverlay" class="tutorial-coach-overlay hidden"></div>
 
     <div id="table">
       <div id="combatTicker"></div>

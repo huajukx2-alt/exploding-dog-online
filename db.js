@@ -68,6 +68,7 @@ function generateVault(u) {
     salt: u.salt,
     pw: u.pw,
     recoveryPin: u.recoveryPin || '1234',
+    email: u.email || '',
     coins: u.coins ?? 500,
     diamonds: u.diamonds ?? 30,
     rp: u.rp ?? 0,
@@ -110,6 +111,7 @@ function restoreFromVault(vault) {
       salt: vault.salt,
       pw: vault.pw,
       recoveryPin: vault.recoveryPin || '1234',
+      email: vault.email || '',
       coins: vault.coins ?? 500,
       diamonds: vault.diamonds ?? 30,
       rp: vault.rp ?? 0,
@@ -198,6 +200,7 @@ function publicUser(u) {
   return {
     username: u.username,
     displayName: u.displayName,
+    email: u.email || '',
     avatar: u.avatar || '🐶',
     coins: u.coins ?? 500,
     diamonds: u.diamonds ?? 30,
@@ -212,7 +215,7 @@ function publicUser(u) {
   };
 }
 
-function register(username, password, displayName, recoveryPin) {
+function register(username, password, displayName, recoveryPin, email) {
   username = String(username || '').trim();
   if (!/^[a-zA-Z0-9_]{3,16}$/.test(username)) return { error: 'bad_username' };
   const key = username.toLowerCase();
@@ -223,11 +226,13 @@ function register(username, password, displayName, recoveryPin) {
   const token = crypto.randomBytes(24).toString('hex');
   const cleanDisplay = String(displayName || username).replace(/[<>]/g, '').trim().slice(0, 16) || username;
   const pin = String(recoveryPin || '').trim() || String(Math.floor(1000 + Math.random() * 9000));
+  const cleanEmail = email ? String(email).trim().slice(0, 80) : '';
   const now = Date.now();
   db.users[key] = {
     username, displayName: cleanDisplay, avatar: '🐶',
     salt, pw: hash(password, salt), token, coins: 500, diamonds: 30, rp: 0,
     recoveryPin: pin,
+    email: cleanEmail,
     stats: { games: 0, wins: 0, explosions: 0, defuses: 0 },
     inventory: ['title_rookie'], equipped: { frame: null, skin: null, avatar: null, title: 'title_rookie' }, title: 'title_rookie',
     claimedMail: [], history: [], createdAt: now, updatedAt: now
@@ -488,8 +493,29 @@ function leaderboard() {
 }
 
 load();
+
+function completeTutorial(token) {
+  const u = byToken(token);
+  if (!u) return { error: 'auth' };
+  if (!u.tutorialCompleted) {
+    u.coins = (u.coins || 0) + 200;
+    u.diamonds = (u.diamonds || 0) + 15;
+    u.inventory = u.inventory || [];
+    if (!u.inventory.includes('title_trained_pup')) {
+      u.inventory.push('title_trained_pup');
+    }
+    u.title = 'title_trained_pup';
+    u.equipped = u.equipped || {};
+    u.equipped.title = 'title_trained_pup';
+    u.tutorialCompleted = true;
+    u.updatedAt = Date.now();
+    save();
+  }
+  return { ok: true, user: publicUser(u), vault: generateVault(u) };
+}
+
 module.exports = {
   load, save, register, login, logout, byToken, publicUser, updateProfile,
-  buy, equip, dailyBonus, gacha, getMailbox, claimMail, recordGame, leaderboard,
+  buy, equip, dailyBonus, gacha, getMailbox, claimMail, completeTutorial, recordGame, leaderboard,
   generateVault, restoreFromVault, resetPassword, updateRecoveryPin, db
 };
