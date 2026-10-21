@@ -1092,10 +1092,104 @@
     }
   }
 
+  
+  // ------------------------------------------------------------ BOSS SHIBA MASCOT
+  function bossShibaMascotSVG() {
+    return `<svg class="boss-mascot-svg" viewBox="0 0 280 340" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="shibaFur" cx="45%" cy="35%" r="65%">
+          <stop offset="0%" stop-color="#fb923c"/>
+          <stop offset="60%" stop-color="#ea580c"/>
+          <stop offset="100%" stop-color="#c2410c"/>
+        </radialGradient>
+        <linearGradient id="shibaWhite" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#ffffff"/>
+          <stop offset="100%" stop-color="#fed7aa"/>
+        </linearGradient>
+        <linearGradient id="goldCrown" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#fef08a"/>
+          <stop offset="50%" stop-color="#f59e0b"/>
+          <stop offset="100%" stop-color="#b45309"/>
+        </linearGradient>
+        <linearGradient id="goldCape" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#dc2626"/>
+          <stop offset="70%" stop-color="#991b1b"/>
+          <stop offset="100%" stop-color="#450a0a"/>
+        </linearGradient>
+        <filter id="bossShadow" x="-20%" y="-15%" width="140%" height="135%">
+          <feDropShadow dx="0" dy="14" stdDeviation="10" flood-color="#180628" flood-opacity="0.6"/>
+        </filter>
+      </defs>
+
+      <g filter="url(#bossShadow)">
+        <!-- Cape -->
+        <path d="M55 170 C40 220 30 280 20 325 C80 340 200 340 260 325 C250 280 240 220 225 170 Z" fill="url(#goldCape)" stroke="#f59e0b" stroke-width="4"/>
+        <path d="M55 170 C90 190 190 190 225 170 L220 200 C185 215 95 215 60 200 Z" fill="#b91c1c"/>
+
+        <!-- Ears -->
+        <path d="M70 120 L40 40 L110 80 Z" fill="url(#shibaFur)" stroke="#7c2d12" stroke-width="4" stroke-linejoin="round"/>
+        <path d="M72 105 L52 56 L100 80 Z" fill="#fda4af"/>
+        <path d="M210 120 L240 40 L170 80 Z" fill="url(#shibaFur)" stroke="#7c2d12" stroke-width="4" stroke-linejoin="round"/>
+        <path d="M208 105 L228 56 L180 80 Z" fill="#fda4af"/>
+
+        <!-- Head / Body Base -->
+        <ellipse cx="140" cy="155" rx="88" ry="76" fill="url(#shibaFur)" stroke="#7c2d12" stroke-width="4"/>
+        <!-- White Cheeks -->
+        <path d="M70 160 C70 205 105 225 140 225 C175 225 210 205 210 160 C210 135 195 125 175 125 C155 125 145 135 140 135 C135 135 125 125 105 125 C85 125 70 135 70 160 Z" fill="url(#shibaWhite)"/>
+
+        <!-- Eyebrows (Doge dots) -->
+        <ellipse cx="106" cy="115" rx="9" ry="11" fill="url(#shibaWhite)"/>
+        <ellipse cx="174" cy="115" rx="9" ry="11" fill="url(#shibaWhite)"/>
+
+        <!-- Eyes -->
+        <ellipse cx="108" cy="142" rx="9" ry="12" fill="#1e1b4b"/>
+        <ellipse cx="172" cy="142" rx="9" ry="12" fill="#1e1b4b"/>
+        <circle cx="105" cy="138" r="4" fill="#ffffff"/>
+        <circle cx="169" cy="138" r="4" fill="#ffffff"/>
+        <circle cx="111" cy="146" r="2" fill="#ffffff"/>
+        <circle cx="175" cy="146" r="2" fill="#ffffff"/>
+
+        <!-- Snout & Nose -->
+        <ellipse cx="140" cy="172" rx="20" ry="15" fill="#ffffff"/>
+        <path d="M131 165 C131 161 149 161 149 165 C149 173 143 178 140 178 C137 178 131 173 131 165 Z" fill="#1e1b4b"/>
+        <path d="M140 178 L140 188" stroke="#1e1b4b" stroke-width="3" stroke-linecap="round"/>
+        <path d="M128 186 C134 192 146 192 152 186" stroke="#1e1b4b" stroke-width="3" stroke-linecap="round" fill="none"/>
+        <path d="M134 188 C137 197 143 197 146 188 Z" fill="#f43f5e"/>
+
+        <!-- King's Golden Chain & Medallion -->
+        <path d="M72 210 C95 240 185 240 208 210" stroke="url(#goldCrown)" stroke-width="10" stroke-linecap="round" fill="none"/>
+        <circle cx="140" cy="242" r="18" fill="url(#goldCrown)" stroke="#78350f" stroke-width="3"/>
+        <circle cx="140" cy="242" r="12" fill="#dc2626"/>
+        <text x="140" y="248" font-size="14" font-weight="900" fill="#fde047" text-anchor="middle" font-family="'Fredoka', sans-serif">★</text>
+
+        <!-- Paws holding podium -->
+        <ellipse cx="90" cy="235" rx="18" ry="14" fill="url(#shibaWhite)" stroke="#7c2d12" stroke-width="3"/>
+        <path d="M82 232 L82 242 M90 230 L90 244 M98 232 L98 242" stroke="#7c2d12" stroke-width="2.5" stroke-linecap="round"/>
+
+        <ellipse cx="190" cy="235" rx="18" ry="14" fill="url(#shibaWhite)" stroke="#7c2d12" stroke-width="3"/>
+        <path d="M182 232 L182 242 M190 230 L190 244 M198 232 L198 242" stroke="#7c2d12" stroke-width="2.5" stroke-linecap="round"/>
+
+        <!-- King's 3D Crown on Head -->
+        <g transform="translate(90, 32)">
+          <path d="M8 44 L0 10 L28 26 L50 0 L72 26 L100 10 L92 44 Z" fill="url(#goldCrown)" stroke="#78350f" stroke-width="3.5" stroke-linejoin="round"/>
+          <ellipse cx="50" cy="44" rx="42" ry="7" fill="#b45309"/>
+          <ellipse cx="50" cy="42" rx="42" ry="7" fill="url(#goldCrown)"/>
+          <circle cx="0" cy="10" r="5" fill="#f43f5e" stroke="#78350f" stroke-width="2"/>
+          <circle cx="50" cy="0" r="6" fill="#38bdf8" stroke="#78350f" stroke-width="2"/>
+          <circle cx="100" cy="10" r="5" fill="#f43f5e" stroke="#78350f" stroke-width="2"/>
+          <!-- Ruby jewels on crown band -->
+          <circle cx="28" cy="42" r="4" fill="#ef4444"/>
+          <circle cx="50" cy="42" r="5" fill="#22c55e"/>
+          <circle cx="72" cy="42" r="4" fill="#ef4444"/>
+        </g>
+      </g>
+    </svg>`;
+  }
+
   function renderHome() {
     const stageMascot = $('#stageMascot');
     if (stageMascot && !stageMascot.innerHTML) {
-      stageMascot.innerHTML = bossShibaMascotSVG();
+      stageMascot.innerHTML = typeof bossShibaMascotSVG === 'function' ? bossShibaMascotSVG() : '👑🐶';
     }
   }
 
@@ -5542,13 +5636,18 @@
   };
 
   // ------------------------------------------------------------ boot
+  // Initialize Auth Screen IMMEDIATELY so buttons and tabs are clickable from the first millisecond
+  try { initAuthScreen(); } catch (err) { console.error('Early initAuthScreen error:', err); }
+
   (async () => {
-    imgMap = await fetch('/api/card-images').then(r => r.json()).catch(() => ({}));
-    if (imgMap.card_back) document.documentElement.style.setProperty('--back-img', `url(${imgMap.card_back})`);
+    try {
+      imgMap = await fetch('/api/card-images').then(r => r.json()).catch(() => ({}));
+      if (imgMap.card_back) document.documentElement.style.setProperty('--back-img', `url(${imgMap.card_back})`);
+    } catch (_) {}
     syncToggles();
-    await loadMe();
-    applyI18n();
-    initAuthScreen();
+    try { await loadMe(); } catch (err) { console.error('loadMe error:', err); }
+    try { applyI18n(); } catch (err) { console.error('applyI18n error:', err); }
+    try { initAuthScreen(); } catch (err) { console.error('initAuthScreen error:', err); }
 
     if (!user && !isGuestSessionActive) {
       show('auth');
