@@ -35,6 +35,9 @@ window.I18N = {
     avatars: 'อวตาร', claim: 'กดรับ', claimed: 'รับแล้ว', claimAll: 'รับรางวัลทั้งหมด',
     roll1: 'สุ่ม 1 ครั้ง', roll10: 'สุ่ม 10 ครั้ง', guaranteeSr: 'การันตี SR+',
     gachaNew: 'ใหม่!', gachaDuplicate: 'ซ้ำ! เปลี่ยนเป็นเหรียญ', equipNow: 'ใช้งานทันที', rollAgain: 'สุ่มอีกครั้ง',
+    forgotPassword: 'ลืมรหัสผ่าน?', recoveryPin: 'PIN กู้คืนรหัสผ่าน', newPassword: 'รหัสผ่านใหม่', confirmPassword: 'ยืนยันรหัสผ่านใหม่',
+    resetPassword: 'รีเซ็ตรหัสผ่าน', resetSuccess: 'รีเซ็ตรหัสผ่านและเข้าสู่ระบบสำเร็จ!', passkey: 'รหัสสำรองบัญชี (Passkey)',
+    passkeyCopied: 'คัดลอกรหัสสำรองบัญชีสำเร็จ!', importPasskey: 'นำเข้ารหัสสำรองบัญชี', restoreSuccess: 'กู้คืนบัญชีสำเร็จ!',
     notEnoughDiamonds: 'เพชรไม่พอ (สุ่มไม่ได้)',
     enterRoomCode: 'ใส่รหัสห้อง 4 หลัก (Room Code)',
     nothingToNope: 'ไม่มีอะไรให้ Nope', noPlay: 'การ์ดนี้เล่นตรงๆ ไม่ได้',
@@ -42,7 +45,10 @@ window.I18N = {
       not_ready: 'ยังมีผู้เล่นที่ไม่พร้อม', not_your_turn: 'ยังไม่ถึงตาคุณ', bad_cards: 'การ์ดไม่ถูกต้อง', bad_combo: 'คอมโบไม่ถูกต้อง (ต้องเป็นการ์ดหมาชนิดเดียวกัน)', need_name: 'ต้องระบุชื่อการ์ด',
       not_playable: 'การ์ดนี้เล่นตรงๆ ไม่ได้', nothing_to_clone: 'ยังไม่มีแอคชันให้โคลน', need_target: 'ต้องเลือกเป้าหมาย', target_empty: 'เป้าหมายไม่มีการ์ดในมือ', nothing_to_nope: 'ไม่มีอะไรให้ Nope',
       cannot_play: 'เล่นไม่ได้ตอนนี้', room_not_found: 'ไม่พบห้องนี้', no_prompt: 'หมดเวลาแล้ว', bad_username: 'ชื่อผู้ใช้ต้องเป็น a-z, 0-9, _ ยาว 3-16 ตัว', bad_password: 'รหัสผ่านอย่างน้อย 4 ตัว',
-      username_taken: 'ชื่อนี้ถูกใช้แล้ว', bad_login: 'ชื่อผู้ใช้หรือรหัสผ่านผิด', no_coins: 'เหรียญไม่พอ', owned: 'มีไอเทมนี้แล้ว', claimed: 'วันนี้รับโบนัสไปแล้ว', auth: 'กรุณาเข้าสู่ระบบ' }
+      username_taken: 'ชื่อนี้ถูกใช้แล้ว', bad_login: 'ชื่อผู้ใช้หรือรหัสผ่านผิด', no_coins: 'เหรียญไม่พอ', owned: 'มีไอเทมนี้แล้ว', claimed: 'วันนี้รับโบนัสไปแล้ว', auth: 'กรุณาเข้าสู่ระบบ',
+      bad_recovery_pin: 'PIN กู้คืนไม่ถูกต้อง หรือไม่ตรงกับบัญชีนี้', user_not_found: 'ไม่พบบัญชีผู้ใช้นี้ในระบบ',
+      password_mismatch: 'รหัสผ่านใหม่และการยืนยันไม่ตรงกัน', invalid_vault: 'ข้อมูลสำรองบัญชีไม่ถูกต้อง',
+      bad_pin_length: 'PIN ต้องมีความยาว 4-12 ตัวอักษร' }
   },
   en: {
     title: 'Exploding Puppies Online', subtitle: 'The chaotic doggo party card game — play with friends or bots! Woof!',
@@ -86,7 +92,10 @@ window.I18N = {
       not_ready: 'Some players are not ready', not_your_turn: 'Not your turn', bad_cards: 'Invalid cards', bad_combo: 'Invalid combo (same dog cards required)', need_name: 'Name a card',
       not_playable: 'This card cannot be played directly', nothing_to_clone: 'Nothing to clone yet', need_target: 'Choose a target', target_empty: 'Target has no cards', nothing_to_nope: 'Nothing to Nope',
       cannot_play: 'Cannot play now', room_not_found: 'Room not found', no_prompt: 'Too late', bad_username: 'Username: a-z, 0-9, _ (3-16 chars)', bad_password: 'Password must be 4+ chars',
-      username_taken: 'Username taken', bad_login: 'Wrong username or password', no_coins: 'Not enough coins', owned: 'Already owned', claimed: 'Already claimed today', auth: 'Please log in' }
+      username_taken: 'Username taken', bad_login: 'Wrong username or password', no_coins: 'Not enough coins', owned: 'Already owned', claimed: 'Already claimed today', auth: 'Please log in',
+      bad_recovery_pin: 'Invalid recovery PIN for this account', user_not_found: 'User account not found',
+      password_mismatch: 'Passwords do not match', invalid_vault: 'Invalid account backup data',
+      bad_pin_length: 'PIN must be between 4 and 12 characters' }
   }
 };
 

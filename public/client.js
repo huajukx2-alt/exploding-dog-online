@@ -566,11 +566,48 @@
     const r = await fetch(path, { method: body ? 'POST' : 'GET', headers: { 'Content-Type': 'application/json', 'x-token': token }, body: body ? JSON.stringify(body) : undefined });
     return r.json().catch(() => ({ error: 'network' }));
   }
-  function setUser(u) { user = u; renderUserChip(); renderHome(); }
+  function setUser(u, vault) {
+    user = u;
+    if (vault) {
+      try { localStorage.setItem('ek_account_vault', JSON.stringify(vault)); } catch (_) {}
+    }
+    renderUserChip();
+    renderHome();
+  }
   async function loadMe() {
-    if (!token) return setUser(null);
-    const r = await api('/api/me');
-    if (r.user) setUser(r.user); else { token = ''; localStorage.removeItem('ek_token'); setUser(null); }
+    if (token) {
+      const r = await api('/api/me');
+      if (r.user) {
+        if (r.vault) {
+          try { localStorage.setItem('ek_account_vault', JSON.stringify(r.vault)); } catch (_) {}
+        }
+        return setUser(r.user, r.vault);
+      }
+    }
+    // If token invalid, expired, or server was redeployed/restarted:
+    const savedVault = localStorage.getItem('ek_account_vault');
+    if (savedVault) {
+      try {
+        const vaultObj = JSON.parse(savedVault);
+        const res = await api('/api/restore-account', { vault: vaultObj });
+        if (res.user && res.token) {
+          token = res.token;
+          localStorage.setItem('ek_token', token);
+          socket.emit('auth', token);
+          if (res.vault) {
+            try { localStorage.setItem('ek_account_vault', JSON.stringify(res.vault)); } catch (_) {}
+          }
+          setUser(res.user, res.vault);
+          toast(lang === 'th' ? `✨ ยินดีต้อนรับกลับ ${esc(res.user.displayName)}! ระบบกู้คืนข้อมูลบัญชีของคุณให้อัตโนมัติแล้ว` : `Welcome back ${esc(res.user.displayName)}! Account restored automatically.`, 'good');
+          return;
+        }
+      } catch (e) {
+        console.error('Vault auto-restore error:', e);
+      }
+    }
+    token = '';
+    localStorage.removeItem('ek_token');
+    setUser(null);
   }
 
   // ------------------------------------------------------------ socket
@@ -935,16 +972,325 @@
     if ($('#stLogin')) $('#stLogin').onclick = () => { closeModal(); openAuth('login'); };
   }
 
-  async function handleMailClick() {
-    if (!user) return openAuth('login');
-    const r = await api('/api/daily', {});
-    if (r.error) {
-      if (r.error === 'claimed') toast(lang === 'th' ? '🎁 วันนี้คุณรับโบนัสแล้ว พรุ่งนี้มารับใหม่นะโฮ่ง!' : 'Daily bonus already claimed!', 'info');
-      else toast('⚠️ ' + terr(r.error), 'err');
+  // ------------------------------------------------------------ MAILBOX SYSTEM
+  async function checkMailboxStatus() {
+    const dot = $('#btnMail .ti-dot');
+    if (!dot) return;
+    if (user) {
+      const r = await api('/api/mailbox');
+      const hasUnclaimed = r.mails && r.mails.some(m => !m.claimed);
+      dot.style.display = hasUnclaimed ? 'block' : 'none';
+    } else {
+      const c1 = !!localStorage.getItem('ek_guest_mail_welcome');
+      const c2 = !!localStorage.getItem('ek_guest_mail_gacha_fest');
+      const c3 = !!localStorage.getItem('ek_guest_mail_patch_v2');
+      dot.style.display = (!c1 || !c2 || !c3) ? 'block' : 'none';
+    }
+  }
+
+  async function openMailboxModal() {
+    A.sfx('click');
+    let mails = [];
+    if (user) {
+      const r = await api('/api/mailbox');
+      mails = r.mails || [];
+    } else {
+      mails = [
+        {
+          id: 'mail_welcome',
+          icon: '🎁',
+          title: { th: 'ของขวัญต้อนรับ & รางวัลประจำวัน', en: 'Welcome & Daily Bonus' },
+          body: { th: 'ยินดีต้อนรับสู่หมาระเบิดออนไลน์! ล็อกอินทุกวันเพื่อรับเหรียญและเพชรฟรี', en: 'Welcome to Exploding Puppies Online! Log in daily to get free coins & gems.' },
+          coins: 150,
+          diamonds: 5,
+          claimed: !!localStorage.getItem('ek_guest_mail_welcome')
+        },
+        {
+          id: 'mail_gacha_fest',
+          icon: '🌟',
+          title: { th: 'ฉลองเปิดตู้สุ่มกาชาจ่าฝูงลิมิเต็ด!', en: 'Celestial Alpha Gacha Launch!' },
+          body: { th: 'รับเพชรฟรี 20 เม็ดสำหรับทดลองสุ่มตู้กาชาจ่าฝูงลุ้นรับของระดับ UR ลิมิเต็ด!', en: '20 free diamonds to summon from the limited Celestial Alpha Gacha!' },
+          coins: 300,
+          diamonds: 20,
+          claimed: !!localStorage.getItem('ek_guest_mail_gacha_fest')
+        },
+        {
+          id: 'mail_patch_v2',
+          icon: '📜',
+          title: { th: 'จดหมายจากทีมพัฒนา: อัปเดตใหญ่จัดเต็ม', en: 'Developer Letter: Massive Update' },
+          body: { th: 'อัปเดตระบบอวตาร 3D หน้าตรงกับในเกม, กรอบและหลังไพ่แสดงผลในเกมจริง, และแก้ไขกล่องจดหมาย!', en: '3D avatars matching in-game, real in-game frames and card backs, plus Gacha!' },
+          coins: 100,
+          diamonds: 5,
+          claimed: !!localStorage.getItem('ek_guest_mail_patch_v2')
+        }
+      ];
+    }
+
+    const hasUnclaimed = mails.some(m => !m.claimed);
+
+    openModal(`<div class="mailbox-wrap">
+      <div class="mailbox-header">
+        <h2>📬 ${lang === 'th' ? 'กล่องจดหมาย' : 'Mailbox'}</h2>
+        <p class="note" style="margin:2px 0 10px">${lang === 'th' ? 'ของรางวัลและประกาศข่าวสารสำคัญจากทีมพัฒนา' : 'Rewards and announcements from developers'}</p>
+      </div>
+      <div class="mailbox-list">
+        ${mails.map(m => {
+          const isClaimed = m.claimed;
+          const tText = m.title[lang] || m.title.en || m.title;
+          const bText = m.body[lang] || m.body.en || m.body;
+          const rewards = [];
+          if (m.coins) rewards.push(`🪙 +${m.coins}`);
+          if (m.diamonds) rewards.push(`💎 +${m.diamonds}`);
+          return `
+            <div class="mail-item ${isClaimed ? 'claimed' : 'unread'}">
+              <div class="mail-icon">${m.icon || '✉️'}</div>
+              <div class="mail-info">
+                <div class="mail-title-row">
+                  <b class="mail-title">${esc(tText)}</b>
+                  ${rewards.length ? `<span class="mail-reward-tag">${rewards.join(' ')}</span>` : ''}
+                </div>
+                <div class="mail-desc">${esc(bText)}</div>
+              </div>
+              <div class="mail-act">
+                ${isClaimed
+                  ? `<span class="tag">${lang === 'th' ? 'รับแล้ว' : 'Claimed'}</span>`
+                  : `<button class="btn small gold btn-claim-single" data-mail="${m.id}">🎁 ${lang === 'th' ? 'กดรับ' : 'Claim'}</button>`}
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+      <div class="mailbox-footer" style="margin-top:14px;display:flex;justify-content:space-between;align-items:center;">
+        ${!user ? `<small class="note">${lang === 'th' ? '💡 ล็อกอินเพื่อบันทึกข้อมูลถาวร' : '💡 Log in to save permanently'}</small>` : '<span></span>'}
+        <button class="btn gold" id="btnClaimAllMail" ${hasUnclaimed ? '' : 'disabled'}>✨ ${lang === 'th' ? 'รับทั้งหมด' : 'Claim All'}</button>
+      </div>
+    </div>`, { cls: 'wide' });
+
+    const handleClaim = async (mailId) => {
+      A.sfx('coin');
+      confetti(true);
+      if (user) {
+        const r = await api('/api/mailbox/claim', { mailId });
+        if (r.error) return toast('⚠️ ' + terr(r.error), 'err');
+        setUser(r.user, r.vault);
+        toast(lang === 'th' ? `🎉 รับรางวัลสำเร็จ! +🪙${r.coins || 0} +💎${r.diamonds || 0}` : `Claimed +🪙${r.coins || 0} +💎${r.diamonds || 0}!`, 'good');
+      } else {
+        let addCoins = 0, addDia = 0;
+        const targets = mailId === 'all' ? mails.filter(m => !m.claimed) : mails.filter(m => m.id === mailId && !m.claimed);
+        targets.forEach(m => {
+          localStorage.setItem('ek_guest_' + m.id, '1');
+          addCoins += m.coins || 0;
+          addDia += m.diamonds || 0;
+        });
+        const curC = parseInt(localStorage.getItem('ek_guest_coins') || '100');
+        const curD = parseInt(localStorage.getItem('ek_guest_diamonds') || '20');
+        localStorage.setItem('ek_guest_coins', curC + addCoins);
+        localStorage.setItem('ek_guest_diamonds', curD + addDia);
+        renderUserChip();
+        toast(lang === 'th' ? `🎉 รับรางวัลสำเร็จ! +🪙${addCoins} +💎${addDia}` : `Claimed +🪙${addCoins} +💎${addDia}!`, 'good');
+      }
+      openMailboxModal();
+    };
+
+    $('.btn-claim-single').forEach(b => b.onclick = () => handleClaim(b.dataset.mail));
+    const btnAll = $('#btnClaimAllMail');
+    if (btnAll) btnAll.onclick = () => handleClaim('all');
+  }
+
+  // ------------------------------------------------------------ GACHA SYSTEM
+  function openGachaModal() {
+    A.sfx('click');
+    const myDia = user ? (user.diamonds ?? 0) : parseInt(localStorage.getItem('ek_guest_diamonds') || '20');
+    openModal(`<div class="gacha-wrap">
+      <div class="gacha-banner">
+        <div class="gacha-badge-ur">LIMITED UR</div>
+        <h2 class="gacha-title">🎲 ${lang === 'th' ? 'ตู้สุ่มราชาจ่าฝูงสุริยันเทวะ' : 'Celestial Alpha Limited Gacha'}</h2>
+        <p class="gacha-sub">${lang === 'th' ? 'ลุ้นรับอวตาร 3D ระดับ UR, กรอบมังกรสวรรค์, และหลังไพ่หลุมดำเอกภพ!' : 'Summon UR Celestial God Doge, Celestial Dragon Frame, and Cosmic Void Skin!'}</p>
+        <div class="gacha-showcase-row">
+          <div class="showcase-card showcase-ur">
+            <div class="sc-preview">${renderAvatarSVG('av_god_shiba')}</div>
+            <div class="sc-tag ur">UR 5%</div>
+            <b>${lang === 'th' ? 'จ่าฝูงสุริยันเทวะ' : 'Celestial Sun God'}</b>
+          </div>
+          <div class="showcase-card showcase-ssr">
+            <div class="sc-preview">${renderAvatarSVG('av_mecha_alpha')}</div>
+            <div class="sc-tag ssr">SSR 20%</div>
+            <b>${lang === 'th' ? 'ไททันเมคาอัลฟ่า' : 'Titan Mecha Alpha'}</b>
+          </div>
+          <div class="showcase-card showcase-ssr">
+            <div class="sc-preview">${avatarHTML({ avatar: 'av_shiba_vip', frame: 'frame_celestial_dragon' }, 'lg')}</div>
+            <div class="sc-tag ur">UR 5%</div>
+            <b>${lang === 'th' ? 'กรอบมังกรสวรรค์' : 'Celestial Dragon'}</b>
+          </div>
+        </div>
+      </div>
+      <div class="gacha-dia-bar">
+        <span>${lang === 'th' ? 'เพชรของคุณ:' : 'Your Diamonds:'} <b class="dia-val">💎 ${myDia}</b></span>
+        <button class="btn small" id="btnGachaGetDia">📬 ${lang === 'th' ? 'รับเพชรฟรีในกล่องจดหมาย' : 'Get Free Diamonds in Mailbox'}</button>
+      </div>
+      <div class="gacha-rates-note">
+        <span>👑 UR: 5%</span> · <span>🌟 SSR: 20%</span> · <span>⭐ SR: 35%</span> · <span>🪙 R: 40%</span>
+        <small style="display:block;margin-top:2px;opacity:0.85">${lang === 'th' ? '✨ สุ่ม 10 ครั้ง การันตี SR ขึ้นไปอย่างน้อย 1 ชิ้น! หากได้ไอเทมซ้ำจะเปลี่ยนเป็นเหรียญทองชดเชยทันที' : '✨ 10x roll guarantees at least 1 SR+! Duplicate items convert to coins automatically.'}</small>
+      </div>
+      <div class="gacha-actions-row">
+        <button class="btn gold gacha-pull-btn" data-times="1">
+          <span class="btn-sub">🎲 ${lang === 'th' ? 'สุ่ม 1 ครั้ง' : 'Summon 1x'}</span>
+          <b class="btn-cost">💎 10</b>
+        </button>
+        <button class="btn gold gacha-pull-btn pulse-gold" data-times="10">
+          <span class="btn-sub">🌟 ${lang === 'th' ? 'สุ่ม 10 ครั้ง (การันตี SR+)' : 'Summon 10x (Guaranteed SR+)'}</span>
+          <b class="btn-cost">💎 90 <small class="save-tag">${lang === 'th' ? 'ลด 10%' : '10% OFF'}</small></b>
+        </button>
+      </div>
+    </div>`, { cls: 'wide' });
+
+    const bDia = $('#btnGachaGetDia');
+    if (bDia) bDia.onclick = () => { closeModal(); openMailboxModal(); };
+
+    $('.gacha-pull-btn').forEach(b => b.onclick = () => {
+      const times = parseInt(b.dataset.times) || 1;
+      executeGachaPull(times);
+    });
+  }
+
+  async function executeGachaPull(times) {
+    const cost = times === 10 ? 90 : 10;
+    const curDia = user ? (user.diamonds ?? 0) : parseInt(localStorage.getItem('ek_guest_diamonds') || '20');
+    if (curDia < cost) {
+      toast(lang === 'th' ? '💎 เพชรไม่พอ! สามารถรับเพชรฟรีได้จากกล่องจดหมายและเล่นชนะเกม' : 'Not enough diamonds! Claim free diamonds from Mailbox or win matches.', 'err');
+      A.sfx('nope');
       return;
     }
-    setUser(r.user); A.sfx('coin'); confetti(true);
-    toast(lang === 'th' ? '🎉 รับรางวัลประจำวันสำเร็จ! +100 เหรียญ 🪙' : 'Claimed +100 Coins! 🪙', 'good');
+
+    // Play Summoning Portal VFX
+    A.sfx('magic');
+    openModal(`<div class="summon-portal-wrap">
+      <div class="portal-core pulse"></div>
+      <div class="portal-rings"></div>
+      <h2 class="portal-text glow-gold">${lang === 'th' ? 'กำลังอัญเชิญจ่าฝูง...' : 'Summoning Pack Leaders...'}</h2>
+    </div>`, { locked: true });
+
+    let result = null;
+    if (user) {
+      result = await api('/api/gacha', { times });
+      if (result.error) {
+        closeModal();
+        return toast('⚠️ ' + terr(result.error), 'err');
+      }
+      setUser(result.user, result.vault);
+    } else {
+      localStorage.setItem('ek_guest_diamonds', curDia - cost);
+      const pulls = [];
+      const poolR = window.EK.GACHA_POOL.R;
+      const inv = JSON.parse(localStorage.getItem('ek_guest_inventory') || '[]');
+      let addCoins = 0;
+
+      for (let i = 0; i < times; i++) {
+        const roll = Math.random() * 100;
+        let tier = 'R';
+        if (roll < 5) tier = 'UR';
+        else if (roll < 25) tier = 'SSR';
+        else if (roll < 60) tier = 'SR';
+        else tier = 'R';
+
+        if (times === 10 && i === 9 && tier === 'R') tier = 'SR';
+        const pool = window.EK.GACHA_POOL[tier] || poolR;
+        const won = pool[Math.floor(Math.random() * pool.length)];
+
+        if (won.type === 'coins') {
+          addCoins += won.amount;
+          pulls.push({ ...won, isNew: false, amount: won.amount });
+        } else {
+          const isDup = inv.includes(won.id);
+          if (isDup) {
+            const refund = tier === 'UR' ? 600 : (tier === 'SSR' ? 350 : 180);
+            addCoins += refund;
+            pulls.push({ ...won, isDuplicate: true, refundCoins: refund });
+          } else {
+            inv.push(won.id);
+            pulls.push({ ...won, isNew: true });
+          }
+        }
+      }
+      localStorage.setItem('ek_guest_inventory', JSON.stringify(inv));
+      const curCoins = parseInt(localStorage.getItem('ek_guest_coins') || '100');
+      localStorage.setItem('ek_guest_coins', curCoins + addCoins);
+      renderUserChip();
+      result = { pulls };
+    }
+
+    setTimeout(() => {
+      showGachaResults(result.pulls, times);
+    }, 1200);
+  }
+
+  function showGachaResults(pulls, times) {
+    const hasUR = pulls.some(p => p.rarity === 'UR');
+    const hasSSR = pulls.some(p => p.rarity === 'SSR');
+    if (hasUR) { A.sfx('win'); confetti(true); }
+    else if (hasSSR) { A.sfx('coin'); confetti(true); }
+    else { A.sfx('coin'); }
+
+    openModal(`<div class="gacha-results-wrap">
+      <h2 class="results-heading">${lang === 'th' ? '🎉 ผลการสุ่มกาชา' : '🎉 Summon Results'}</h2>
+      <div class="gacha-pulls-grid ${pulls.length > 1 ? 'grid-10' : 'grid-1'}">
+        ${pulls.map((p, idx) => {
+          let preview = '';
+          if (p.type === 'avatar') {
+            preview = `<div class="pull-av-preview">${renderAvatarSVG(p.id)}</div>`;
+          } else if (p.type === 'frame') {
+            preview = avatarHTML({ avatar: myAvatar(), frame: p.id }, 'lg');
+          } else if (p.type === 'skin') {
+            preview = backHTML(p.id, 'style="width:68px;height:95px"');
+          } else {
+            preview = `<div class="coin-bag-art">🪙 <b style="font-size:1.1rem;color:#fde047">+${p.amount}</b></div>`;
+          }
+
+          const rarityCls = (p.rarity || 'R').toLowerCase();
+          const pName = p.name ? (p.name[lang] || p.name.en || p.name) : `เหรียญทอง ${p.amount}`;
+
+          let statusTag = '';
+          if (p.isNew) statusTag = `<span class="badge-new">NEW!</span>`;
+          else if (p.isDuplicate) statusTag = `<span class="badge-dup">+🪙${p.refundCoins}</span>`;
+
+          return `
+            <div class="pull-card tier-${rarityCls} animate-reveal" style="animation-delay:${idx * 0.08}s">
+              <div class="pull-rarity-pill ${rarityCls}">${p.rarity || 'R'}</div>
+              ${statusTag}
+              ${preview}
+              <div class="pull-name">${esc(pName)}</div>
+              ${(p.type !== 'coins' && p.isNew) ? `<button class="btn small green btn-pull-equip" data-id="${p.id}" data-type="${p.type}">${lang === 'th' ? 'ใช้งานทันที' : 'Equip'}</button>` : ''}
+            </div>
+          `;
+        }).join('')}
+      </div>
+      <div class="gacha-results-footer">
+        <button class="btn gold" id="btnGachaAgain">🔄 ${lang === 'th' ? 'สุ่มอีกครั้ง' : 'Summon Again'}</button>
+        <button class="btn" id="btnGachaDone">${lang === 'th' ? 'ตกลง' : 'OK'}</button>
+      </div>
+    </div>`, { cls: 'wide' });
+
+    $('.btn-pull-equip').forEach(b => b.onclick = async () => {
+      const id = b.dataset.id;
+      const type = b.dataset.type;
+      if (user) {
+        const r = await api('/api/equip', { itemId: id, type });
+        if (r.user) setUser(r.user, r.vault);
+      } else {
+        localStorage.setItem('ek_guest_' + type, id);
+        renderUserChip();
+      }
+      A.sfx('select');
+      toast(lang === 'th' ? '✨ สวมใส่สำเร็จ!' : 'Equipped successfully!', 'good');
+      b.textContent = lang === 'th' ? '✓ สวมใส่แล้ว' : '✓ Equipped';
+      b.classList.remove('green');
+      b.disabled = true;
+    });
+
+    const bAgain = $('#btnGachaAgain');
+    if (bAgain) bAgain.onclick = () => executeGachaPull(times);
+    const bDone = $('#btnGachaDone');
+    if (bDone) bDone.onclick = () => { closeModal(); renderUserChip(); };
   }
 
   // Bindings for top bar and main navigation
@@ -977,6 +1323,8 @@
   const dDeck = $('#dockBtnDeck'); if (dDeck) dDeck.onclick = openRules;
   const dShop = $('#dockBtnShop'); if (dShop) dShop.onclick = () => { shopTab = 'frame'; openShop(); };
   const dRanking = $('#dockBtnRanking'); if (dRanking) dRanking.onclick = openLeaderboard;
+  const dGacha = $('#dockBtnGacha'); if (dGacha) dGacha.onclick = openGachaModal;
+  const bDiamonds = $('#topDiamonds'); if (bDiamonds && bDiamonds.parentElement) bDiamonds.parentElement.onclick = openGachaModal;
 
   // top toggles
   const syncToggles = () => {
@@ -989,73 +1337,329 @@
   const btnL = $('#btnLang'); if (btnL) btnL.onclick = () => { lang = lang === 'th' ? 'en' : 'th'; localStorage.setItem('ek_lang', lang); lastSettingsKey = ''; lastSettingsStructKey = ''; applyI18n(); renderUserChip(); };
 
   // ------------------------------------------------------------ AUTH / PROFILE / SHOP / LEADERBOARD / RULES
-  function openAuth(mode) {
+  function openAuth(mode = 'login') {
+    A.sfx('click');
+    const savedVaultRaw = localStorage.getItem('ek_account_vault');
+    let localVault = null;
+    try { if (savedVaultRaw) localVault = JSON.parse(savedVaultRaw); } catch (_) {}
+
+    if (mode === 'forgot') {
+      openModal(`<h2>🔑 ${lang === 'th' ? 'รีเซ็ตรหัสผ่าน' : 'Reset Password'}</h2>
+        <form id="forgotForm" class="form">
+          <input name="username" id="fgUsername" placeholder="${t('username')}" value="${esc(localVault?.username || '')}" autocomplete="username" required>
+          <div style="position:relative;">
+            <input name="recoveryPin" id="fgPin" placeholder="${lang === 'th' ? 'PIN กู้คืน (หรือชื่อที่แสดงในเกม)' : 'Recovery PIN (or Display Name)'}" value="${esc(localVault?.recoveryPin || '')}" required>
+            ${localVault ? `<button type="button" class="btn small" id="btnAutoPin" style="position:absolute;right:4px;top:4px;padding:3px 8px;font-size:0.75rem;">📲 ${lang === 'th' ? 'เติมจากเครื่องนี้' : 'Auto Fill'}</button>` : ''}
+          </div>
+          <input name="newPassword" type="password" placeholder="${lang === 'th' ? 'รหัสผ่านใหม่ (อย่างน้อย 4 ตัว)' : 'New Password (min 4 chars)'}" autocomplete="new-password" required>
+          <input name="confirmPassword" type="password" placeholder="${lang === 'th' ? 'ยืนยันรหัสผ่านใหม่อีกครั้ง' : 'Confirm New Password'}" autocomplete="new-password" required>
+          <button class="btn big gold">${lang === 'th' ? '🔄 ตั้งรหัสผ่านใหม่และเข้าสู่ระบบ' : 'Reset Password & Log In'}</button>
+        </form>
+        <div style="margin-top:14px;text-align:center;">
+          <a href="#" id="authBackLogin">${lang === 'th' ? '← กลับไปหน้าเข้าสู่ระบบ' : '← Back to Login'}</a>
+        </div>`);
+
+      const bAuto = $('#btnAutoPin');
+      if (bAuto && localVault) {
+        bAuto.onclick = () => {
+          $('#fgUsername').value = localVault.username || '';
+          $('#fgPin').value = localVault.recoveryPin || '';
+          toast(lang === 'th' ? '📲 ดึงข้อมูลกู้คืนจากเครื่องนี้เรียบร้อย!' : 'Autofilled from device backup!', 'good');
+        };
+      }
+
+      $('#authBackLogin').onclick = (e) => { e.preventDefault(); openAuth('login'); };
+
+      $('#forgotForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const f = Object.fromEntries(new FormData(e.target));
+        if (f.newPassword !== f.confirmPassword) {
+          return toast('⚠️ ' + (lang === 'th' ? 'รหัสผ่านใหม่และการยืนยันไม่ตรงกัน' : 'Passwords do not match'), 'err');
+        }
+        const r = await api('/api/reset-password', f);
+        if (r.error) return toast('⚠️ ' + terr(r.error), 'err');
+        token = r.token;
+        localStorage.setItem('ek_token', token);
+        socket.emit('auth', token);
+        setUser(r.user, r.vault);
+        closeModal();
+        A.sfx('coin');
+        toast(lang === 'th' ? '✨ รีเซ็ตรหัสผ่านและเข้าสู่ระบบสำเร็จ!' : 'Password reset successfully!', 'good');
+      };
+      return;
+    }
+
+    if (mode === 'import') {
+      openModal(`<h2>📥 ${lang === 'th' ? 'กู้คืนบัญชีด้วยรหัสสำรอง (Passkey)' : 'Restore from Account Passkey'}</h2>
+        <p class="note" style="margin-bottom:10px;">${lang === 'th' ? 'วางรหัสสำรองบัญชี (Passkey) ที่เคยคัดลอกไว้ เพื่อดึงข้อมูลบัญชี ไอเทม เหรียญ และเพชรกลับมาทันที' : 'Paste your exported account passkey to restore your account and items.'}</p>
+        <textarea id="passkeyInput" class="form-input" style="width:100%;height:85px;font-family:monospace;font-size:0.8rem;border-radius:8px;padding:8px;box-sizing:border-box;background:#0f172a;color:#f8fafc;border:1px solid #334155;" placeholder="${lang === 'th' ? 'วางรหัส Passkey ที่นี่...' : 'Paste Passkey here...'}"></textarea>
+        <div style="margin-top:12px;display:flex;gap:8px;">
+          <button class="btn gold" id="btnDoImport" style="flex:1;">✨ ${lang === 'th' ? 'กู้คืนบัญชี' : 'Restore Account'}</button>
+          <button class="btn" id="btnCancelImport">${lang === 'th' ? 'ยกเลิก' : 'Cancel'}</button>
+        </div>`);
+
+      $('#btnCancelImport').onclick = () => openAuth('login');
+      $('#btnDoImport').onclick = async () => {
+        const raw = $('#passkeyInput').value.trim();
+        if (!raw) return toast(lang === 'th' ? 'กรุณาวางรหัส Passkey' : 'Please paste a passkey', 'err');
+        try {
+          const jsonStr = decodeURIComponent(escape(atob(raw)));
+          const vaultObj = JSON.parse(jsonStr);
+          const r = await api('/api/restore-account', { vault: vaultObj });
+          if (r.error) return toast('⚠️ ' + terr(r.error), 'err');
+          token = r.token;
+          localStorage.setItem('ek_token', token);
+          socket.emit('auth', token);
+          setUser(r.user, r.vault);
+          closeModal();
+          A.sfx('win');
+          confetti(true);
+          toast(lang === 'th' ? `🎉 กู้คืนบัญชี @${r.user.username} สำเร็จ!` : 'Account restored successfully!', 'good');
+        } catch (err) {
+          toast(lang === 'th' ? '⚠️ รหัส Passkey ไม่ถูกต้อง' : 'Invalid passkey', 'err');
+        }
+      };
+      return;
+    }
+
     const reg = mode === 'register';
     openModal(`<h2>${reg ? '📝 ' + t('register') : '🔑 ' + t('login')}</h2>
       <form id="authForm" class="form">
         <input name="username" placeholder="${t('username')}" autocomplete="username" required>
         ${reg ? `<input name="displayName" placeholder="${t('displayName')}" maxlength="16">` : ''}
         <input name="password" type="password" placeholder="${t('password')}" autocomplete="${reg ? 'new-password' : 'current-password'}" required>
+        ${reg ? `<input name="recoveryPin" placeholder="${lang === 'th' ? 'PIN กู้คืน 4-6 หลัก (สำหรับรีเซ็ตหากลืมรหัส)' : 'Recovery PIN (4-6 digits for reset)'}" maxlength="8" required>` : ''}
         <button class="btn big gold">${reg ? t('register') : t('login')}</button>
       </form>
-      <a href="#" id="authSwitch">${reg ? t('haveAccount') : t('noAccount')}</a>`);
+      <div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center;font-size:0.9rem;">
+        ${!reg ? `<a href="#" id="authForgot" style="color:#f59e0b;text-decoration:underline;">❓ ${lang === 'th' ? 'ลืมรหัสผ่าน?' : 'Forgot Password?'}</a>` : '<span></span>'}
+        <a href="#" id="authSwitch">${reg ? t('haveAccount') : t('noAccount')}</a>
+      </div>
+      <div style="margin-top:12px;text-align:center;border-top:1px solid rgba(255,255,255,0.1);padding-top:10px;">
+        <a href="#" id="authImport" style="font-size:0.82rem;color:var(--muted);text-decoration:none;">📥 ${lang === 'th' ? 'นำเข้าบัญชีเดิมด้วยรหัสสำรอง (Passkey)' : 'Restore from Account Passkey'}</a>
+      </div>`);
+
+    const bForgot = $('#authForgot');
+    if (bForgot) bForgot.onclick = (e) => { e.preventDefault(); openAuth('forgot'); };
+    const bImport = $('#authImport');
+    if (bImport) bImport.onclick = (e) => { e.preventDefault(); openAuth('import'); };
     $('#authSwitch').onclick = (e) => { e.preventDefault(); openAuth(reg ? 'login' : 'register'); };
+
     $('#authForm').onsubmit = async (e) => {
-      e.preventDefault(); const f = Object.fromEntries(new FormData(e.target));
+      e.preventDefault();
+      const f = Object.fromEntries(new FormData(e.target));
       const r = await api(reg ? '/api/register' : '/api/login', f);
       if (r.error) return toast('⚠️ ' + terr(r.error), 'err');
-      token = r.token; localStorage.setItem('ek_token', token); socket.emit('auth', token);
-      setUser(r.user); closeModal(); A.sfx('coin'); toast('👋 ' + esc(r.user.displayName));
+      token = r.token;
+      localStorage.setItem('ek_token', token);
+      socket.emit('auth', token);
+      setUser(r.user, r.vault);
+      closeModal();
+      A.sfx('coin');
+      toast('👋 ' + esc(r.user.displayName));
     };
   }
 
-  const AVATARS = ['🐶', '🐕', '🦮', '🐩', '🐕‍🦺', '🐺', '🦊', '🐾', '🦴', '🌭', '🦝', '🐻', '🐼', '🐨', '🐯', '🦁', '🐸', '🐵', '🦄', '🐲'];
+  const EMOJI_AVATARS = ['🐶', '🐕', '🦮', '🐩', '🐕‍🦺', '🐺', '🦊', '🐾', '🦴', '🌭', '🦝', '🐻', '🐼', '🐨', '🐯', '🦁', '🐸', '🐵', '🦄', '🐲'];
   function openProfile() {
     if (!user) return openAuth('login');
     const r = rankOf(user.rp), st = user.stats;
     const nextRank = window.EK.RANKS.find(x => x.min > user.rp);
+    const inv = user.inventory || [];
+    const ownedAvatars = window.EK.AVATARS.filter(a => inv.includes(a.id));
+    const curAvatar = user.equipped?.avatar || user.avatar || '🐶';
+
     openModal(`<h2>👤 ${t('profile')}</h2>
-      <div class="profile-head">${avatarHTML({ avatar: user.avatar, frame: user.equipped.frame }, 'lg')}
+      <div class="profile-head">${avatarHTML({ avatar: curAvatar, frame: user.equipped?.frame }, 'lg')}
         <div><h3>${esc(user.displayName)} <small>@${esc(user.username)}</small></h3>
         <div class="rank-line">${r.icon} <b>${r.name[lang]}</b> · ${user.rp} RP ${nextRank ? `<div class="bar"><i style="width:${Math.round((user.rp - r.min) / (nextRank.min - r.min) * 100)}%"></i></div><small>→ ${nextRank.icon} ${nextRank.min} RP</small>` : ''}</div>
-        <div class="coins big">🪙 ${user.coins}</div></div></div>
+        <div class="coins big">🪙 ${user.coins} · 💎 ${user.diamonds ?? 0}</div></div></div>
       <div class="stat-grid"><div><b>${st.games}</b>${t('games')}</div><div><b>${st.wins}</b>${t('wins')}</div><div><b>${st.games ? Math.round(st.wins / st.games * 100) : 0}%</b>${t('winRate')}</div><div><b>${st.explosions}</b>${t('explosions')}</div><div><b>${st.defuses}</b>${t('defusesStat')}</div></div>
       <h4>${t('displayName')}</h4><div class="row"><input id="pfName" value="${esc(user.displayName)}" maxlength="16"><button class="btn small" id="pfSave">${t('save')}</button></div>
-      <h4>${t('avatar')}</h4><div class="avatar-pick">${AVATARS.map(a => `<button class="${a === user.avatar ? 'on' : ''}" data-av="${a}">${a}</button>`).join('')}</div>
+
+      <h4>🔐 ${lang === 'th' ? 'ความปลอดภัย & สำรองบัญชี (กันข้อมูลหาย)' : 'Security & Account Backup'}</h4>
+      <div class="security-card" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:12px;margin-bottom:14px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span>${lang === 'th' ? 'PIN กู้คืนรหัสผ่านของคุณ:' : 'Your Recovery PIN:'} <b style="color:#fbbf24;letter-spacing:1px;font-size:1.05rem;">${user.recoveryPin || '1234'}</b></span>
+          <button class="btn small" id="btnChangePin">✏️ ${lang === 'th' ? 'เปลี่ยน PIN' : 'Change PIN'}</button>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:8px;">
+          <button class="btn small gold" id="btnExportPasskey" style="flex:1;">📋 ${lang === 'th' ? 'คัดลอกรหัสสำรองบัญชี (Passkey)' : 'Copy Account Passkey'}</button>
+        </div>
+        <small class="note" style="display:block;margin-top:6px;font-size:0.75rem;">${lang === 'th' ? '💡 หากเซิร์ฟเวอร์รีสตาร์ท ระบบจะกู้คืนข้อมูลให้อัตโนมัติ หรือคัดลอก Passkey ไปกู้คืนในเครื่องอื่นได้' : '💡 Accounts auto-restore after server restarts. You can also paste this passkey on another device.'}</small>
+      </div>
+
+      <h4>🎭 ${lang === 'th' ? 'อวตาร 3D & ลิมิเต็ดของคุณ' : 'Your 3D & Limited Avatars'}</h4>
+      <div class="owned-avatars-row">
+        ${ownedAvatars.length ? ownedAvatars.map(a => `
+          <button class="btn-owned-av ${curAvatar === a.id ? 'on' : ''}" data-av="${a.id}" title="${esc(a.name[lang] || a.name.en)}">
+            <div class="oav-preview">${renderAvatarSVG(a.id)}</div>
+            <span class="oav-name">${esc(a.name[lang] || a.name.en)}</span>
+          </button>
+        `).join('') : `<p class="note" style="margin:4px 0">${lang === 'th' ? 'ยังไม่มีอวตาร 3D ซื้อได้ที่ร้านค้าหรือสุ่มได้จากตู้กาชา!' : 'No 3D avatars owned. Visit the Shop or Gacha!'}</p>`}
+      </div>
+
+      <h4>🐶 ${lang === 'th' ? 'อวตารอิโมจิคลาสสิก' : 'Classic Dog Emojis'}</h4>
+      <div class="avatar-pick">${EMOJI_AVATARS.map(a => `<button class="${a === curAvatar ? 'on' : ''}" data-av="${a}">${a}</button>`).join('')}</div>
+
       <h4>${t('history')}</h4><div class="history">${(user.history || []).map(h => `<div>#${h.place}/${h.total} · ${VERSIONS[h.version]?.icon || ''} · 🪙+${h.coins} · ${h.rp >= 0 ? '+' : ''}${h.rp} RP</div>`).join('') || '-'}</div>
-      <div class="row"><button class="btn small" id="pfShop">🛒 ${t('shop')}</button><button class="btn small red" id="pfLogout">${t('logout')}</button></div>`);
-    const save = async (body) => { const r2 = await api('/api/profile', body); if (r2.user) { setUser(r2.user); openProfile(); } };
+      <div class="row" style="margin-top:12px;gap:8px;"><button class="btn small" id="pfShop">🛒 ${t('shop')}</button><button class="btn small gold" id="pfGacha">🎲 ${t('gacha') || 'กาชา'}</button><button class="btn small red" id="pfLogout">${t('logout')}</button></div>`);
+
+    const save = async (body) => {
+      const r2 = await api('/api/profile', body);
+      if (r2.user) {
+        setUser(r2.user, r2.vault);
+        openProfile();
+      }
+    };
+
     $('#pfSave').onclick = () => save({ displayName: $('#pfName').value });
-    $$('.avatar-pick button').forEach(b => b.onclick = () => save({ avatar: b.dataset.av }));
-    $('#pfShop').onclick = openShop;
-    $('#pfLogout').onclick = async () => { await api('/api/logout', {}); token = ''; localStorage.removeItem('ek_token'); socket.emit('auth', ''); setUser(null); closeModal(); };
+    $$('[data-av]').forEach(b => b.onclick = () => save({ avatar: b.dataset.av }));
+
+    $('#btnChangePin').onclick = async () => {
+      const newPin = prompt(lang === 'th' ? 'กรอก PIN กู้คืนรหัสผ่านใหม่ (4-12 ตัวอักษร):' : 'Enter new Recovery PIN (4-12 chars):', user.recoveryPin || '');
+      if (newPin && newPin.trim().length >= 4) {
+        const r = await api('/api/update-pin', { recoveryPin: newPin.trim() });
+        if (r.error) return toast('⚠️ ' + terr(r.error), 'err');
+        setUser(r.user, r.vault);
+        A.sfx('coin');
+        toast(lang === 'th' ? '✨ เปลี่ยน PIN กู้คืนสำเร็จ!' : 'Recovery PIN updated!', 'good');
+        openProfile();
+      }
+    };
+
+    $('#btnExportPasskey').onclick = () => {
+      const v = localStorage.getItem('ek_account_vault');
+      if (v) {
+        const code = btoa(unescape(encodeURIComponent(v)));
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(code).then(() => {
+            toast(lang === 'th' ? '📋 คัดลอกรหัสสำรองบัญชี (Passkey) สำเร็จ!' : 'Passkey copied to clipboard!', 'good');
+            A.sfx('coin');
+          }).catch(() => prompt(lang === 'th' ? 'คัดลอกรหัสสำรองบัญชีของคุณ:' : 'Copy your passkey:', code));
+        } else {
+          prompt(lang === 'th' ? 'คัดลอกรหัสสำรองบัญชีของคุณ:' : 'Copy your passkey:', code);
+        }
+      } else {
+        toast(lang === 'th' ? 'ไม่พบข้อมูลบัญชี' : 'No account vault found', 'err');
+      }
+    };
+
+    $('#pfShop').onclick = () => { closeModal(); openShop(); };
+    $('#pfGacha').onclick = () => { closeModal(); openGachaModal(); };
+    $('#pfLogout').onclick = async () => {
+      await api('/api/logout', {});
+      token = '';
+      localStorage.removeItem('ek_token');
+      socket.emit('auth', '');
+      setUser(null);
+      closeModal();
+    };
   }
 
-  let shopTab = 'frame';
+  let shopTab = 'avatar';
   function openShop() {
-    const inv = user ? user.inventory : [];
-    const tabs = [['frame', '🖼️ ' + t('frames')], ['skin', '🎴 ' + t('skins')], ['sticker', '🐶 ' + t('stickers')]];
-    const items = SHOP.filter(i => i.type === shopTab).map(i => {
-      const owned = inv.includes(i.id); const eq = user && user.equipped[i.type] === i.id;
-      const preview = i.type === 'frame' ? avatarHTML({ avatar: user?.avatar || '🐶', frame: i.id }, 'lg') : i.type === 'skin' ? backHTML(i.id, 'style="width:70px;height:98px"') : `<div class="sticker-big">${i.icon}</div>`;
-      let btn;
-      if (!owned) btn = `<button class="btn small gold" data-buy="${i.id}">🪙 ${i.price}</button>`;
-      else if (i.type === 'sticker') btn = `<span class="tag">${t('owned')}</span>`;
-      else btn = `<button class="btn small ${eq ? '' : 'green'}" data-equip="${eq ? '' : i.id}" data-type="${i.type}">${eq ? t('unequip') : t('equip')}</button>`;
-      return `<div class="shop-item ${owned ? 'owned' : ''}">${preview}<div>${i.icon} ${esc(i.name[lang])}</div>${btn}</div>`;
+    const inv = user ? (user.inventory || []) : JSON.parse(localStorage.getItem('ek_guest_inventory') || '[]');
+    const eqAv = myAvatar();
+    const eqFrame = myFrame();
+    const eqSkin = mySkin();
+
+    const tabs = [
+      ['avatar', '🎭 ' + (t('avatars') || 'อวตาร')],
+      ['frame', '🖼️ ' + t('frames')],
+      ['skin', '🎴 ' + t('skins')],
+      ['sticker', '🐶 ' + t('stickers')]
+    ];
+
+    const items = window.EK.SHOP.filter(i => i.type === shopTab).map(i => {
+      const owned = inv.includes(i.id);
+      const eq = i.type === 'avatar' ? (eqAv === i.id)
+        : i.type === 'frame' ? (eqFrame === i.id)
+        : i.type === 'skin' ? (eqSkin === i.id)
+        : false;
+
+      let preview = '';
+      if (i.type === 'avatar') {
+        preview = `<div class="shop-avatar-box">${renderAvatarSVG(i.id)}</div>`;
+      } else if (i.type === 'frame') {
+        preview = avatarHTML({ avatar: eqAv || '🐶', frame: i.id }, 'lg');
+      } else if (i.type === 'skin') {
+        preview = backHTML(i.id, 'style="width:70px;height:98px"');
+      } else {
+        preview = `<div class="sticker-big">${i.icon}</div>`;
+      }
+
+      let btn = '';
+      if (!owned) {
+        btn = `<button class="btn small gold" data-buy="${i.id}">🪙 ${i.price}</button>`;
+      } else if (i.type === 'sticker') {
+        btn = `<span class="tag">${t('owned')}</span>`;
+      } else {
+        btn = `<button class="btn small ${eq ? '' : 'green'}" data-equip="${eq ? '' : i.id}" data-type="${i.type}">${eq ? t('unequip') : t('equip')}</button>`;
+      }
+      return `<div class="shop-item ${owned ? 'owned' : ''}">
+        ${preview}
+        <div class="shop-item-name">${i.icon} ${esc(i.name[lang] || i.name.en || i.id)}</div>
+        ${btn}
+      </div>`;
     }).join('');
-    openModal(`<h2>🛒 ${t('shop')} ${user ? `<span class="coins">🪙 ${user.coins}</span>` : ''}</h2>
-      ${user ? `<button class="btn small gold" id="btnDaily">🎁 ${t('daily')}</button>` : `<p class="note">${t('loginFirst')}</p>`}
+
+    const coinVal = user ? user.coins : (localStorage.getItem('ek_guest_coins') || 100);
+    const diaVal = user ? (user.diamonds ?? 0) : (localStorage.getItem('ek_guest_diamonds') || 20);
+
+    openModal(`<h2>🛒 ${t('shop')} <span class="coins">🪙 ${coinVal} · 💎 ${diaVal}</span></h2>
+      <div style="display:flex;gap:8px;margin-bottom:10px;">
+        <button class="btn small gold" id="btnShopMail">📬 ${lang === 'th' ? 'กล่องจดหมาย & โบนัส' : 'Mailbox & Bonus'}</button>
+        <button class="btn small gold pulse-gold" id="btnShopGacha">🎲 ${t('gacha') || 'ตู้สุ่มกาชา'}</button>
+      </div>
       <div class="tabs">${tabs.map(([k, l]) => `<button class="${k === shopTab ? 'active' : ''}" data-st="${k}">${l}</button>`).join('')}</div>
       <div class="shop-grid">${items}</div>`, { cls: 'wide' });
+
     $$('[data-st]').forEach(b => b.onclick = () => { shopTab = b.dataset.st; openShop(); });
-    const d = $('#btnDaily'); if (d) d.onclick = async () => { const r = await api('/api/daily', {}); if (r.error) return toast(terr(r.error), 'err'); setUser(r.user); A.sfx('coin'); confetti(true); openShop(); };
+    const bMail = $('#btnShopMail'); if (bMail) bMail.onclick = () => { closeModal(); openMailboxModal(); };
+    const bGacha = $('#btnShopGacha'); if (bGacha) bGacha.onclick = () => { closeModal(); openGachaModal(); };
+
     $$('[data-buy]').forEach(b => b.onclick = async () => {
-      if (!user) return openAuth('login');
-      const r = await api('/api/buy', { itemId: b.dataset.buy }); if (r.error) return toast('⚠️ ' + terr(r.error), 'err');
-      setUser(r.user); A.sfx('coin'); confetti(true); openShop();
+      const itemId = b.dataset.buy;
+      if (user) {
+        const r = await api('/api/buy', { itemId });
+        if (r.error) return toast('⚠️ ' + terr(r.error), 'err');
+        setUser(r.user, r.vault);
+        A.sfx('coin');
+        confetti(true);
+        openShop();
+      } else {
+        const item = window.EK.SHOP.find(x => x.id === itemId);
+        const curCoins = parseInt(localStorage.getItem('ek_guest_coins') || '100');
+        if (curCoins < item.price) return toast(lang === 'th' ? 'เหรียญไม่พอ!' : 'Not enough coins!', 'err');
+        localStorage.setItem('ek_guest_coins', curCoins - item.price);
+        const gInv = JSON.parse(localStorage.getItem('ek_guest_inventory') || '[]');
+        gInv.push(itemId);
+        localStorage.setItem('ek_guest_inventory', JSON.stringify(gInv));
+        if (item.type === 'avatar') localStorage.setItem('ek_guest_avatar', itemId);
+        else if (item.type === 'frame') localStorage.setItem('ek_guest_frame', itemId);
+        else if (item.type === 'skin') localStorage.setItem('ek_guest_skin', itemId);
+        renderUserChip();
+        A.sfx('coin');
+        confetti(true);
+        openShop();
+      }
     });
-    $$('[data-equip]').forEach(b => b.onclick = async () => { const r = await api('/api/equip', { itemId: b.dataset.equip, type: b.dataset.type }); if (r.user) { setUser(r.user); A.sfx('select'); openShop(); } });
+
+    $$('[data-equip]').forEach(b => b.onclick = async () => {
+      const itemId = b.dataset.equip;
+      const type = b.dataset.type;
+      if (user) {
+        const r = await api('/api/equip', { itemId, type });
+        if (r.user) { setUser(r.user, r.vault); A.sfx('select'); openShop(); }
+      } else {
+        if (itemId) localStorage.setItem('ek_guest_' + type, itemId);
+        else localStorage.removeItem('ek_guest_' + type);
+        renderUserChip();
+        A.sfx('select');
+        openShop();
+      }
+    });
   }
 
   async function openLeaderboard() {
@@ -1735,12 +2339,12 @@
         const fan = Array.from({ length: nCards }, (_, i) => {
           const ang = (i - mid) * 9;
           const ty = Math.abs(i - mid) * 2.5;
-          return `<i class="fan-card skin-${theme} ${p.skin || ''}" style="--ang:${ang}deg;--ty:${ty}px"></i>`;
+          return `<i class="fan-card ${p.skin || ('skin_' + theme)}" ${p.skin ? `data-skin="${p.skin}"` : ''} style="--ang:${ang}deg;--ty:${ty}px"></i>`;
         }).join('');
         return `<div class="seat ${posCls} theme-${theme} ${isTurn ? 'turn' : ''} ${p.alive ? '' : 'dead'} ${targeted ? 'targeted' : ''}" data-id="${p.id}">
-          <div class="seat-portrait">
+          <div class="seat-portrait ${p.frame || ''}">
             <span class="seat-tag">${THEME_TAG[theme]}</span>
-            <div class="seat-dog">${dogHeroSVG(theme)}</div>
+            <div class="seat-dog ${p.frame || ''}">${renderAvatarSVG(p.avatar || '🐶', theme)}</div>
             <div class="seat-stars">⭐⭐⭐⭐⭐</div>
             <div class="seat-plate">${esc(p.name)} ${p.registered ? rankBadge(p.rp) : ''}</div>
             ${isTurn && S.turnsLeft > 1 ? `<span class="turns-badge">x${S.turnsLeft}</span>` : ''}
@@ -1759,14 +2363,14 @@
     // my own bottom-left hero seat
     const myTurn = S.state === 'PLAYING' && S.turnId === m.id && m.alive;
     const myTheme = themeForPlayer(m, 3);
-    const heroKey = JSON.stringify([m.id, m.name, m.avatar, m.frame, m.rp, m.alive, myTurn, S.turnsLeft, user?.coins, lang]);
+    const heroKey = JSON.stringify([m.id, m.name, m.avatar || myAvatar(), m.frame || myFrame(), m.skin || mySkin(), m.rp, m.alive, myTurn, S.turnsLeft, user?.coins, lang]);
     if (heroKey !== lastHeroKey) {
       lastHeroKey = heroKey;
       const heroEl = $('#myHeroSeat');
       if (heroEl) {
         heroEl.innerHTML = `<div class="my-hero theme-${myTheme} ${myTurn ? 'turn' : ''} ${m.alive ? '' : 'dead'}">
-          <div class="my-hero-ring">
-            <div class="my-hero-dog">${dogHeroSVG(myTheme)}</div>
+          <div class="my-hero-ring ${m.frame || myFrame() || ''}">
+            <div class="my-hero-dog">${renderAvatarSVG(m.avatar || myAvatar(), myTheme)}</div>
           </div>
           <div class="my-hero-stars">⭐⭐⭐⭐⭐</div>
           <div class="my-hero-plate">

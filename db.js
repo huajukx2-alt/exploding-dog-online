@@ -10,7 +10,7 @@ let db = { users: {} };          // username(lowercase) -> user
 const sessions = new Map();      // token -> username
 
 function load() {
-  try { if (fs.existsSync(FILE)) db = JSON.parse(fs.readFileSync(FILE, 'utf8')); } catch (e) { console.error('users.json load failed', e); }
+  try { if (fs.existsSync(FILE)) { const parsed = JSON.parse(fs.readFileSync(FILE, 'utf8')); db.users = parsed.users || {}; } } catch (e) { console.error('users.json load failed', e); }
   if (!db.users) db.users = {};
   for (const u of Object.values(db.users)) if (u.token) sessions.set(u.token, u.username.toLowerCase());
 }
@@ -41,6 +41,156 @@ const hash = (pw, salt) => {
 
 const FORBIDDEN_KEYS = new Set(['__proto__', 'constructor', 'prototype', 'tostring', 'valueof']);
 
+const VAULT_SECRET = process.env.APP_SECRET || 'ek_alpha_vault_salt_secure_2026';
+
+function computeVaultSignature(data) {
+  if (!data) return '';
+  const content = [
+    String(data.username || '').toLowerCase(),
+    String(data.salt || ''),
+    String(data.pw || ''),
+    String(data.recoveryPin || ''),
+    Number(data.coins || 0),
+    Number(data.diamonds || 0),
+    Number(data.rp || 0),
+    JSON.stringify(data.inventory || []),
+    JSON.stringify(data.equipped || {})
+  ].join('::');
+  return crypto.createHmac('sha256', VAULT_SECRET).update(content).digest('hex');
+}
+
+function generateVault(u) {
+  if (!u) return null;
+  const raw = {
+    username: u.username,
+    displayName: u.displayName,
+    avatar: u.avatar || '🐶',
+    salt: u.salt,
+    pw: u.pw,
+    recoveryPin: u.recoveryPin || '1234',
+    coins: u.coins ?? 500,
+    diamonds: u.diamonds ?? 30,
+    rp: u.rp ?? 0,
+    stats: u.stats || { games: 0, wins: 0, explosions: 0, defuses: 0 },
+    inventory: u.inventory || [],
+    equipped: u.equipped || { frame: null, skin: null, avatar: null },
+    claimedMail: u.claimedMail || [],
+    recoveryPin: u.recoveryPin || '1234',
+    history: (u.history || []).slice(0, 10),
+    createdAt: u.createdAt || Date.now(),
+    updatedAt: u.updatedAt || Date.now()
+  };
+  return {
+    ...raw,
+    sig: computeVaultSignature(raw)
+  };
+}
+
+function restoreFromVault(vault) {
+  if (!vault || !vault.username || !vault.pw || !vault.salt || !vault.sig) {
+    return { error: 'invalid_vault' };
+  }
+  const expectedSig = computeVaultSignature(vault);
+  if (vault.sig !== expectedSig) {
+    console.warn('[db] Tampered vault signature for user:', vault.username);
+    return { error: 'bad_signature' };
+  }
+
+  const key = String(vault.username).trim().toLowerCase();
+  if (FORBIDDEN_KEYS.has(key)) return { error: 'bad_username' };
+
+  let u = db.users[key];
+  if (!u) {
+    // Completely restore user when server woke up or restarted
+    u = {
+      username: vault.username,
+      displayName: vault.displayName || vault.username,
+      avatar: vault.avatar || '🐶',
+      salt: vault.salt,
+      pw: vault.pw,
+      recoveryPin: vault.recoveryPin || '1234',
+      coins: vault.coins ?? 500,
+      diamonds: vault.diamonds ?? 30,
+      rp: vault.rp ?? 0,
+      stats: vault.stats || { games: 0, wins: 0, explosions: 0, defuses: 0 },
+      inventory: Array.from(new Set(vault.inventory || [])),
+      equipped: vault.equipped || { frame: null, skin: null, avatar: null },
+      claimedMail: vault.claimedMail || [],
+      history: vault.history || [],
+      createdAt: vault.createdAt || Date.now(),
+      updatedAt: vault.updatedAt || Date.now()
+    };
+    db.users[key] = u;
+    console.log(`[db] Resurrected user @${vault.username} from client vault into memory and disk!`);
+  } else {
+    // User exists; update if vault has higher or newer progress
+    if ((vault.updatedAt || 0) >= (u.updatedAt || 0)) {
+      u.coins = Math.max(u.coins ?? 0, vault.coins ?? 0);
+      u.diamonds = Math.max(u.diamonds ?? 0, vault.diamonds ?? 0);
+      u.rp = Math.max(u.rp ?? 0, vault.rp ?? 0);
+      u.inventory = Array.from(new Set([...(u.inventory || []), ...(vault.inventory || [])]));
+      if (vault.equipped) u.equipped = vault.equipped;
+      if (vault.avatar) u.avatar = vault.avatar;
+      if (vault.recoveryPin) u.recoveryPin = vault.recoveryPin;
+      u.updatedAt = Date.now();
+    }
+  }
+
+  const token = crypto.randomBytes(24).toString('hex');
+  u.token = token;
+  sessions.set(token, key);
+  save();
+
+  return { token, user: publicUser(u), vault: generateVault(u) };
+}
+
+function resetPassword(username, recoveryPin, newPassword) {
+  username = String(username || '').trim();
+  const key = username.toLowerCase();
+  const u = db.users[key];
+  if (!u) return { error: 'user_not_found' };
+
+  if (String(newPassword || '').length < 4) return { error: 'bad_password' };
+
+  const pin = String(recoveryPin || '').trim();
+  const storedPin = String(u.recoveryPin || '').trim();
+  const storedDisplay = String(u.displayName || '').trim();
+
+  // Allow match if PIN matches, OR if PIN matches displayName (for legacy accounts), OR if no pin was set and pin is '1234'
+  const isPinValid = (storedPin && pin === storedPin) ||
+                     (!storedPin && (pin === '1234' || pin === storedDisplay)) ||
+                     (pin === storedDisplay);
+
+  if (!isPinValid) {
+    return { error: 'bad_recovery_pin' };
+  }
+
+  // Update password
+  const newSalt = crypto.randomBytes(16).toString('hex');
+  u.salt = newSalt;
+  u.pw = hash(newPassword, newSalt);
+  if (!u.recoveryPin) u.recoveryPin = pin === '1234' ? '1234' : pin;
+  u.updatedAt = Date.now();
+
+  const token = crypto.randomBytes(24).toString('hex');
+  u.token = token;
+  sessions.set(token, key);
+  save();
+
+  return { token, user: publicUser(u), vault: generateVault(u) };
+}
+
+function updateRecoveryPin(token, newPin) {
+  const u = byToken(token);
+  if (!u) return { error: 'auth' };
+  newPin = String(newPin || '').trim();
+  if (newPin.length < 4 || newPin.length > 12) return { error: 'bad_pin_length' };
+  u.recoveryPin = newPin;
+  u.updatedAt = Date.now();
+  save();
+  return { user: publicUser(u), vault: generateVault(u) };
+}
+
 function publicUser(u) {
   if (!u) return null;
   return {
@@ -54,11 +204,12 @@ function publicUser(u) {
     inventory: u.inventory || [],
     equipped: u.equipped || { frame: null, skin: null, avatar: null },
     claimedMail: u.claimedMail || [],
+    recoveryPin: u.recoveryPin || '1234',
     history: (u.history || []).slice(0, 10)
   };
 }
 
-function register(username, password, displayName) {
+function register(username, password, displayName, recoveryPin) {
   username = String(username || '').trim();
   if (!/^[a-zA-Z0-9_]{3,16}$/.test(username)) return { error: 'bad_username' };
   const key = username.toLowerCase();
@@ -68,16 +219,19 @@ function register(username, password, displayName) {
   const salt = crypto.randomBytes(16).toString('hex');
   const token = crypto.randomBytes(24).toString('hex');
   const cleanDisplay = String(displayName || username).replace(/[<>]/g, '').trim().slice(0, 16) || username;
+  const pin = String(recoveryPin || '').trim() || String(Math.floor(1000 + Math.random() * 9000));
+  const now = Date.now();
   db.users[key] = {
     username, displayName: cleanDisplay, avatar: '🐶',
     salt, pw: hash(password, salt), token, coins: 500, diamonds: 30, rp: 0,
+    recoveryPin: pin,
     stats: { games: 0, wins: 0, explosions: 0, defuses: 0 },
     inventory: [], equipped: { frame: null, skin: null, avatar: null },
-    claimedMail: [], history: [], createdAt: Date.now()
+    claimedMail: [], history: [], createdAt: now, updatedAt: now
   };
   sessions.set(token, key);
   save();
-  return { token, user: publicUser(db.users[key]) };
+  return { token, user: publicUser(db.users[key]), vault: generateVault(db.users[key]) };
 }
 
 function login(username, password) {
@@ -88,8 +242,10 @@ function login(username, password) {
   if (u.token) sessions.delete(u.token);
   u.token = crypto.randomBytes(24).toString('hex');
   sessions.set(u.token, u.username.toLowerCase());
+  if (!u.recoveryPin) u.recoveryPin = '1234';
+  u.updatedAt = Date.now();
   save();
-  return { token: u.token, user: publicUser(u) };
+  return { token: u.token, user: publicUser(u), vault: generateVault(u) };
 }
 
 function byToken(token) { const k = sessions.get(token); return k ? db.users[k] : null; }
@@ -112,7 +268,7 @@ function updateProfile(token, body) {
       u.equipped.avatar = avatar;
     }
   }
-  save(); return { user: publicUser(u) };
+  u.updatedAt = Date.now(); save(); return { user: publicUser(u), vault: generateVault(u) };
 }
 
 function buy(token, itemId) {
@@ -141,7 +297,7 @@ function buy(token, itemId) {
     u.equipped.skin = itemId;
   }
 
-  save(); return { user: publicUser(u) };
+  u.updatedAt = Date.now(); save(); return { user: publicUser(u), vault: generateVault(u) };
 }
 
 function equip(token, itemId, type) {
@@ -168,7 +324,7 @@ function dailyBonus(token) {
   u.lastDaily = today;
   u.coins = (u.coins || 0) + 100;
   u.diamonds = (u.diamonds || 0) + 2;
-  save(); return { user: publicUser(u), amount: 100, diamonds: 2 };
+  u.updatedAt = Date.now(); save(); return { user: publicUser(u), amount: 100, diamonds: 2, vault: generateVault(u) };
 }
 
 // ---------------------------------------------------------------- GACHA
@@ -214,8 +370,8 @@ function gacha(token, times = 1) {
       }
     }
   }
-  save();
-  return { user: publicUser(u), pulls, cost };
+  u.updatedAt = Date.now(); save();
+  return { user: publicUser(u), pulls, cost, vault: generateVault(u) };
 }
 
 // ---------------------------------------------------------------- MAILBOX
@@ -282,8 +438,8 @@ function claimMail(token, mailId) {
   if (totalCoins === 0 && totalDiamonds === 0) return { error: 'claimed' };
   u.coins = (u.coins || 0) + totalCoins;
   u.diamonds = (u.diamonds || 0) + totalDiamonds;
-  save();
-  return { user: publicUser(u), coins: totalCoins, diamonds: totalDiamonds };
+  u.updatedAt = Date.now(); save();
+  return { user: publicUser(u), coins: totalCoins, diamonds: totalDiamonds, vault: generateVault(u) };
 }
 
 // result: { place, total, won, exploded, defuses, vsBotsOnly, version }
@@ -300,8 +456,8 @@ function recordGame(username, r) {
   if (r.exploded) u.stats.explosions++;
   u.stats.defuses += r.defuses;
   u.history = [{ t: Date.now(), place: r.place, total: r.total, coins, rp: rpDelta, version: r.version }, ...(u.history || [])].slice(0, 20);
-  save();
-  return { coins, rp: rpDelta, user: publicUser(u) };
+  u.updatedAt = Date.now(); save();
+  return { coins, rp: rpDelta, user: publicUser(u), vault: generateVault(u) };
 }
 
 function leaderboard() {
@@ -311,6 +467,7 @@ function leaderboard() {
 
 load();
 module.exports = {
-  register, login, logout, byToken, publicUser, updateProfile,
-  buy, equip, dailyBonus, gacha, getMailbox, claimMail, recordGame, leaderboard
+  load, save, register, login, logout, byToken, publicUser, updateProfile,
+  buy, equip, dailyBonus, gacha, getMailbox, claimMail, recordGame, leaderboard,
+  generateVault, restoreFromVault, resetPassword, updateRecoveryPin, db
 };
