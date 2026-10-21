@@ -127,6 +127,8 @@ function generateVault(u) {
     inventory: u.inventory || [],
     equipped: u.equipped || { frame: null, skin: null, avatar: null, title: 'title_rookie' },
     title: u.equipped?.title || u.title || 'title_rookie',
+    dailyStreak: u.dailyStreak || 0,
+    lastDaily: u.lastDaily || '',
     claimedMail: u.claimedMail || [],
     recoveryPin: u.recoveryPin || '1234',
     history: (u.history || []).slice(0, 10),
@@ -260,6 +262,8 @@ function publicUser(u) {
     inventory: u.inventory || [],
     equipped: u.equipped || { frame: null, skin: null, avatar: null, title: 'title_rookie' },
     title: u.equipped?.title || u.title || 'title_rookie',
+    dailyStreak: u.dailyStreak || 0,
+    lastDaily: u.lastDaily || '',
     claimedMail: u.claimedMail || [],
     recoveryPin: u.recoveryPin || '1234',
     history: (u.history || []).slice(0, 10)
@@ -398,14 +402,40 @@ function equip(token, itemId, type) {
   save(); return { user: publicUser(u), vault: generateVault(u) };
 }
 
+const STREAK_REWARDS = [
+  { day: 1, coins: 200, diamonds: 10 },
+  { day: 2, coins: 350, diamonds: 15 },
+  { day: 3, coins: 500, diamonds: 25 },
+  { day: 4, coins: 700, diamonds: 30 },
+  { day: 5, coins: 900, diamonds: 40 },
+  { day: 6, coins: 1200, diamonds: 50 },
+  { day: 7, coins: 2500, diamonds: 100 }
+];
+
 function dailyBonus(token) {
   const u = byToken(token); if (!u) return { error: 'auth' };
   const today = new Date().toISOString().slice(0, 10);
   if (u.lastDaily === today) return { error: 'claimed' };
+
+  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+  if (u.lastDaily === yesterday) {
+    u.dailyStreak = ((u.dailyStreak || 0) % 7) + 1;
+  } else {
+    u.dailyStreak = 1;
+  }
   u.lastDaily = today;
-  u.coins = (u.coins || 0) + 100;
-  u.diamonds = (u.diamonds || 0) + 2;
-  u.updatedAt = Date.now(); save(); return { user: publicUser(u), amount: 100, diamonds: 2, vault: generateVault(u) };
+
+  const curReward = STREAK_REWARDS[u.dailyStreak - 1] || STREAK_REWARDS[0];
+  u.coins = (u.coins || 0) + curReward.coins;
+  u.diamonds = (u.diamonds || 0) + curReward.diamonds;
+  u.updatedAt = Date.now(); save();
+  return {
+    user: publicUser(u),
+    amount: curReward.coins,
+    diamonds: curReward.diamonds,
+    streak: u.dailyStreak,
+    vault: generateVault(u)
+  };
 }
 
 // ---------------------------------------------------------------- GACHA

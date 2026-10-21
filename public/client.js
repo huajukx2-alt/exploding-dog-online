@@ -977,6 +977,7 @@
       renderUserChip();
       show('home');
       renderHome();
+      setTimeout(() => checkDailyLoginStatus(true), 800);
       checkMailboxStatus();
       toast(lang === 'th' ? `⚡ เข้าเล่นด่วนในฐานะ ${gName}` : `Quick playing as ${gName}`, 'good');
     }
@@ -1178,10 +1179,12 @@
       if (sDia) sDia.textContent = user.diamonds || Math.floor((user.rp || 0) / 25) + 15;
     } else {
       if (av) av.textContent = '🐶';
-      if (lvl) lvl.textContent = 'LV.1';
+      const curXp = parseInt(localStorage.getItem('ek_guest_xp') || '0', 10);
+      const curLvl = Math.min(99, Math.floor(curXp / 100) + 1);
+      if (lvl) lvl.textContent = 'LV.' + curLvl;
       const saved = localStorage.getItem('ek_name');
       if (nm) nm.textContent = saved || (lang === 'th' ? 'ผู้เล่นทั่วไป (เข้าสู่ระบบ)' : 'Guest (Log in)');
-      if (xp) xp.style.width = '25%';
+      if (xp) xp.style.width = Math.min(100, Math.max(12, curXp % 100)) + '%';
       const gC = localStorage.getItem('ek_guest_coins') || '100';
       const gD = localStorage.getItem('ek_guest_diamonds') || '20';
       if (coins) coins.textContent = gC;
@@ -1350,6 +1353,8 @@
     if (stageMascot && !stageMascot.innerHTML) {
       stageMascot.innerHTML = typeof bossShibaMascotSVG === 'function' ? bossShibaMascotSVG() : '👑🐶';
     }
+    renderUserChip();
+    checkDailyLoginStatus(false);
   }
 
     const myAvatar = () => (user && (user.equipped?.avatar || user.avatar)) || localStorage.getItem('ek_guest_avatar') || '🐶';
@@ -1397,7 +1402,7 @@
       tag: { th: 'ซ่อนระเบิดมือ', en: 'STREAKING HEIST' },
       theme: 'cyber',
       avatar: 'av_cyber_husky',
-      desc: { th: 'หมาซ่อนระเบิดไว้ในมือได้! กองขยะ ตาบอด และคำสาปสลับขั้วชวนระแวง', en: 'Hold bombs secretly in hand! Garbage dump, blind cat & swap-top.' },
+      desc: { th: 'หมาซ่อนระเบิดไว้ในมือได้! กองขยะ ตาบอด และคำสาปสลับขั้วชวนระแวง', en: 'Hold bombs secretly in hand! Garbage dump, blind pup & swap-top.' },
       accent: '#06b6d4',
       glow: 'rgba(6, 182, 212, 0.45)',
       badgeBg: 'rgba(6, 182, 212, 0.18)'
@@ -1998,6 +2003,155 @@
     if ($('#stLogin')) $('#stLogin').onclick = () => { closeModal(); openAuth('login'); };
   }
 
+
+  // ------------------------------------------------------------ 7-DAY DAILY LOGIN STREAK SYSTEM
+  const DAILY_STREAK_AWARDS = [
+    { day: 1, coins: 200, diamonds: 10, icon: '🪙', label: { th: 'เหรียญเริ่มต้น', en: 'Starter Pack' } },
+    { day: 2, coins: 350, diamonds: 15, icon: '🦴', label: { th: 'กระดูกนำโชค', en: 'Lucky Bone' } },
+    { day: 3, coins: 500, diamonds: 25, icon: '🐕', label: { th: 'หมานักสู้', en: 'Fighter Pup' } },
+    { day: 4, coins: 700, diamonds: 30, icon: '🥩', label: { th: 'สเต๊กเนื้อทอง', en: 'Golden Steak' } },
+    { day: 5, coins: 900, diamonds: 40, icon: '✨', label: { th: 'ผงเวทมนตร์', en: 'Magic Dust' } },
+    { day: 6, coins: 1200, diamonds: 50, icon: '💎', label: { th: 'ถุงเพชรใหญ่', en: 'Gem Pouch' } },
+    { day: 7, coins: 2500, diamonds: 100, icon: '👑', label: { th: 'ราชาหมาระเบิด', en: 'Golden Doge Jackpot' }, isJackpot: true }
+  ];
+
+  function getDailyStreakData() {
+    const today = new Date().toISOString().slice(0, 10);
+    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+
+    if (user) {
+      const last = user.lastDaily || '';
+      let streak = user.dailyStreak || 0;
+      const claimedToday = last === today;
+      if (last && last !== yesterday && last !== today) {
+        streak = 0;
+      }
+      return { streak, claimedToday, today };
+    } else {
+      const last = localStorage.getItem('ek_daily_last_date') || '';
+      let streak = parseInt(localStorage.getItem('ek_daily_streak_count') || '0', 10);
+      const claimedToday = last === today;
+      if (last && last !== yesterday && last !== today) {
+        streak = 0;
+      }
+      return { streak, claimedToday, today };
+    }
+  }
+
+  function checkDailyLoginStatus(autoOpen = false) {
+    const { streak, claimedToday } = getDailyStreakData();
+    const dot = $('#dailyDot');
+    if (dot) dot.style.display = claimedToday ? 'none' : 'block';
+
+    if (autoOpen && !claimedToday) {
+      if (screen === 'home') {
+        setTimeout(() => openDailyStreakModal(), 600);
+      }
+    }
+  }
+
+  function openDailyStreakModal() {
+    A.sfx('click');
+    const { streak, claimedToday, today } = getDailyStreakData();
+    const isTh = lang === 'th';
+    const nextDay = claimedToday ? Math.min(7, streak) : Math.min(7, (streak % 7) + 1);
+
+    const cardsHtml = DAILY_STREAK_AWARDS.map(item => {
+      let statusClass = 'locked';
+      let badgeText = isTh ? `วันที่ ${item.day}` : `Day ${item.day}`;
+      let checkMark = '';
+
+      if (claimedToday) {
+        if (item.day <= streak) {
+          statusClass = 'claimed';
+          checkMark = '<span class="d-check">✅</span>';
+        }
+      } else {
+        if (item.day < nextDay) {
+          statusClass = 'claimed';
+          checkMark = '<span class="d-check">✅</span>';
+        } else if (item.day === nextDay) {
+          statusClass = 'active';
+          checkMark = '<span class="d-claim-tag">' + (isTh ? 'กดรับ!' : 'CLAIM') + '</span>';
+        }
+      }
+
+      return `
+        <div class="daily-card ${statusClass} ${item.isJackpot ? 'jackpot' : ''}">
+          <div class="dc-day">${badgeText} ${checkMark}</div>
+          <div class="dc-icon">${item.icon}</div>
+          <div class="dc-rewards">
+            <span class="dc-coins">🪙 ${item.coins.toLocaleString()}</span>
+            <span class="dc-dia">💎 ${item.diamonds}</span>
+          </div>
+          <div class="dc-lbl">${item.label[lang] || item.label.th}</div>
+        </div>
+      `;
+    }).join('');
+
+    const claimBtnHtml = claimedToday
+      ? `<div class="daily-claimed-msg">✅ ${isTh ? `คุณรับรางวัลของวันที่ ${streak} เรียบร้อยแล้ว! พรุ่งนี้กลับมารับวันที่ ${Math.min(7, (streak % 7) + 1)} ต่อนะ` : `You have already claimed Day ${streak}! Come back tomorrow for Day ${Math.min(7, (streak % 7) + 1)}!`}</div>`
+      : `<button class="btn big gold daily-claim-action" id="btnClaimDailyStreak">✦ ${isTh ? `รับรางวัลวันที่ ${nextDay} ฟรี! (CLAIM DAY ${nextDay})` : `CLAIM DAY ${nextDay} REWARD!`} ✦</button>`;
+
+    openModal(`
+      <div class="daily-calendar-wrap">
+        <div class="daily-header">
+          <div class="daily-mascot">🐕🎁</div>
+          <div class="daily-title-box">
+            <h2>📅 ${isTh ? 'เช็คอินรายวัน 7 วัน (7-Day Daily Streak)' : '7-Day Daily Login Streak'}</h2>
+            <p>${isTh ? 'เข้าเล่นทุกวันเพื่อสะสมของรางวัล ยิ่งล็อกอินติดกันรางวัลยิ่งใหญ่!' : 'Log in every day to collect rewards! Greater streak, bigger jackpot!'}</p>
+          </div>
+        </div>
+        <div class="daily-grid">${cardsHtml}</div>
+        <div class="daily-footer-row">${claimBtnHtml}</div>
+      </div>
+    `, { cls: 'wide' });
+
+    const btnClaim = $('#btnClaimDailyStreak');
+    if (btnClaim) {
+      btnClaim.onclick = async () => {
+        btnClaim.disabled = true;
+        btnClaim.textContent = isTh ? '⏳ กำลังรับรางวัล...' : '⏳ Claiming...';
+
+        if (user) {
+          try {
+            const r = await api('/api/daily', 'POST');
+            if (r.error) {
+              toast('⚠️ ' + (r.error === 'claimed' ? (isTh ? 'คุณรับรางวัลของวันนี้ไปแล้ว' : 'Already claimed today') : r.error), 'err');
+              closeModal(true);
+              return;
+            }
+            setUser(r.user, r.vault);
+            renderUserChip();
+            A.sfx('win');
+            confetti(true);
+            toast(isTh ? `🎉 เช็คอินสำเร็จ! วันที่ ${r.streak}: +🪙${r.amount} +💎${r.diamonds}` : `🎉 Claimed Day ${r.streak}! +🪙${r.amount} +💎${r.diamonds}`, 'good');
+            checkDailyLoginStatus(false);
+            openDailyStreakModal();
+          } catch (e) {
+            toast(isTh ? '⚠️ การเชื่อมต่อขัดข้อง' : 'Connection error', 'err');
+          }
+        } else {
+          // Guest
+          const nextStreak = (streak % 7) + 1;
+          const rew = DAILY_STREAK_AWARDS[nextStreak - 1] || DAILY_STREAK_AWARDS[0];
+          const curC = parseInt(localStorage.getItem('ek_guest_coins') || '100');
+          const curD = parseInt(localStorage.getItem('ek_guest_diamonds') || '20');
+          localStorage.setItem('ek_guest_coins', curC + rew.coins);
+          localStorage.setItem('ek_guest_diamonds', curD + rew.diamonds);
+          localStorage.setItem('ek_daily_last_date', today);
+          localStorage.setItem('ek_daily_streak_count', nextStreak);
+          renderUserChip();
+          A.sfx('win');
+          confetti(true);
+          toast(isTh ? `🎉 เช็คอินสำเร็จ! วันที่ ${nextStreak}: +🪙${rew.coins} +💎${rew.diamonds}` : `🎉 Claimed Day ${nextStreak}! +🪙${rew.coins} +💎${rew.diamonds}`, 'good');
+          checkDailyLoginStatus(false);
+          openDailyStreakModal();
+        }
+      };
+    }
+  }
+
   // ------------------------------------------------------------ MAILBOX SYSTEM
   async function checkMailboxStatus() {
     const dots = [$('#btnMail .ti-dot'), $('#btnStageMail .ti-dot')];
@@ -2376,6 +2530,7 @@
 
   // Bindings for top bar and main navigation
   const pCard = $('#playerProfileCard'); if (pCard) pCard.onclick = () => openProfile();
+  const bDaily = $('#btnDaily'); if (bDaily) bDaily.onclick = openDailyStreakModal;
   const bMail = $('#btnMail'); if (bMail) bMail.onclick = openMailboxModal;
   const bSettings = $('#btnSettings'); if (bSettings) bSettings.onclick = openSettingsModal;
 
@@ -3254,7 +3409,7 @@
         return false;
       }
       if (this.step === 6 && card.id !== 'tacocat') {
-        this.wobbleCoach(lang === 'th' ? 'เลือกการ์ด 🌮 "ทาโก้แคท" ทั้ง 2 ใบเพื่อเล่นคอมโบไพ่คู่ขโมยการ์ดนะ!' : 'Select both 🌮 "Tacocat" cards to perform a pair steal combo!');
+        this.wobbleCoach(lang === 'th' ? 'เลือกการ์ด 🌭 "หมาไส้กรอก" ทั้ง 2 ใบเพื่อเล่นคอมโบไพ่คู่ขโมยการ์ดนะ!' : 'Select both 🌭 "Hotdog Pup" cards to perform a pair steal combo!');
         A.sfx('nope');
         this.wobbleEl(el);
         return false;
@@ -3391,7 +3546,7 @@
       // STEP 6: Play 2x tacocat (Pair combo)
       if (this.step === 6) {
         if (cards.length !== 2 || !cards.every(c => c.id === 'tacocat')) {
-          return this.wobbleCoach(lang === 'th' ? 'ในบทนี้ต้องเลือกการ์ด 🌮 "ทาโก้แคท" ทั้ง 2 ใบนะ!' : 'Please select both 🌮 "Tacocat" cards!');
+          return this.wobbleCoach(lang === 'th' ? 'ในบทนี้ต้องเลือกการ์ด 🌭 "หมาไส้กรอก" ทั้ง 2 ใบนะ!' : 'Please select both 🌭 "Hotdog Pup" cards!');
         }
         this.clearHighlights();
         sel = [];
@@ -3794,11 +3949,11 @@
           break;
 
         case 6:
-          title = isTh ? 'บทที่ 6/8: คอมโบการ์ดแมวคู่' : 'Lesson 6/8: Pair Cat Combo';
+          title = isTh ? 'บทที่ 6/8: คอมโบการ์ดแก๊งหมาคู่' : 'Lesson 6/8: Pair Dog Squad Combo';
           text = isTh
-            ? 'รู้หรือไม่? การ์ดแมวสามารถจับคู่ 2 ใบเหมือนกัน (Pair) เพื่อ <b>ขโมยการ์ด 1 ใบจากมือคู่แข่ง</b> ได้! ครูฝึกมอบการ์ด ทาโก้แคท ให้คุณอีก 1 ใบ ลองจับคู่ขโมยการ์ดบ็อบบี้เลย!'
-            : 'Did you know? Matching 2 identical cat cards (Pair Combo) lets you <b>steal a card from your opponent</b>! Coach Bobby gave you a 2nd Tacocat. Select both to steal from Bobby!';
-          guide = isTh ? '👉 เลือกการ์ด <b>Tacocat ทั้ง 2 ใบ</b> ในมือ แล้วกด <b>🚀 ลงไพ่คู่</b>' : '👉 Select <b>both Tacocats</b> in hand and tap <b>🚀 Play Pair Combo</b>';
+            ? 'รู้หรือไม่? การ์ดแก๊งหมาสามารถจับคู่ 2 ใบเหมือนกัน (Pair) เพื่อ <b>ขโมยการ์ด 1 ใบจากมือคู่แข่ง</b> ได้! ครูฝึกมอบการ์ด หมาไส้กรอก ให้คุณอีก 1 ใบ ลองจับคู่ขโมยการ์ดบ็อบบี้เลย!'
+            : 'Did you know? Matching 2 identical dog cards (Pair Combo) lets you <b>steal a card from your opponent</b>! Coach Bobby gave you a 2nd Hotdog Pup. Select both to steal from Bobby!';
+          guide = isTh ? '👉 เลือกการ์ด <b>หมาไส้กรอก ทั้ง 2 ใบ</b> ในมือ แล้วกด <b>🚀 ลงไพ่คู่</b>' : '👉 Select <b>both Hotdog Pups</b> in hand and tap <b>🚀 Play Pair Combo</b>';
           this.highlightCardInHand('tacocat', true);
           break;
 
@@ -5572,12 +5727,15 @@
       const baseCoins = (gWon ? 120 : 30) + (results.length - mine.place) * 15;
       const gCoins = Math.round(baseCoins * stkConfig.mult);
       const gDia = (gWon ? 3 : (mine.place === 2 ? 1 : 0)) + (gWon ? (stkConfig.bonusDiamonds || (stkConfig.diamonds ? stkConfig.diamonds * 2 : 0)) : 0);
+      const gXp = gWon ? 50 : 20;
       const curC = parseInt(localStorage.getItem('ek_guest_coins') || '100');
       const curD = parseInt(localStorage.getItem('ek_guest_diamonds') || '20');
+      const curXp = parseInt(localStorage.getItem('ek_guest_xp') || '0');
       localStorage.setItem('ek_guest_coins', curC + gCoins);
       localStorage.setItem('ek_guest_diamonds', curD + gDia);
+      localStorage.setItem('ek_guest_xp', curXp + gXp);
       renderUserChip();
-      mine.reward = { coins: gCoins, diamonds: gDia, rp: gWon ? 25 : 5, stake: stakeKey };
+      mine.reward = { coins: gCoins, diamonds: gDia, xp: gXp, rp: gWon ? 25 : 5, stake: stakeKey };
     }
 
     const stakeBadgeHtml = stkConfig && stkConfig.mult > 1 ? `<div class="result-stake-ribbon">${stkConfig.icon} <b>${stkConfig.name[lang] || stkConfig.name.th}</b> <span class="rsr-mult">x${stkConfig.mult} REWARDS</span></div>` : '';
@@ -5586,6 +5744,8 @@
       if (r.reward) {
         const parts = [`🪙 +${r.reward.coins}`];
         if (r.reward.diamonds) parts.push(`<b style="color:#38bdf8">💎 +${r.reward.diamonds}</b>`);
+        if (r.reward.xp) parts.push(`<b style="color:#a855f7">⭐ +${r.reward.xp} XP</b>`);
+        else if (r.reward.rp !== undefined) parts.push(`<b style="color:#a855f7">⭐ +${Math.max(15, r.reward.rp * 2)} XP</b>`);
         if (r.reward.rp !== undefined) parts.push(`${r.reward.rp >= 0 ? '+' : ''}${r.reward.rp} RP`);
         rewText = `<span class="reward">${parts.join(' · ')}</span>`;
       }
@@ -5598,13 +5758,38 @@
         </div>`;
     }).join('')}</div>
       ${!user ? `<p class="note">${t('guestNote')}</p>` : ''}
-      <div class="row">${isHost ? `<button class="btn big gold" id="resLobby">🔄 ${t('playAgain')}</button>` : `<span class="note" style="align-self:center;">⏳ ${lang === 'th' ? 'รอหัวหน้าห้องเริ่มตาใหม่...' : 'Waiting for host to restart...'}</span>`}<button class="btn big" id="resHome">🏠 ${t('home')}</button></div>`, { cls: 'results-modal' });
+      <div class="row">
+        ${isHost 
+          ? `<button class="btn big gold" id="resLobby">⚔️ ${lang === 'th' ? 'เริ่มตาใหม่ (REMATCH)' : 'PLAY AGAIN'}</button>` 
+          : `<button class="btn big gold" id="resQuickPlay">⚡ ${lang === 'th' ? 'หาห้องใหม่ทันที' : 'QUICK MATCH'}</button>`
+        }
+        <button class="btn big" id="resHome">🏠 ${t('home')}</button>
+      </div>`, { cls: 'results-modal' });
     if (fresh && mine && mine.reward) {
       A.sfx(mine.place === 1 ? 'win' : 'coin');
       if (mine.place === 1) confetti(true);
     }
     const l = $('#resLobby'); if (l) l.onclick = () => { closeModal(true); socket.emit('backToLobby'); };
-    $('#resHome').onclick = () => { closeModal(true); socket.emit('leaveRoom'); };
+    const qp = $('#resQuickPlay');
+    if (qp) {
+      qp.onclick = () => {
+        closeModal(true);
+        socket.emit('leaveRoom');
+        setTimeout(() => {
+          show('browser');
+          renderStageBrowser();
+        }, 150);
+      };
+    }
+    const rh = $('#resHome');
+    if (rh) {
+      rh.onclick = () => {
+        closeModal(true);
+        socket.emit('leaveRoom');
+        show('home');
+        renderHome();
+      };
+    }
   }
 
   function roulette(order, firstId) {
