@@ -781,6 +781,7 @@
       }
     });
     document.body.dataset.screen = name;
+    if (name === 'lobby') { initLobbyTabs(); }
   }
 
   function render() {
@@ -1439,7 +1440,89 @@
     });
   }
 
+  
+  function openPinEntryModal() {
+    A.sfx('click');
+    openModal(`
+      <div class="pin-modal-wrap">
+        <div class="pin-modal-header">
+          <div class="pin-modal-badge">ROOM PIN</div>
+          <h2 class="pin-modal-title">🔑 ${lang === 'th' ? 'ใส่รหัสห้อง 4 หลัก' : 'Enter 4-Letter Room PIN'}</h2>
+          <p class="pin-modal-desc">${lang === 'th' ? 'กรอกรหัสห้อง 4 ตัวอักษรที่เพื่อนแชร์มาเพื่อเข้าร่วมเกมทันที' : 'Enter the 4-character code shared by your friend to join the room.'}</p>
+        </div>
+        <div class="pin-modal-inputs">
+          <input class="stage-pin-box pin-modal-box" id="mpin0" maxlength="1" autocomplete="off" autocapitalize="characters" placeholder="·">
+          <input class="stage-pin-box pin-modal-box" id="mpin1" maxlength="1" autocomplete="off" autocapitalize="characters" placeholder="·">
+          <input class="stage-pin-box pin-modal-box" id="mpin2" maxlength="1" autocomplete="off" autocapitalize="characters" placeholder="·">
+          <input class="stage-pin-box pin-modal-box" id="mpin3" maxlength="1" autocomplete="off" autocapitalize="characters" placeholder="·">
+        </div>
+        <div class="pin-modal-actions">
+          <button class="btn gold big pin-modal-submit" id="btnModalPinJoin">
+            🚀 ${lang === 'th' ? 'เข้าร่วมห้องเลย (JOIN ROOM)' : 'JOIN ROOM'}
+          </button>
+        </div>
+      </div>
+    `);
+
+    const mpins = [$('#mpin0'), $('#mpin1'), $('#mpin2'), $('#mpin3')].filter(Boolean);
+    mpins.forEach((inp, idx) => {
+      inp.oninput = () => {
+        inp.value = inp.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+        if (inp.value && idx < mpins.length - 1) {
+          mpins[idx + 1].focus();
+          mpins[idx + 1].select();
+        }
+      };
+      inp.onkeydown = (e) => {
+        if (e.key === 'Backspace' && !inp.value && idx > 0) {
+          mpins[idx - 1].focus();
+        }
+        if (e.key === 'Enter') {
+          $('#btnModalPinJoin')?.click();
+        }
+      };
+      inp.onpaste = (e) => {
+        e.preventDefault();
+        const paste = (e.clipboardData || window.clipboardData).getData('text').toUpperCase().replace(/[^A-Z0-9]/g, '');
+        for (let i = 0; i < 4; i++) {
+          if (mpins[i]) mpins[i].value = paste[i] || '';
+        }
+        if (paste.length >= 4) {
+          $('#btnModalPinJoin')?.click();
+        } else if (mpins[Math.min(3, paste.length)]) {
+          mpins[Math.min(3, paste.length)].focus();
+        }
+      };
+    });
+
+    const btnJoinModal = $('#btnModalPinJoin');
+    if (btnJoinModal) {
+      btnJoinModal.onclick = () => {
+        const code = mpins.map(p => p.value.trim()).join('').toUpperCase();
+        if (code.length < 4) {
+          return toast(lang === 'th' ? 'กรุณาระบุรหัสห้องให้ครบ 4 หลัก' : 'Enter 4-letter room code', 'err');
+        }
+        A.sfx('click');
+        closeModal();
+        socket.emit('joinRoom', {
+          code,
+          name: myName(),
+          avatar: myAvatar(),
+          frame: myFrame(),
+          skin: mySkin(),
+          title: myTitle()
+        });
+      };
+    }
+
+    setTimeout(() => {
+      if (mpins[0]) mpins[0].focus();
+    }, 120);
+  }
+
   function setupPinInputs() {
+    const btnOpenPin = $('#btnOpenPinModal');
+    if (btnOpenPin) btnOpenPin.onclick = () => openPinEntryModal();
     const pins = [$('#pin0'), $('#pin1'), $('#pin2'), $('#pin3')].filter(Boolean);
     if (!pins.length) return;
 
@@ -3655,10 +3738,27 @@
   }
 
   // ------------------------------------------------------------ LOBBY
+  
+  function initLobbyTabs() {
+    const tabBtns = $('.lobby-tab-btn');
+    if (!tabBtns || !tabBtns.length) return;
+    tabBtns.forEach(btn => {
+      btn.onclick = () => {
+        A.sfx('click');
+        const target = btn.dataset.tab;
+        tabBtns.forEach(b => b.classList.toggle('active', b === btn));
+        $('.lobby-grid .panel').forEach(p => {
+          p.classList.toggle('active-mobile-panel', p.dataset.panel === target);
+        });
+      };
+    });
+  }
+
   function renderLobby() {
     const m = me(); const isHost = m && m.isHost;
     $('#lobbyCode').textContent = S.code;
     $('#lobbyCount').textContent = `(${S.players.length}/${S.settings.maxPlayers})`;
+    if ($('#lobbyTabCount')) $('#lobbyTabCount').textContent = S.players.length;
     $('#lobbyPlayers').innerHTML = S.players.map(p => `
       <div class="lp ${p.ready ? 'ready' : ''} ${p.id === S.me.id ? 'me' : ''}">
         ${avatarHTML(p)}<div class="lp-name">${esc(p.name)} ${p.registered ? rankBadge(p.rp) : ''} ${titleBadgeHTML(p.title, lang)}

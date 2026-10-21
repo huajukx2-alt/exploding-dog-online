@@ -1893,12 +1893,7 @@ body.shake-heavy {
   #banner p { font-size: 0.88rem !important; }
 
   /* ROOM BROWSER IN LANDSCAPE */
-  #screen-browser {
-    padding: 8px 14px !important;
-    height: 100vh !important;
-    height: 100dvh !important;
-    overflow-y: auto !important;
-  }
+  #screen-browser { padding: 4px 12px !important; height: 100vh !important; height: 100dvh !important; max-height: 100dvh !important; overflow: hidden !important; }
   .browser-container {
     grid-template-columns: 280px 1fr !important;
     gap: 12px !important;
@@ -1913,12 +1908,7 @@ body.shake-heavy {
   }
 
   /* WAITING LOBBY IN LANDSCAPE */
-  #screen-lobby.active {
-    height: 100vh !important;
-    height: 100dvh !important;
-    overflow-y: auto !important;
-    padding: 10px 14px !important;
-  }
+  #screen-lobby.active { height: 100vh !important; height: 100dvh !important; max-height: 100dvh !important; overflow: hidden !important; padding: 6px 12px !important; }
   .lobby-grid {
     grid-template-columns: 1fr 1fr 1fr !important;
     gap: 8px !important;
@@ -6027,4 +6017,720 @@ html, body {
     grid-template-columns: 1fr;
     gap: 8px;
   }
+}
+
+
+/* ============================================================
+   ZERO VERTICAL SCROLL ARCHITECTURE & WINDOW BUTTONS
+   Applies across Mobile, Tablet, and Desktop
+   ============================================================ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  overflow: hidden !important;
+  overscroll-behavior: none !important;
+  touch-action: manipulation;
+}
+
+/* Universal Screen Container: Strictly Viewport Bound */
+.screen {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  overflow: hidden !important;
+  overscroll-behavior: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+  z-index: 5;
+}
+.screen.active {
+  display: flex !important;
+}
+
+/* ------------------------------------------------------------
+   SCREEN 1: AUTH (Login & Register - Zero Scroll)
+   ------------------------------------------------------------ */
+#screen-auth {
+  display: none;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 8px 12px !important;
+  overflow: hidden !important;
+}
+#screen-auth.active {
+  display: flex !important;
+}
+
+.auth-stage-container {
+  width: 100% !important;
+  max-width: 460px !important;
+  height: 100% !important;
+  max-height: 100dvh !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  margin: 0 auto !important;
+  padding: 4px 0 !important;
+  box-sizing: border-box !important;
+  position: relative !important;
+  z-index: 10;
+}
+
+.auth-logo-header {
+  margin-bottom: 4px !important;
+  flex-shrink: 0 !important;
+}
+.logo-title-3d {
+  font-size: clamp(1.8rem, 4.5vh, 2.8rem) !important;
+  line-height: 1.1 !important;
+}
+.logo-paw-left, .logo-paw-right {
+  font-size: 1.4rem !important;
+}
+.logo-bomb-icon {
+  font-size: 1.8rem !important;
+}
+.ribbon-center {
+  padding: 3px 16px !important;
+  font-size: 0.78rem !important;
+}
+
+.auth-center-wrapper {
+  flex: 1 !important;
+  min-height: 0 !important;
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  position: relative !important;
+  margin: 2px 0 !important;
+}
+
+.auth-card {
+  width: 100% !important;
+  max-height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 10px 16px 12px !important;
+  border-radius: 20px !important;
+  border-width: 4px !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+}
+
+.auth-tabs {
+  margin-bottom: 6px !important;
+  flex-shrink: 0 !important;
+  gap: 6px !important;
+}
+.auth-tab {
+  padding: 6px 10px !important;
+  font-size: 0.85rem !important;
+}
+.tab-main-text {
+  font-size: 0.88rem !important;
+}
+.tab-sub-text {
+  font-size: 0.68rem !important;
+}
+
+.auth-form {
+  flex: 1 !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain !important;
+  display: none;
+  flex-direction: column !important;
+  gap: 4px !important;
+  padding-right: 2px !important;
+}
+.auth-form.active {
+  display: flex !important;
+}
+
+.auth-input-row {
+  margin-bottom: 3px !important;
+}
+.auth-label-badge {
+  font-size: 0.75rem !important;
+  margin-bottom: 2px !important;
+  padding: 2px 8px !important;
+}
+.auth-input-row input {
+  height: 35px !important;
+  font-size: 0.86rem !important;
+  padding: 4px 10px !important;
+}
+
+.auth-terms-row {
+  margin: 2px 0 4px !important;
+  font-size: 0.76rem !important;
+}
+.auth-btn-submit {
+  height: 40px !important;
+  font-size: 0.94rem !important;
+  padding: 6px 16px !important;
+  margin-top: 4px !important;
+  flex-shrink: 0 !important;
+}
+.auth-switch-link-row {
+  margin-top: 4px !important;
+  font-size: 0.78rem !important;
+  flex-shrink: 0 !important;
+}
+.auth-social-row {
+  margin-top: 4px !important;
+  gap: 6px !important;
+  flex-shrink: 0 !important;
+}
+.btn-auth-social, .btn-auth-guest {
+  height: 32px !important;
+  font-size: 0.78rem !important;
+  padding: 4px 10px !important;
+}
+
+.auth-footer-bar {
+  flex-shrink: 0 !important;
+  padding: 4px 8px !important;
+  font-size: 0.72rem !important;
+  width: 100% !important;
+}
+
+/* Auto-hide peeking mascots and floating cards on small height screens */
+@media (max-height: 740px) or (max-width: 650px) {
+  .peeking-mascot { display: none !important; }
+  .auth-floating-cards { display: none !important; }
+  .card-bracket { width: 14px !important; height: 14px !important; }
+}
+
+/* ------------------------------------------------------------
+   SCREEN 2: CASINO HOME LOBBY (Zero Scroll)
+   ------------------------------------------------------------ */
+#screen-home.active {
+  height: 100vh !important;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  padding: 4px 12px 8px !important;
+  box-sizing: border-box !important;
+}
+
+.stage-center {
+  flex: 1 !important;
+  min-height: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+.stage-mascot {
+  max-height: 32vh !important;
+  width: auto !important;
+  max-width: 240px !important;
+}
+.mascot-group {
+  margin-bottom: -20px !important;
+}
+.stage-podium {
+  transform: scale(0.9);
+}
+
+.bottom-dock-nav {
+  flex-shrink: 0 !important;
+  padding: 4px 0 !important;
+}
+
+/* ------------------------------------------------------------
+   SCREEN 3: STAGE & MODE SELECTOR (Zero Scroll Window Buttons)
+   ------------------------------------------------------------ */
+#screen-browser.stage-select-screen,
+.stage-select-screen {
+  position: absolute !important;
+  top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  overflow: hidden !important;
+  display: none;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+}
+#screen-browser.active {
+  display: flex !important;
+}
+
+.stage-topbar {
+  flex-shrink: 0 !important;
+  height: 52px !important;
+  padding: 4px 14px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+.stage-back-btn {
+  padding: 6px 14px !important;
+}
+.stage-title-wrap {
+  text-align: center;
+}
+.stage-title-th {
+  font-size: clamp(1rem, 2.5vw, 1.45rem) !important;
+  margin: 0 !important;
+}
+.stage-title-en {
+  font-size: 0.62rem !important;
+  margin: 0 !important;
+}
+
+.stage-stakes-container {
+  flex-shrink: 0 !important;
+  padding: 2px 14px !important;
+  margin: 0 !important;
+}
+.stakes-heading {
+  font-size: 0.72rem !important;
+  margin-bottom: 2px !important;
+}
+.stakes-pills-row {
+  gap: 6px !important;
+  padding: 2px 0 !important;
+}
+.stake-pill {
+  padding: 4px 10px !important;
+  font-size: 0.78rem !important;
+}
+
+.stage-carousel-wrapper {
+  flex: 1 !important;
+  min-height: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  position: relative !important;
+  overflow: hidden !important;
+  padding: 4px 0 !important;
+}
+.stages-carousel {
+  display: flex !important;
+  gap: 16px !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  scroll-snap-type: x mandatory !important;
+  height: 100% !important;
+  align-items: center !important;
+  padding: 0 40px !important;
+  box-sizing: border-box !important;
+}
+.stage-card {
+  height: 94% !important;
+  max-height: 52vh !important;
+  min-height: 250px !important;
+  width: 250px !important;
+  flex-shrink: 0 !important;
+  scroll-snap-align: center !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  padding: 10px !important;
+}
+.sc-mascot {
+  max-height: 20vh !important;
+}
+.stage-start-btn {
+  padding: 8px 14px !important;
+  font-size: 0.9rem !important;
+  margin-top: 4px !important;
+}
+
+/* Stage Bottom Bar: 4 Clean Window Action Buttons */
+.stage-bottom-bar {
+  flex-shrink: 0 !important;
+  height: 64px !important;
+  padding: 6px 14px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  background: rgba(12, 10, 26, 0.92) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border-top: 1.5px solid rgba(251, 191, 36, 0.3) !important;
+}
+
+.btn-stage-action {
+  flex: 1 !important;
+  max-width: 220px !important;
+  height: 48px !important;
+  padding: 4px 10px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  border-radius: 999px !important;
+  cursor: pointer !important;
+  box-sizing: border-box !important;
+}
+.bsa-icon {
+  font-size: 1.35rem !important;
+}
+.bsa-labels {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  line-height: 1.15 !important;
+}
+.bsa-th {
+  font-size: 0.85rem !important;
+  font-weight: 800 !important;
+  white-space: nowrap !important;
+}
+.bsa-en {
+  font-size: 0.6rem !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  opacity: 0.85 !important;
+}
+
+.btn-pin-code {
+  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%) !important;
+  border: 1.5px solid #818cf8 !important;
+  color: #e0e7ff !important;
+  box-shadow: 0 4px 12px rgba(49, 46, 129, 0.4) !important;
+}
+.btn-pin-code:hover {
+  border-color: #a5b4fc !important;
+  transform: translateY(-2px) !important;
+}
+
+.desktop-only-pin {
+  display: none !important;
+}
+@media (min-width: 1024px) {
+  .desktop-only-pin {
+    display: flex !important;
+  }
+}
+
+/* PIN Entry Modal Window */
+.pin-modal-wrap {
+  text-align: center;
+  padding: 8px 4px 14px;
+  max-width: 420px;
+  margin: 0 auto;
+}
+.pin-modal-badge {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 1px;
+  color: #fde047;
+  background: rgba(245, 158, 11, 0.2);
+  border: 1px solid #f59e0b;
+  border-radius: 999px;
+  padding: 2px 10px;
+  margin-bottom: 6px;
+}
+.pin-modal-title {
+  margin: 0 0 6px;
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: #fff;
+}
+.pin-modal-desc {
+  font-size: 0.84rem;
+  color: #cbd5e1;
+  margin: 0;
+  line-height: 1.35;
+}
+.pin-modal-inputs {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin: 20px 0;
+}
+.pin-modal-box {
+  width: 54px !important;
+  height: 60px !important;
+  font-size: 1.9rem !important;
+  font-weight: 900 !important;
+  border-radius: 12px !important;
+  border: 2.5px solid #f59e0b !important;
+  background: #1e1b4b !important;
+  color: #fde047 !important;
+  text-align: center !important;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.4), inset 0 2px 4px rgba(0,0,0,0.5) !important;
+}
+.pin-modal-box:focus {
+  border-color: #fde047 !important;
+  box-shadow: 0 0 18px rgba(253, 224, 71, 0.7) !important;
+  transform: scale(1.05) !important;
+}
+.pin-modal-submit {
+  width: 100% !important;
+  font-size: 1.05rem !important;
+  padding: 12px 20px !important;
+}
+
+/* ------------------------------------------------------------
+   SCREEN 4: WAITING ROOM LOBBY (Window Tabs & Pinned CTA - Zero Scroll)
+   ------------------------------------------------------------ */
+#screen-lobby.active {
+  position: absolute !important;
+  top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  padding: 6px 12px !important;
+  box-sizing: border-box !important;
+}
+
+.lobby-head {
+  flex-shrink: 0 !important;
+  width: 100% !important;
+  max-width: 1100px !important;
+  margin: 0 auto 6px !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding: 0 4px !important;
+}
+.lh-room-info {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+}
+.room-code-tag {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  background: rgba(251, 191, 36, 0.15) !important;
+  border: 1.5px solid #f59e0b !important;
+  border-radius: 12px !important;
+  padding: 3px 10px !important;
+}
+.room-code {
+  font-size: 1.35rem !important;
+  letter-spacing: 4px !important;
+  color: var(--gold) !important;
+  font-weight: 900 !important;
+  margin: 0 !important;
+}
+
+/* Mobile & Tablet Tab Window Navigation */
+.lobby-tabs-nav {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto 6px;
+  flex-shrink: 0;
+}
+.lobby-tab-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1.5px solid rgba(255, 255, 255, 0.14);
+  color: #cbd5e1;
+  font-family: inherit;
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.lobby-tab-btn.active {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.35) 0%, rgba(217, 119, 6, 0.45) 100%);
+  border-color: #f59e0b;
+  color: #fef08a;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+.tab-count-pill {
+  background: #f59e0b;
+  color: #451a03;
+  font-size: 0.7rem;
+  font-weight: 900;
+  border-radius: 999px;
+  padding: 1px 6px;
+}
+
+/* Lobby Main Content Area */
+.lobby-grid {
+  flex: 1 !important;
+  min-height: 0 !important;
+  width: 100% !important;
+  max-width: 1100px !important;
+  margin: 0 auto !important;
+  overflow: hidden !important;
+}
+
+/* Mobile / Tablet View (<860px) */
+@media (max-width: 860px) {
+  .lobby-tabs-nav {
+    display: flex !important;
+  }
+  .lobby-grid {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  .lobby-grid .panel {
+    display: none !important;
+    flex: 1 !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain !important;
+    padding: 10px 12px !important;
+    border-radius: 14px !important;
+    background: rgba(25, 18, 42, 0.85) !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.1) !important;
+  }
+  .lobby-grid .panel.active-mobile-panel {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  .lobby-grid .panel h3 {
+    margin: 0 0 8px !important;
+    font-size: 0.95rem !important;
+  }
+  .lobby-players {
+    flex: 1 !important;
+    overflow-y: auto !important;
+    margin-bottom: 8px !important;
+  }
+  .chat-box {
+    flex: 1 !important;
+    height: auto !important;
+    min-height: 120px !important;
+    overflow-y: auto !important;
+    margin-bottom: 6px !important;
+  }
+}
+
+/* Desktop View (>=861px) */
+@media (min-width: 861px) {
+  .lobby-tabs-nav {
+    display: none !important;
+  }
+  .lobby-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1.15fr 0.95fr !important;
+    gap: 12px !important;
+  }
+  .lobby-grid .panel {
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain !important;
+    padding: 12px 14px !important;
+    border-radius: 16px !important;
+    background: rgba(25, 18, 42, 0.85) !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.1) !important;
+  }
+  .lobby-players {
+    flex: 1 !important;
+    overflow-y: auto !important;
+  }
+  .chat-box {
+    flex: 1 !important;
+    height: auto !important;
+    min-height: 140px !important;
+    overflow-y: auto !important;
+  }
+}
+
+/* Pinned Bottom CTA Bar (Always in Viewport!) */
+.lobby-bottom-cta {
+  flex-shrink: 0 !important;
+  width: 100% !important;
+  max-width: 1100px !important;
+  margin: 4px auto 0 !important;
+  padding: 6px 12px !important;
+  background: rgba(14, 10, 26, 0.94) !important;
+  border: 1.5px solid rgba(251, 191, 36, 0.3) !important;
+  border-radius: 14px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
+  box-sizing: border-box !important;
+}
+.lobby-bottom-cta .note {
+  margin: 0 !important;
+  font-size: 0.78rem !important;
+  text-align: center !important;
+  color: #fde047 !important;
+}
+.lobby-cta-row {
+  display: flex !important;
+  gap: 10px !important;
+  width: 100% !important;
+}
+.lobby-cta-row button {
+  flex: 1 !important;
+  height: 44px !important;
+  font-size: 0.95rem !important;
+  font-weight: 800 !important;
+  margin: 0 !important;
+  border-radius: 12px !important;
+}
+
+/* ------------------------------------------------------------
+   SCREEN 5: GAME MATCH (Zero Scroll)
+   ------------------------------------------------------------ */
+#screen-game.active {
+  position: absolute !important;
+  top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  padding: 4px 10px !important;
+  box-sizing: border-box !important;
+}
+
+/* Universal Modal Box: Internal Scroll Only, Body Never Scrolls */
+.modal-box {
+  max-height: 88vh !important;
+  max-height: 88dvh !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain !important;
 }

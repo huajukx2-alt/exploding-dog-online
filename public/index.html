@@ -715,51 +715,53 @@
       <button class="stage-nav-arrow stage-nav-next" id="btnStageNext" title="Next Stage">▶</button>
     </div>
 
-    <!-- Bottom Action Bar matching user's image -->
+    <!-- Bottom Action Bar matching user's image (Zero Scroll Window Buttons) -->
     <footer class="stage-bottom-bar">
-      <!-- Left: Room Code 4-Box PIN Entry -->
-      <div class="bottom-code-group">
-        <div class="bc-label-col">
-          <b class="bc-label-th" data-i18n="enterRoomCode">สร้าง/เข้าห้องด้วยรหัส</b>
-          <small class="bc-label-en">(ENTER ROOM CODE)</small>
+      <!-- 1. Enter Room PIN Button (Opens Window Modal) -->
+      <button class="btn-stage-action btn-pin-code" id="btnOpenPinModal" title="ใส่รหัสห้อง 4 หลักเพื่อเข้าเล่น">
+        <span class="bsa-icon">🔑</span>
+        <div class="bsa-labels">
+          <b class="bsa-th" data-i18n="enterRoomCode">ใส่รหัสห้อง</b>
+          <small class="bsa-en">ENTER PIN</small>
         </div>
+      </button>
+
+      <!-- 2. View All Rooms Button (Opens Window Modal) -->
+      <button class="btn-stage-action btn-rooms-list" id="btnOpenRoomsModal" title="ดูห้องที่เปิดอยู่ทั้งหมด">
+        <span class="bsa-icon">📋</span>
+        <div class="bsa-labels">
+          <b class="bsa-th">ห้องเปิดอยู่</b>
+          <small class="bsa-en">ALL ROOMS (<span id="browserRoomCount">0</span>)</small>
+        </div>
+      </button>
+
+      <!-- 3. Random Match Button -->
+      <button class="btn-stage-action btn-random-match" id="btnStageRandom" title="สุ่มค้นหาห้องที่มีคนเล่นอยู่">
+        <span class="bsa-dot"></span>
+        <div class="bsa-labels">
+          <b class="bsa-th">ค้นหาห้องสุ่ม</b>
+          <small class="bsa-en">RANDOM MATCH</small>
+        </div>
+      </button>
+
+      <!-- 4. Quick Play Button -->
+      <button class="btn-stage-action btn-quick-play pulse-gold" id="btnStageQuick" title="เล่นด่วนกับบอททันที">
+        <span class="bsa-icon">⚡</span>
+        <div class="bsa-labels">
+          <b class="bsa-th">เล่นด่วน</b>
+          <small class="bsa-en">QUICK PLAY</small>
+        </div>
+      </button>
+
+      <!-- Desktop fallback PIN inputs -->
+      <div class="bottom-code-group desktop-only-pin">
         <div class="pin-inputs-wrap">
           <input class="stage-pin-box" id="pin0" maxlength="1" autocomplete="off" autocapitalize="characters" placeholder="·">
           <input class="stage-pin-box" id="pin1" maxlength="1" autocomplete="off" autocapitalize="characters" placeholder="·">
           <input class="stage-pin-box" id="pin2" maxlength="1" autocomplete="off" autocapitalize="characters" placeholder="·">
           <input class="stage-pin-box" id="pin3" maxlength="1" autocomplete="off" autocapitalize="characters" placeholder="·">
-          <button class="btn gold small pin-submit-btn" id="btnPinJoin">🚀 <span data-i18n="join">เข้าห้อง</span></button>
+          <button class="btn gold small pin-submit-btn" id="btnPinJoin">🚀</button>
         </div>
-      </div>
-
-      <!-- Right: Main Match Actions -->
-      <div class="bottom-action-buttons">
-        <!-- View All Rooms / Spectate button -->
-        <button class="btn-stage-action btn-rooms-list" id="btnOpenRoomsModal" title="ดูห้องที่เปิดอยู่ทั้งหมด">
-          <span class="bsa-icon">📋</span>
-          <div class="bsa-labels">
-            <b class="bsa-th">ห้องเปิดอยู่</b>
-            <small class="bsa-en">ALL ROOMS (<span id="browserRoomCount">0</span>)</small>
-          </div>
-        </button>
-
-        <!-- Random Match Button (Red/Coral with red notification dot) -->
-        <button class="btn-stage-action btn-random-match" id="btnStageRandom" title="สุ่มค้นหาห้องที่มีคนเล่นอยู่">
-          <span class="bsa-dot"></span>
-          <div class="bsa-labels">
-            <b class="bsa-th">ค้นหาห้องสุ่ม</b>
-            <small class="bsa-en">RANDOM MATCH</small>
-          </div>
-        </button>
-
-        <!-- Quick Play Button (Golden Glowing) -->
-        <button class="btn-stage-action btn-quick-play pulse-gold" id="btnStageQuick" title="เล่นด่วนกับบอททันที">
-          <span class="bsa-icon">⚡</span>
-          <div class="bsa-labels">
-            <b class="bsa-th">เล่นด่วน</b>
-            <small class="bsa-en">QUICK PLAY</small>
-          </div>
-        </button>
       </div>
     </footer>
 
@@ -772,35 +774,56 @@
     <div id="browserRoomGrid" class="hidden"></div>
   </section>
 
-  <!-- LOBBY -->
+  <!-- LOBBY (Window Tabs & Pinned CTA - Zero Scroll) -->
   <section id="screen-lobby" class="screen">
     <div class="lobby-head">
-      <div>
-        <small data-i18n="shareCode"></small>
-        <div class="room-code" id="lobbyCode">----</div>
-        <button class="btn small" id="btnCopy" data-i18n="copyLink"></button>
-      </div>
-      <button class="btn small red" id="btnLeave" data-i18n="leave"></button>
-    </div>
-    <div class="lobby-grid">
-      <div class="panel">
-        <h3>👥 <span data-i18n="players"></span> <span id="lobbyCount"></span></h3>
-        <div id="lobbyPlayers" class="lobby-players"></div>
-        <button class="btn small" id="btnAddBot" data-i18n="addBot"></button>
-        <div class="lobby-cta">
-          <button class="btn big green" id="btnReady"></button>
-          <button class="btn big gold" id="btnStart" data-i18n="start"></button>
-          <p class="note" id="lobbyHint"></p>
+      <div class="lh-room-info">
+        <small data-i18n="shareCode">แชร์รหัสห้องให้เพื่อน</small>
+        <div class="room-code-tag">
+          <span class="rct-icon">🏠</span>
+          <b class="room-code" id="lobbyCode">----</b>
         </div>
+        <button class="btn small" id="btnCopy" data-i18n="copyLink">📋 คัดลอกลิงก์</button>
       </div>
-      <div class="panel">
-        <h3>⚙️ <span data-i18n="settings"></span></h3>
+      <button class="btn small red" id="btnLeave" data-i18n="leave">🚪 ออกจากห้อง</button>
+    </div>
+
+    <!-- Mobile/Tablet Tab Window Switcher -->
+    <div class="lobby-tabs-nav">
+      <button type="button" class="lobby-tab-btn active" data-tab="players">
+        <span>👥 ผู้เล่น</span> <span id="lobbyTabCount" class="tab-count-pill">1</span>
+      </button>
+      <button type="button" class="lobby-tab-btn" data-tab="settings">
+        <span>⚙️ ตั้งค่าห้อง</span>
+      </button>
+      <button type="button" class="lobby-tab-btn" data-tab="chat">
+        <span>💬 แชทห้อง</span>
+      </button>
+    </div>
+
+    <div class="lobby-grid">
+      <div class="panel panel-players active-mobile-panel" data-panel="players">
+        <h3>👥 <span data-i18n="players">ผู้เล่น</span> <span id="lobbyCount"></span></h3>
+        <div id="lobbyPlayers" class="lobby-players"></div>
+        <button class="btn small" id="btnAddBot" data-i18n="addBot">+ เพิ่มบอท</button>
+      </div>
+      <div class="panel panel-settings" data-panel="settings">
+        <h3>⚙️ <span data-i18n="settings">ตั้งค่าห้อง</span></h3>
         <div id="lobbySettings"></div>
       </div>
-      <div class="panel chat-panel">
-        <h3>💬 <span data-i18n="chat"></span></h3>
+      <div class="panel chat-panel panel-chat" data-panel="chat">
+        <h3>💬 <span data-i18n="chat">แชทห้อง</span></h3>
         <div class="chat-box" id="lobbyChat"></div>
-        <form class="chat-form" data-chat><input maxlength="120"><button class="btn small" data-i18n="send"></button></form>
+        <form class="chat-form" data-chat><input maxlength="120" placeholder="พิมพ์ข้อความ..."><button class="btn small" data-i18n="send">ส่ง</button></form>
+      </div>
+    </div>
+
+    <!-- Pinned Bottom CTA Bar (Always in Viewport!) -->
+    <div class="lobby-bottom-cta">
+      <p class="note" id="lobbyHint"></p>
+      <div class="lobby-cta-row">
+        <button class="btn big green" id="btnReady">✓ พร้อมแล้ว</button>
+        <button class="btn big gold" id="btnStart" data-i18n="start">🚀 เริ่มเกมเลย</button>
       </div>
     </div>
   </section>
