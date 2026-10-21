@@ -710,12 +710,18 @@
     }
     return $(`.seat[data-id="${id}"]`);
   }
-  function floatAt(id, html, cls = '') {
+  function floatAt(id, html, cls = '', duration = (cls === 'chat' ? 5500 : 3000)) {
     const anchor = seatEl(id); if (!anchor) return;
+    if (cls === 'chat') {
+      $(`.floater.chat[data-player-id="${id}"]`).forEach(oldEl => oldEl.remove());
+    }
     const r = anchor.getBoundingClientRect();
-    const el = document.createElement('div'); el.className = 'floater ' + cls; el.innerHTML = html;
+    const el = document.createElement('div'); el.className = 'floater ' + cls;
+    if (cls === 'chat') el.dataset.playerId = id;
+    el.innerHTML = html;
     el.style.left = (r.left + r.width / 2) + 'px'; el.style.top = (r.top + Math.min(r.height / 2, 50)) + 'px';
-    document.body.appendChild(el); setTimeout(() => el.remove(), 2800);
+    document.body.appendChild(el);
+    setTimeout(() => { if (el.parentNode) el.remove(); }, duration);
   }
 
   // ------------------------------------------------------------ modal
@@ -856,7 +862,7 @@
   socket.on('chat', (m) => {
     const html = `<div class="msg"><b>${esc(m.avatar)} ${esc(m.name)}:</b> ${esc(m.text)}</div>`;
     $$('.chat-box').forEach(b => { b.insertAdjacentHTML('beforeend', html); b.scrollTop = b.scrollHeight; });
-    if (screen === 'game') floatAt(m.playerId, `<div class="bubble">${esc(m.text)}</div>`, 'chat');
+    if (screen === 'game') floatAt(m.playerId, `<div class="bubble">${esc(m.text)}</div>`, 'chat', 5500);
     A.sfx('click');
   });
   socket.on('sticker', ({ playerId, id }) => {
@@ -882,6 +888,7 @@
       }
     });
     document.body.dataset.screen = name;
+    if (name === 'home') { renderHome(); }
     if (name === 'lobby') { initLobbyTabs(); }
   }
 
@@ -1352,19 +1359,101 @@
     </svg>`;
   }
 
-  function renderHome() {
+  function myAvatar() { return (user && (user.equipped?.avatar || user.avatar)) || localStorage.getItem('ek_guest_avatar') || '🐶'; }
+  function myFrame() { return (user && user.equipped?.frame) || localStorage.getItem('ek_guest_frame') || ''; }
+  function mySkin() { return (user && user.equipped?.skin) || localStorage.getItem('ek_guest_skin') || ''; }
+  function myTitle() { return (user && (user.equipped?.title || user.title)) || localStorage.getItem('ek_guest_title') || 'title_rookie'; }
+
+  function renderHomeMascotAndCards() {
     const stageMascot = $('#stageMascot');
-    if (stageMascot && !stageMascot.innerHTML) {
-      stageMascot.innerHTML = typeof bossShibaMascotSVG === 'function' ? bossShibaMascotSVG() : '👑🐶';
+    const stageCardFan = $('#stageCardFan') || $('.stage-card-fan');
+    const curAvatar = myAvatar();
+    const curFrame = myFrame();
+    const curSkin = mySkin();
+
+    // 1. Render equipped avatar and frame on central podium
+    if (stageMascot) {
+      const isSvg = typeof curAvatar === 'string' && (curAvatar.startsWith('av_') || ['gold', 'neon', 'fire', 'galaxy', 'custom'].includes(curAvatar));
+      if (isSvg) {
+        stageMascot.innerHTML = `
+          <div class="podium-hero-display ${curFrame || ''}">
+            <div class="phd-svg-wrap">
+              ${renderAvatarSVG(curAvatar)}
+            </div>
+            ${curFrame ? `<div class="podium-frame-ring ${curFrame}"></div>` : ''}
+          </div>
+        `;
+      } else if (curAvatar && curAvatar !== '🐶' && curAvatar !== 'boss_shiba') {
+        stageMascot.innerHTML = `
+          <div class="podium-hero-display ${curFrame || ''}">
+            <div class="phd-emoji-avatar">${esc(curAvatar)}</div>
+            ${curFrame ? `<div class="podium-frame-ring ${curFrame}"></div>` : ''}
+          </div>
+        `;
+      } else {
+        if (curFrame) {
+          stageMascot.innerHTML = `
+            <div class="podium-hero-display boss-shiba-mode ${curFrame}">
+              ${typeof bossShibaMascotSVG === 'function' ? bossShibaMascotSVG() : '👑🐶'}
+              <div class="podium-frame-ring ${curFrame}"></div>
+            </div>
+          `;
+        } else {
+          stageMascot.innerHTML = typeof bossShibaMascotSVG === 'function' ? bossShibaMascotSVG() : '👑🐶';
+        }
+      }
+
+      stageMascot.title = lang === 'th' ? '🎭 อวตารที่สวมใส่ (คลิกเพื่อเปิดโปรไฟล์)' : 'Equipped Avatar (Click to open Profile)';
+      stageMascot.style.cursor = 'pointer';
+      stageMascot.onclick = () => {
+        A.sfx('click');
+        openProfile();
+      };
     }
+
+    // 2. Render 5 fanned cards on stage with equipped skin
+    if (stageCardFan) {
+      const SKIN_EMBLEMS = {
+        skin_gold: '👑',
+        skin_galaxy: '🌌',
+        skin_sakura: '🌸',
+        skin_matrix: '🟩',
+        skin_diamond: '💎',
+        skin_dragon: '🐉',
+        skin_cyber: '⚡',
+        skin_cosmic_void: '🌀'
+      };
+      const emblem = (curSkin && SKIN_EMBLEMS[curSkin]) || '💎';
+      const skinClass = curSkin || 'skin_gold';
+
+      stageCardFan.innerHTML = `
+        <div class="fan-card-gold ${skinClass} f1"><div class="fcg-diamond">${emblem}</div></div>
+        <div class="fan-card-gold ${skinClass} f2"><div class="fcg-diamond">${emblem}</div></div>
+        <div class="fan-card-gold ${skinClass} f3"><div class="fcg-diamond">${emblem}</div></div>
+        <div class="fan-card-gold ${skinClass} f4"><div class="fcg-diamond">${emblem}</div></div>
+        <div class="fan-card-gold ${skinClass} f5"><div class="fcg-diamond">${emblem}</div></div>
+        <div class="fan-sparkle s1">✨</div>
+        <div class="fan-sparkle s2">✨</div>
+        <div class="fan-sparkle s3">✨</div>
+      `;
+
+      stageCardFan.style.pointerEvents = 'auto';
+      stageCardFan.style.cursor = 'pointer';
+      stageCardFan.title = lang === 'th' ? '🎴 สกินการ์ดที่สวมใส่ (คลิกเพื่อไปร้านค้า)' : 'Equipped Card Skin (Click to open Shop)';
+      stageCardFan.onclick = (e) => {
+        e.stopPropagation();
+        A.sfx('click');
+        shopTab = 'skin';
+        openShop();
+      };
+    }
+  }
+
+  function renderHome() {
+    renderHomeMascotAndCards();
     renderUserChip();
     checkDailyLoginStatus(false);
   }
-
-    const myAvatar = () => (user && (user.equipped?.avatar || user.avatar)) || localStorage.getItem('ek_guest_avatar') || '🐶';
-  const myFrame = () => (user && user.equipped?.frame) || localStorage.getItem('ek_guest_frame') || '';
-  const mySkin = () => (user && user.equipped?.skin) || localStorage.getItem('ek_guest_skin') || '';
-  const myTitle = () => (user && (user.equipped?.title || user.title)) || localStorage.getItem('ek_guest_title') || 'title_rookie';
   const myName = () => {
     if (user && user.displayName) return user.displayName;
     const saved = localStorage.getItem('ek_name');
@@ -2974,6 +3063,7 @@
         else if (type === 'title') localStorage.setItem('ek_guest_title', 'title_rookie');
         else localStorage.removeItem('ek_guest_' + type);
         renderUserChip();
+        if (typeof renderHomeMascotAndCards === 'function') renderHomeMascotAndCards();
         A.sfx('select');
         openShop();
       }
