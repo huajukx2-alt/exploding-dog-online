@@ -3122,7 +3122,7 @@
     },
 
     wobbleCoach(alertMsg) {
-      const sp = $('#tutSpeechText');
+      const sp = $('#tutSpeechText') || $('.ccb-guide');
       if (sp && alertMsg) {
         const orig = sp.innerHTML;
         sp.innerHTML = '<span style="color:#f87171;font-weight:bold;">' + esc(alertMsg) + '</span>';
@@ -3130,7 +3130,8 @@
           if (sp && tutorialActive) sp.innerHTML = orig;
         }, 2800);
       }
-      const coach = $('#tutorialCoachOverlay');
+      if (alertMsg) toast(alertMsg, 'warn');
+      const coach = $('#tutorialCoachOverlay') || $('#tutCollapsedContainer');
       if (coach) {
         coach.style.animation = 'shake 0.4s ease';
         setTimeout(() => { if (coach) coach.style.animation = ''; }, 450);
@@ -3723,11 +3724,15 @@
     },
 
     highlightCardInHand(cardId, allMatches = false) {
-      const cards = $('#hand .card');
+      const cards = $$('#hand .card');
+      if (!cards || !cards.length) return;
       let found = false;
       cards.forEach(c => {
         if (c.dataset.id === cardId && (!found || allMatches)) {
           c.classList.add('tutorial-highlight-target', 'pulse-card-guide');
+          try {
+            c.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+          } catch (e) {}
           found = true;
         }
       });
@@ -4441,6 +4446,7 @@
     const btnPlayAction = $('#btnPlayAction');
     if (btnPlayAction) {
       btnPlayAction.classList.toggle('hidden', !canPlay);
+      if (tutorialActive && canPlay) btnPlayAction.classList.add('pulse-card-guide');
       btnPlayAction.onclick = () => doPlay();
     }
 
