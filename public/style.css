@@ -2032,16 +2032,7 @@ body.shake-heavy {
 /* ============================================================
    MATCH LOBBY BROWSER (FULL SCREEN)
    ============================================================ */
-#screen-browser {
-  padding: 24px 32px;
-  max-width: 1300px;
-  margin: 0 auto;
-  box-sizing: border-box;
-  display: none;
-  flex-direction: column;
-  gap: 20px;
-  min-height: 100vh;
-}
+/* Legacy 1300px removed */
 #screen-browser.active {
   display: flex;
 }
@@ -6978,4 +6969,131 @@ html, body {
   .stage-mascot {
     animation: none !important;
   }
+}
+
+
+/* ============================================================
+   LAPTOP & DESKTOP FULL-WIDTH (100vw) GUARANTEE
+   Ensures zero purple side gaps on wide screens/laptops
+   ============================================================ */
+
+#screen-browser,
+#screen-browser.stage-select-screen,
+.stage-select-screen {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 100% !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  overflow: hidden !important;
+  display: none;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+  background: radial-gradient(ellipse at 50% 15%, #1e1838 0%, #110e24 50%, #070611 100%) !important;
+}
+
+#screen-browser.active {
+  display: flex !important;
+}
+
+/* Full-width topbar */
+.stage-topbar {
+  width: 100% !important;
+  max-width: 100% !important;
+  flex-shrink: 0 !important;
+  height: 56px !important;
+  padding: 6px 24px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  box-sizing: border-box !important;
+}
+
+/* Full-width stakes container */
+.stage-stakes-container {
+  width: 100% !important;
+  max-width: 100% !important;
+  flex-shrink: 0 !important;
+  padding: 4px 24px !important;
+  margin: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  box-sizing: border-box !important;
+}
+
+.stakes-label {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.stakes-pills {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+}
+
+/* Full-width carousel showcase wrapper */
+.stages-showcase-wrap {
+  width: 100% !important;
+  max-width: 100% !important;
+  flex: 1 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 20px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  position: relative !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+
+.stages-carousel {
+  width: 100% !important;
+  max-width: 100% !important;
+  display: flex !important;
+  gap: 20px !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  scroll-snap-type: x mandatory !important;
+  height: 100% !important;
+  align-items: center !important;
+  justify-content: center !important; /* Centered on laptops */
+  padding: 0 40px !important;
+  box-sizing: border-box !important;
+}
+
+@media (max-width: 1280px) {
+  .stages-carousel {
+    justify-content: flex-start !important;
+  }
+}
+
+/* Full-width bottom action bar */
+.stage-bottom-bar {
+  width: 100% !important;
+  max-width: 100% !important;
+  flex-shrink: 0 !important;
+  height: 64px !important;
+  padding: 6px 24px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  box-sizing: border-box !important;
 }
