@@ -5707,13 +5707,146 @@ html, body {
 /* Floating Coach Overlay */
 .tutorial-coach-overlay {
   position: absolute;
-  top: 14px;
+  top: 8px;
   left: 50%;
   transform: translateX(-50%);
-  width: min(92%, 660px);
+  width: min(94%, 640px);
   z-index: 120;
-  pointer-events: auto;
-  animation: tutSlideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none; /* Clicks outside the bubble pass straight through to the table & draw pile */
+  animation: tutSlideDown 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tutorial-coach-overlay.collapsed {
+  top: 6px;
+  width: auto;
+  max-width: min(96%, 640px);
+}
+
+.coach-container {
+  pointer-events: auto; /* Only the bubble itself captures clicks */
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: rgba(15, 23, 42, 0.94);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 2px solid rgba(251, 191, 36, 0.65);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 24px rgba(245, 158, 11, 0.35);
+  border-radius: 18px;
+  padding: 10px 14px;
+  position: relative;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  max-height: 170px;
+}
+
+.coach-container.collapsed {
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.96);
+  border: 1.5px solid #f59e0b;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.65), 0 0 14px rgba(245, 158, 11, 0.4);
+  cursor: pointer;
+  max-height: 42px;
+}
+
+.coach-collapsed-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 10px;
+}
+
+.ccb-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.ccb-avatar {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.ccb-step {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #fbbf24;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.ccb-sep {
+  color: rgba(255, 255, 255, 0.35);
+  font-size: 0.8rem;
+  flex-shrink: 0;
+}
+
+.ccb-guide {
+  font-size: 0.78rem;
+  color: #e2e8f0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0.95;
+}
+
+.ccb-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.tut-toggle-btn {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.25), rgba(217, 119, 6, 0.35));
+  border: 1.5px solid #f59e0b;
+  border-radius: 999px;
+  color: #fef08a;
+  font-family: inherit;
+  font-size: 0.74rem;
+  font-weight: 800;
+  padding: 3px 10px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+.tut-toggle-btn:hover {
+  background: #f59e0b;
+  color: #1e1b4b;
+  transform: scale(1.04);
+}
+
+.tut-exit-icon-btn {
+  background: rgba(239, 68, 68, 0.25);
+  border: 1px solid #ef4444;
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.tut-exit-icon-btn:hover {
+  background: #ef4444;
+  transform: scale(1.08);
+}
+
+.coach-header-btns {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 @keyframes tutSlideDown {
@@ -6733,4 +6866,54 @@ html, body {
   max-height: 88dvh !important;
   overflow-y: auto !important;
   overscroll-behavior: contain !important;
+}
+
+
+/* Mobile Responsive Tuning for Collapsible Coach Guide */
+@media (max-width: 650px) {
+  .tutorial-coach-overlay {
+    top: 4px !important;
+    width: 96% !important;
+  }
+  .coach-container {
+    padding: 8px 10px !important;
+    gap: 8px !important;
+    border-radius: 14px !important;
+    max-height: 140px !important;
+  }
+  .coach-avatar {
+    width: 44px !important;
+    height: 44px !important;
+    font-size: 1.45rem !important;
+  }
+  .coach-badge {
+    font-size: 0.58rem !important;
+    padding: 1px 5px !important;
+  }
+  .coach-step-indicator {
+    font-size: 0.8rem !important;
+  }
+  .coach-speech-text {
+    font-size: 0.8rem !important;
+    max-height: 60px !important;
+    overflow-y: auto !important;
+  }
+  .coach-action-guide {
+    font-size: 0.76rem !important;
+    padding: 3px 8px !important;
+  }
+  .coach-container.collapsed {
+    padding: 4px 10px !important;
+    max-height: 38px !important;
+  }
+  .ccb-step {
+    font-size: 0.76rem !important;
+  }
+  .ccb-guide {
+    font-size: 0.72rem !important;
+  }
+  .tut-toggle-btn {
+    font-size: 0.7rem !important;
+    padding: 2px 8px !important;
+  }
 }

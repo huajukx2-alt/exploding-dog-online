@@ -2914,6 +2914,33 @@
   const tutorialEngine = {
     step: 1,
     substep: '',
+    collapsed: false,
+
+    toggleCollapse() {
+      this.collapsed = !this.collapsed;
+      this.renderCoach();
+    },
+
+    promptExit() {
+      const isTh = lang === 'th';
+      openModal(`
+        <div style="text-align:center;padding:12px;">
+          <h3>🚪 ${isTh ? 'ต้องการออกจากการฝึกสอนหรือไม่?' : 'Exit Training Mode?'}</h3>
+          <p style="color:#cbd5e1;margin:10px 0 20px;">
+            ${isTh ? 'คุณสามารถกลับมาฝึกสอนใหม่ได้ตลอดเวลาจากปุ่มบนหน้าหลัก' : 'You can restart the tutorial anytime from the home screen.'}
+          </p>
+          <div style="display:flex;gap:12px;justify-content:center;">
+            <button class="btn red" id="btnConfirmExitTut">${isTh ? 'ออกจากการฝึก' : 'Exit to Lobby'}</button>
+            <button class="btn gold" id="btnResumeTut">${isTh ? 'ฝึกต่อ' : 'Continue'}</button>
+          </div>
+        </div>
+      `);
+      $('#btnConfirmExitTut').onclick = () => {
+        closeModal(true);
+        exitTutorialGame();
+      };
+      $('#btnResumeTut').onclick = () => closeModal(true);
+    },
 
     clearHighlights() {
       $$('.tutorial-highlight-target').forEach(el => el.classList.remove('tutorial-highlight-target'));
@@ -2958,7 +2985,11 @@
         return false;
       }
       if (this.step === 4) {
-        this.wobbleCoach(lang === 'th' ? 'บ็อบบี้กำลังใช้ Favor! แตะปุ่มสีแดง 🛑 NOPE ตรงกลางจอเพื่อสั่งห้าม!' : 'Tap the red 🛑 NOPE button in the center to cancel Bobby\'s favor!');
+        if (card.id === 'nope') {
+          this.onNope();
+          return false;
+        }
+        this.wobbleCoach(lang === 'th' ? 'บ็อบบี้กำลังใช้ Favor! แตะการ์ด 🛑 NOPE หรือปุ่มตรงกลางจอเพื่อสั่งห้าม!' : 'Tap NOPE card or the center button to cancel Bobby\'s favor!');
         A.sfx('nope');
         this.wobbleEl(el);
         return false;
@@ -3123,8 +3154,13 @@
           toast(lang === 'th' ? '⚡ คอมโบไพ่คู่สำเร็จ! ขโมยการ์ด ⚡ Attack จากครูฝึกบ็อบบี้มาได้!' : '⚡ Pair Combo! Stole ⚡ Attack from Coach Bobby!', 'good');
           renderGame();
           addTutTimer(() => {
+            // FIX: Give player the Favor card for Step 7!
+            const fav = { uid: 'tut_fav_' + Date.now(), id: 'favor' };
+            S.me.hand.push(fav);
+            toast(lang === 'th' ? '🙏 ได้รับการ์ด "ขอร้อง (Favor)" จากครูฝึกบ็อบบี้!' : '🙏 Received "Favor" card from Coach Bobby!', 'good');
+            renderGame();
             this.setStep(7);
-          }, 1200);
+          }, 1400);
         }, 1000);
         return;
       }
@@ -3489,8 +3525,9 @@
           text = isTh
             ? '🚨 ระวัง! บ็อบบี้กำลังใช้การ์ด <b>🙏 Favor (ขอร้อง)</b> เพื่อบังคับขโมยการ์ดในมือคุณ! อย่ายอมแพ้! นี่คือการ์ด <b>🛑 NOPE</b> ใช้สกัดกั้นทันที!'
             : '🚨 Warning! Bobby played <b>🙏 Favor</b> to take a card from your hand! Don\'t let him! Here is a <b>🛑 NOPE</b> card to block him!';
-          guide = isTh ? '👉 แตะปุ่มสีแดง <b>🛑 NOPE</b> ตรงกลางจอเพื่อสั่งห้ามบ็อบบี้!' : '👉 Tap the red <b>🛑 NOPE</b> button in the center to cancel Bobby!';
-          $('#btnNope')?.classList.add('tutorial-highlight-target');
+          guide = isTh ? '👉 แตะการ์ด <b>🛑 NOPE</b> ในมือ หรือปุ่มสีแดงตรงกลางจอเพื่อสั่งห้าม!' : '👉 Tap <b>🛑 NOPE</b> card in your hand or the center button to counter!';
+          this.highlightCardInHand('nope');
+          $('#btnNope')?.classList.add('tutorial-highlight-target', 'pulse-card-guide');
           break;
 
         case 5:
@@ -3530,6 +3567,37 @@
           break;
       }
 
+      overlay.classList.toggle('collapsed', !!this.collapsed);
+
+      if (this.collapsed) {
+        overlay.innerHTML = `
+          <div class="coach-container collapsed" id="tutCollapsedContainer" title="${isTh ? 'คลิกเพื่อขยายคำแนะนำ' : 'Click to expand guide'}">
+            <div class="coach-collapsed-bar">
+              <div class="ccb-left">
+                <span class="ccb-avatar">🎓🐶</span>
+                <span class="ccb-step">${title}</span>
+                <span class="ccb-sep">•</span>
+                <span class="ccb-guide">${guide.replace(/👉\s*/, '')}</span>
+              </div>
+              <div class="ccb-right">
+                <button type="button" class="tut-toggle-btn" id="btnTutExpand" title="${isTh ? 'ขยายคำแนะนำ' : 'Expand Guide'}">
+                  🔽 ${isTh ? 'ขยายคำแนะนำ' : 'Expand'}
+                </button>
+                <button type="button" class="tut-exit-icon-btn" id="btnTutExitCompact" title="${isTh ? 'ออกจากการฝึก' : 'Exit Training'}">🚪</button>
+              </div>
+            </div>
+          </div>
+        `;
+
+        const expandBtn = $('#btnTutExpand');
+        if (expandBtn) expandBtn.onclick = (e) => { e.stopPropagation(); this.toggleCollapse(); };
+        const bar = $('#tutCollapsedContainer');
+        if (bar) bar.onclick = () => this.toggleCollapse();
+        const exitCompact = $('#btnTutExitCompact');
+        if (exitCompact) exitCompact.onclick = (e) => { e.stopPropagation(); this.promptExit(); };
+        return;
+      }
+
       overlay.innerHTML = `
         <div class="coach-container">
           <div class="coach-avatar-wrap">
@@ -3539,7 +3607,14 @@
           <div class="coach-bubble">
             <div class="coach-bubble-header">
               <span class="coach-step-indicator" id="tutStepIndicator">${title}</span>
-              <button class="tutorial-exit-btn" id="btnTutExit" title="ออกจากการฝึก">🚪 ${isTh ? 'ออกจากการฝึก' : 'Exit Training'}</button>
+              <div class="coach-header-btns">
+                <button type="button" class="tut-toggle-btn" id="btnTutCollapse" title="${isTh ? 'พับหน้าต่างคำแนะนำเพื่อมองเห็นกระดาน' : 'Collapse guide'}">
+                  🔼 ${isTh ? 'พับหน้าต่าง' : 'Collapse'}
+                </button>
+                <button class="tutorial-exit-btn" id="btnTutExit" title="${isTh ? 'ออกจากการฝึก' : 'Exit Training'}">
+                  🚪 ${isTh ? 'ออก' : 'Exit'}
+                </button>
+              </div>
             </div>
             <div class="coach-speech-text" id="tutSpeechText">${text}</div>
             <div class="coach-action-guide" id="tutActionGuide">${guide}</div>
@@ -3547,25 +3622,10 @@
         </div>
       `;
 
-      $('#btnTutExit').onclick = () => {
-        openModal(`
-          <div style="text-align:center;padding:12px;">
-            <h3>🚪 ${isTh ? 'ต้องการออกจากการฝึกสอนหรือไม่?' : 'Exit Training Mode?'}</h3>
-            <p style="color:#cbd5e1;margin:10px 0 20px;">
-              ${isTh ? 'คุณสามารถกลับมาฝึกสอนใหม่ได้ตลอดเวลาจากปุ่มบนหน้าหลัก' : 'You can restart the tutorial anytime from the home screen.'}
-            </p>
-            <div style="display:flex;gap:12px;justify-content:center;">
-              <button class="btn red" id="btnConfirmExitTut">${isTh ? 'ออกจากการฝึก' : 'Exit to Lobby'}</button>
-              <button class="btn gold" id="btnResumeTut">${isTh ? 'ฝึกต่อ' : 'Continue'}</button>
-            </div>
-          </div>
-        `);
-        $('#btnConfirmExitTut').onclick = () => {
-          closeModal(true);
-          exitTutorialGame();
-        };
-        $('#btnResumeTut').onclick = () => closeModal(true);
-      };
+      const collapseBtn = $('#btnTutCollapse');
+      if (collapseBtn) collapseBtn.onclick = () => this.toggleCollapse();
+      const exitBtn = $('#btnTutExit');
+      if (exitBtn) exitBtn.onclick = () => this.promptExit();
     },
 
     highlightCardInHand(cardId, allMatches = false) {
@@ -3664,8 +3724,12 @@
   function exitTutorialGame() {
     clearTutTimers();
     tutorialActive = false;
+    tutorialEngine.collapsed = false;
     const overlay = $('#tutorialCoachOverlay');
-    if (overlay) overlay.classList.add('hidden');
+    if (overlay) {
+      overlay.classList.add('hidden');
+      overlay.classList.remove('collapsed');
+    }
     const peek = $('#tutPeekOverlay');
     if (peek) peek.remove();
     tutorialEngine.clearHighlights();
