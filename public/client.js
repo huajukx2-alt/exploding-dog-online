@@ -1179,8 +1179,21 @@
     if (flags) flags.textContent = lang === 'th' ? '🇹🇭 TH / 🇬🇧 EN' : '🇬🇧 EN / 🇹🇭 TH';
     const tBadge = $('#pTitle');
     if (tBadge) tBadge.innerHTML = titleBadgeHTML(myTitle(), lang);
+
+    // Properly render equipped avatar (SVG or Emoji) and frame glow (no raw avatar ID strings)
+    const curAv = myAvatar();
+    const curFrame = myFrame();
+    if (av) {
+      const isSvg = typeof curAv === 'string' && (curAv.startsWith('av_') || ['gold', 'neon', 'fire', 'galaxy', 'custom'].includes(curAv));
+      av.className = 'p-avatar ' + (curFrame || '') + (isSvg ? ' has-svg' : '');
+      if (isSvg) {
+        av.innerHTML = renderAvatarSVG(curAv);
+      } else {
+        av.innerHTML = `<span class="emoji-avatar">${esc(curAv || '🐶')}</span>`;
+      }
+    }
+
     if (user) {
-      if (av) av.textContent = user.avatar || '🐶';
       if (lvl) lvl.textContent = 'LV.' + (user.level || Math.min(99, Math.floor((user.rp || 0) / 40) + 1));
       if (nm) nm.textContent = user.displayName;
       if (xp) xp.style.width = Math.min(100, Math.max(15, (user.rp || 0) % 100)) + '%';
@@ -1189,7 +1202,6 @@
       if (sCoins) sCoins.textContent = user.coins;
       if (sDia) sDia.textContent = user.diamonds || Math.floor((user.rp || 0) / 25) + 15;
     } else {
-      if (av) av.textContent = '🐶';
       const curXp = parseInt(localStorage.getItem('ek_guest_xp') || '0', 10);
       const curLvl = Math.min(99, Math.floor(curXp / 100) + 1);
       if (lvl) lvl.textContent = 'LV.' + curLvl;
