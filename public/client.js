@@ -21,6 +21,7 @@
   let lastTick = -1;
   let homeVersion = localStorage.getItem('ek_ver') || 'original';
   if (!VERSIONS[homeVersion]) homeVersion = 'original';
+  let isGuestSessionActive = false;
 
   const t = (k) => (I18N[lang][k] ?? I18N.en[k] ?? k);
   const terr = (e) => I18N[lang].err[e] || e;
@@ -770,7 +771,7 @@
       name = 'auth';
     }
     screen = name;
-    $('.screen').forEach(s => s.classList.toggle('active', s.id === 'screen-' + name));
+    $$('.screen').forEach(s => s.classList.toggle('active', s.id === 'screen-' + name));
     document.body.dataset.screen = name;
   }
 
@@ -793,33 +794,35 @@
 
   
   // ------------------------------------------------------------ AUTH SCREEN (หมาระเบิด Online)
-  let isGuestSessionActive = false;
-  window.onNewAccountCreated = window.onNewAccountCreated || null;
+    window.onNewAccountCreated = window.onNewAccountCreated || null;
 
   function initAuthScreen() {
     const tabRegister = $('#tabRegister');
     const tabLogin = $('#tabLogin');
-    const authRegForm = $('#authRegisterForm');
-    const authLoginForm = $('#authLoginForm');
+    const authRegForm = $('#authFormRegister') || $('#authRegisterForm');
+    const authLoginForm = $('#authFormLogin') || $('#authLoginForm');
 
     function switchAuthTab(mode) {
       A.sfx('click');
+      const regForm = $('#authFormRegister') || $('#authRegisterForm');
+      const loginForm = $('#authFormLogin') || $('#authLoginForm');
       if (mode === 'register') {
         tabRegister?.classList.add('active');
         tabLogin?.classList.remove('active');
-        authRegForm?.classList.remove('hidden');
-        authRegForm?.classList.add('active');
-        authLoginForm?.classList.add('hidden');
-        authLoginForm?.classList.remove('active');
+        regForm?.classList.remove('hidden');
+        regForm?.classList.add('active');
+        loginForm?.classList.add('hidden');
+        loginForm?.classList.remove('active');
       } else {
         tabLogin?.classList.add('active');
         tabRegister?.classList.remove('active');
-        authLoginForm?.classList.remove('hidden');
-        authLoginForm?.classList.add('active');
-        authRegForm?.classList.add('hidden');
-        authRegForm?.classList.remove('active');
+        loginForm?.classList.remove('hidden');
+        loginForm?.classList.add('active');
+        regForm?.classList.add('hidden');
+        regForm?.classList.remove('active');
       }
     }
+    window.switchAuthTab = switchAuthTab;
 
     if (tabRegister) tabRegister.onclick = () => switchAuthTab('register');
     if (tabLogin) tabLogin.onclick = () => switchAuthTab('login');
@@ -1769,7 +1772,7 @@
       openMailboxModal();
     };
 
-    $('.btn-claim-single').forEach(b => b.onclick = () => handleClaim(b.dataset.mail));
+    $$('.btn-claim-single').forEach(b => b.onclick = () => handleClaim(b.dataset.mail));
     const btnAll = $('#btnClaimAllMail');
     if (btnAll) btnAll.onclick = () => handleClaim('all');
   }
@@ -1824,7 +1827,7 @@
     const bDia = $('#btnGachaGetDia');
     if (bDia) bDia.onclick = () => { closeModal(); openMailboxModal(); };
 
-    $('.gacha-pull-btn').forEach(b => b.onclick = () => {
+    $$('.gacha-pull-btn').forEach(b => b.onclick = () => {
       const times = parseInt(b.dataset.times) || 1;
       executeGachaPull(times);
     });
@@ -1949,7 +1952,7 @@
       </div>
     </div>`, { cls: 'wide' });
 
-    $('.btn-pull-equip').forEach(b => b.onclick = async () => {
+    $$('.btn-pull-equip').forEach(b => b.onclick = async () => {
       const id = b.dataset.id;
       const type = b.dataset.type;
       if (user) {
@@ -2018,6 +2021,14 @@
   // ------------------------------------------------------------ AUTH / PROFILE / SHOP / LEADERBOARD / RULES
   function openAuth(mode = 'login') {
     A.sfx('click');
+    if (mode === 'login' || mode === 'register') {
+      closeModal();
+      show('auth');
+      if (typeof window.switchAuthTab === 'function') {
+        window.switchAuthTab(mode);
+      }
+      return;
+    }
     const savedVaultRaw = localStorage.getItem('ek_account_vault');
     let localVault = null;
     try { if (savedVaultRaw) localVault = JSON.parse(savedVaultRaw); } catch (_) {}
@@ -2219,8 +2230,8 @@
     };
 
     $('#pfSave').onclick = () => save({ displayName: $('#pfName').value });
-    $('[data-av]').forEach(b => b.onclick = () => save({ avatar: b.dataset.av }));
-    $('[data-title]').forEach(b => b.onclick = async () => {
+    $$('[data-av]').forEach(b => b.onclick = () => save({ avatar: b.dataset.av }));
+    $$('[data-title]').forEach(b => b.onclick = async () => {
       const r = await api('/api/equip', { itemId: b.dataset.title, type: 'title' });
       if (r.user) {
         setUser(r.user, r.vault);
@@ -2759,8 +2770,8 @@
     substep: '',
 
     clearHighlights() {
-      $('.tutorial-highlight-target').forEach(el => el.classList.remove('tutorial-highlight-target'));
-      $('.pulse-card-guide').forEach(el => el.classList.remove('pulse-card-guide'));
+      $$('.tutorial-highlight-target').forEach(el => el.classList.remove('tutorial-highlight-target'));
+      $$('.pulse-card-guide').forEach(el => el.classList.remove('pulse-card-guide'));
     },
 
     setStep(step, substep = '') {
