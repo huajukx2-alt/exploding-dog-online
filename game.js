@@ -68,7 +68,7 @@ class Game {
   // ---------------------------------------------------------------- lobby
   makePlayer(extra) {
     return { id: 'p' + (this.seq++), key: crypto.randomBytes(8).toString('hex'), hand: [], alive: true, ready: false, isHost: false,
-      connected: true, auto: false, defuses: 0, mem: null, botPlays: 0, avatar: '🐶', frame: null, skin: null, rp: 0, userId: null, ...extra };
+      connected: true, auto: false, defuses: 0, mem: null, botPlays: 0, avatar: '🐶', frame: null, skin: null, title: 'title_rookie', rp: 0, userId: null, ...extra };
   }
 
   addHuman(socketId, name, user, guestData = {}) {
@@ -81,6 +81,7 @@ class Game {
       avatar: user ? (user.avatar || '🐶') : (guestData?.avatar || '🐶'),
       frame: user ? (user.equipped?.frame || null) : (guestData?.frame || null),
       skin: user ? (user.equipped?.skin || null) : (guestData?.skin || null),
+      title: user ? (user.equipped?.title || user.title || 'title_rookie') : (guestData?.title || 'title_rookie'),
       rp: user ? user.rp : 0,
       inventory: user ? user.inventory : []
     });
@@ -127,6 +128,7 @@ class Game {
     const botAvatars = ['av_shiba_vip', 'av_cyber_husky', 'av_blaze_bulldog', 'av_corgi_galaxy', 'av_diamond_poodle', 'av_samurai_akita', 'av_gentleman_pug', 'av_ninja_dog'];
     const botFrames = ['frame_gold', 'frame_neon', 'frame_fire', 'frame_rainbow', 'frame_diamond', 'frame_cyber', 'frame_sakura', 'frame_abyss'];
     const botSkins = ['skin_gold', 'skin_galaxy', 'skin_sakura', 'skin_matrix', 'skin_diamond', 'skin_dragon', 'skin_cyber', 'skin_cosmic_void'];
+    const botTitles = ['title_bomb_master', 'title_nope_king', 'title_rich_doge', 'title_undefeated', 'title_grim_reaper', 'title_lucky_star', 'title_fried_chicken', 'title_cyber_overlord'];
     const p = this.makePlayer({
       isBot: true,
       name,
@@ -134,6 +136,7 @@ class Game {
       avatar: botAvatars[idx % botAvatars.length] || '🐶',
       frame: botFrames[idx % botFrames.length],
       skin: botSkins[idx % botSkins.length],
+      title: botTitles[idx % botTitles.length],
       socketId: null
     });
     this.players.push(p);
@@ -992,7 +995,7 @@ class Game {
     const order = [winner, ...[...this.elimOrder].reverse().map(id => this.byId(id))].filter(Boolean);
     const results = order.map((p, i) => ({ player: p, place: i + 1 }));
     const rewards = this.onEnd ? this.onEnd(this, results) : {};
-    this.lastResults = results.map(r => ({ id: r.player.id, name: r.player.name, avatar: r.player.avatar, place: r.place, isBot: r.player.isBot, reward: rewards[r.player.id] || null }));
+    this.lastResults = results.map(r => ({ id: r.player.id, name: r.player.name, avatar: r.player.avatar, frame: r.player.frame, title: r.player.title || 'title_rookie', place: r.place, isBot: r.player.isBot, reward: rewards[r.player.id] || null }));
     if (winner) this.fx('win', { playerId: winner.id });
     this.sync();
     this.io.to(this.code).emit('gameOver', { results: this.lastResults });
@@ -1034,7 +1037,7 @@ class Game {
     const pa = this.pending, pr = this.prompt;
     return {
       code: this.code, state: this.state, phase: this.phase, settings: this.settings,
-      players: this.players.map(p => ({ id: p.id, name: p.name, avatar: p.avatar, frame: p.frame, skin: p.skin, rp: p.rp,
+      players: this.players.map(p => ({ id: p.id, name: p.name, avatar: p.avatar, frame: p.frame, skin: p.skin, title: p.title || 'title_rookie', rp: p.rp,
         isBot: p.isBot, isHost: p.isHost, ready: p.ready, alive: p.alive, connected: p.connected, auto: p.auto,
         handCount: p.hand.length, registered: !!p.userId, elimReason: p.elimReason })),
       turnId: this.state === 'PLAYING' ? this.cur()?.id : null, turnsLeft: this.turnsLeft, direction: this.direction,

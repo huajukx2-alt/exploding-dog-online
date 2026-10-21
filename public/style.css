@@ -3415,3 +3415,212 @@ body.shake-heavy {
   text-overflow: ellipsis;
   width: 100%;
 }
+
+
+/* ------------------------------------------------------------ PURCHASABLE TITLES & RANKS */
+.title-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 999px;
+  line-height: 1.2;
+  white-space: nowrap;
+  letter-spacing: 0.2px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+  vertical-align: middle;
+  transition: transform 0.2s ease;
+}
+.title-badge:hover {
+  transform: scale(1.04);
+}
+
+.tb-title_rookie {
+  background: rgba(148, 163, 184, 0.25);
+  color: #cbd5e1;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+}
+.tb-title_bomb_master {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.35), rgba(249, 115, 22, 0.35));
+  color: #fca5a5;
+  border: 1px solid #ef4444;
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
+}
+.tb-title_nope_king {
+  background: linear-gradient(135deg, rgba(220, 38, 38, 0.4), rgba(153, 27, 27, 0.4));
+  color: #fecaca;
+  border: 1px solid #dc2626;
+  box-shadow: 0 0 8px rgba(220, 38, 38, 0.4);
+}
+.tb-title_rich_doge {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.4), rgba(217, 119, 6, 0.4));
+  color: #fef08a;
+  border: 1px solid #f59e0b;
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+}
+.tb-title_diamond_hunter {
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.4), rgba(59, 130, 246, 0.4));
+  color: #a5f3fc;
+  border: 1px solid #06b6d4;
+  box-shadow: 0 0 10px rgba(6, 182, 212, 0.5);
+}
+.tb-title_grim_reaper {
+  background: linear-gradient(135deg, rgba(88, 28, 135, 0.6), rgba(15, 23, 42, 0.8));
+  color: #e9d5ff;
+  border: 1px solid #9333ea;
+  box-shadow: 0 0 10px rgba(147, 51, 234, 0.6);
+}
+.tb-title_undefeated {
+  background: linear-gradient(135deg, rgba(234, 179, 8, 0.45), rgba(249, 115, 22, 0.45));
+  color: #fef9c3;
+  border: 1px solid #eab308;
+  box-shadow: 0 0 12px rgba(234, 179, 8, 0.6);
+}
+.tb-title_lucky_star {
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.4), rgba(244, 114, 182, 0.4));
+  color: #fbcfe8;
+  border: 1px solid #ec4899;
+  box-shadow: 0 0 8px rgba(236, 72, 153, 0.4);
+}
+.tb-title_fried_chicken {
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.4), rgba(194, 65, 12, 0.4));
+  color: #fed7aa;
+  border: 1px solid #f97316;
+  box-shadow: 0 0 8px rgba(249, 115, 22, 0.4);
+}
+.tb-title_cyber_overlord {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.4), rgba(6, 182, 212, 0.4));
+  color: #6ee7b7;
+  border: 1px solid #10b981;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+}
+.tb-title_alpha_titan {
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.5), rgba(99, 102, 241, 0.5));
+  color: #f0f9ff;
+  border: 1.5px solid #38bdf8;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.7);
+  animation: titanPulse 2s infinite ease-in-out;
+}
+@keyframes titanPulse {
+  0%, 100% { box-shadow: 0 0 8px rgba(56, 189, 248, 0.6); }
+  50% { box-shadow: 0 0 16px rgba(99, 102, 241, 0.9), 0 0 25px rgba(56, 189, 248, 0.5); }
+}
+.tb-title_god_doge {
+  background: linear-gradient(90deg, #ff007f, #7928ca, #0070f3, #00dfd8, #ff007f);
+  background-size: 300% 300%;
+  color: #fff;
+  font-weight: 800;
+  border: 1.5px solid #ffd700;
+  box-shadow: 0 0 14px rgba(255, 215, 0, 0.8), 0 0 22px rgba(236, 72, 153, 0.5);
+  animation: rainbowTitleShift 3.5s ease infinite;
+}
+@keyframes rainbowTitleShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.shop-title-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 8px;
+  min-height: 80px;
+}
+.shop-title-desc {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  text-align: center;
+  line-height: 1.25;
+}
+
+.owned-titles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.btn-owned-title {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: 10px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+.btn-owned-title:hover {
+  transform: translateY(-2px);
+  border-color: #fbbf24;
+  background: rgba(251, 191, 36, 0.1);
+  box-shadow: 0 4px 12px rgba(251, 191, 36, 0.25);
+}
+.btn-owned-title.on {
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.18);
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
+}
+.btn-owned-title.on::after {
+  content: '✓ สวมใส่อยู่';
+  font-size: 0.65rem;
+  font-weight: bold;
+  color: #10b981;
+}
+.otitle-desc {
+  font-size: 0.68rem;
+  color: #94a3b8;
+  line-height: 1.2;
+}
+
+.seat-title-row {
+  margin-top: 2px;
+  margin-bottom: 2px;
+  display: flex;
+  justify-content: center;
+}
+.seat-title-row .title-badge {
+  font-size: 0.58rem;
+  padding: 1px 5px;
+  max-width: 90px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mh-title-row {
+  margin-bottom: 2px;
+  display: flex;
+  justify-content: center;
+}
+.mh-title-row .title-badge {
+  font-size: 0.66rem;
+  padding: 1.5px 6px;
+}
+.p-name-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+#pTitle .title-badge {
+  font-size: 0.62rem;
+  padding: 1px 5px;
+}
+.res-name-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+}
+.res-name-wrap .title-badge {
+  font-size: 0.65rem;
+  padding: 1px 6px;
+}

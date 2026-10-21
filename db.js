@@ -73,7 +73,8 @@ function generateVault(u) {
     rp: u.rp ?? 0,
     stats: u.stats || { games: 0, wins: 0, explosions: 0, defuses: 0 },
     inventory: u.inventory || [],
-    equipped: u.equipped || { frame: null, skin: null, avatar: null },
+    equipped: u.equipped || { frame: null, skin: null, avatar: null, title: 'title_rookie' },
+    title: u.equipped?.title || u.title || 'title_rookie',
     claimedMail: u.claimedMail || [],
     recoveryPin: u.recoveryPin || '1234',
     history: (u.history || []).slice(0, 10),
@@ -114,7 +115,8 @@ function restoreFromVault(vault) {
       rp: vault.rp ?? 0,
       stats: vault.stats || { games: 0, wins: 0, explosions: 0, defuses: 0 },
       inventory: Array.from(new Set(vault.inventory || [])),
-      equipped: vault.equipped || { frame: null, skin: null, avatar: null },
+      equipped: vault.equipped || { frame: null, skin: null, avatar: null, title: vault.title || 'title_rookie' },
+      title: vault.title || vault.equipped?.title || 'title_rookie',
       claimedMail: vault.claimedMail || [],
       history: vault.history || [],
       createdAt: vault.createdAt || Date.now(),
@@ -202,7 +204,8 @@ function publicUser(u) {
     rp: u.rp ?? 0,
     stats: u.stats || { games: 0, wins: 0, explosions: 0, defuses: 0 },
     inventory: u.inventory || [],
-    equipped: u.equipped || { frame: null, skin: null, avatar: null },
+    equipped: u.equipped || { frame: null, skin: null, avatar: null, title: 'title_rookie' },
+    title: u.equipped?.title || u.title || 'title_rookie',
     claimedMail: u.claimedMail || [],
     recoveryPin: u.recoveryPin || '1234',
     history: (u.history || []).slice(0, 10)
@@ -226,7 +229,7 @@ function register(username, password, displayName, recoveryPin) {
     salt, pw: hash(password, salt), token, coins: 500, diamonds: 30, rp: 0,
     recoveryPin: pin,
     stats: { games: 0, wins: 0, explosions: 0, defuses: 0 },
-    inventory: [], equipped: { frame: null, skin: null, avatar: null },
+    inventory: ['title_rookie'], equipped: { frame: null, skin: null, avatar: null, title: 'title_rookie' }, title: 'title_rookie',
     claimedMail: [], history: [], createdAt: now, updatedAt: now
   };
   sessions.set(token, key);
@@ -291,6 +294,9 @@ function buy(token, itemId) {
   if (item.type === 'avatar') {
     u.avatar = itemId;
     u.equipped.avatar = itemId;
+  } else if (item.type === 'title') {
+    u.title = itemId;
+    u.equipped.title = itemId;
   } else if (item.type === 'frame' && !u.equipped.frame) {
     u.equipped.frame = itemId;
   } else if (item.type === 'skin' && !u.equipped.skin) {
@@ -302,7 +308,7 @@ function buy(token, itemId) {
 
 function equip(token, itemId, type) {
   const u = byToken(token); if (!u) return { error: 'auth' };
-  if (!['frame', 'skin', 'avatar'].includes(type)) return { error: 'bad_type' };
+  if (!['frame', 'skin', 'avatar', 'title'].includes(type)) return { error: 'bad_type' };
   u.inventory = u.inventory || [];
   u.equipped = u.equipped || { frame: null, skin: null, avatar: null };
 
@@ -311,10 +317,13 @@ function equip(token, itemId, type) {
   if (type === 'avatar') {
     u.avatar = itemId || '🐶';
     u.equipped.avatar = itemId || null;
+  } else if (type === 'title') {
+    u.title = itemId || 'title_rookie';
+    u.equipped.title = itemId || 'title_rookie';
   } else {
     u.equipped[type] = itemId || null;
   }
-  save(); return { user: publicUser(u) };
+  save(); return { user: publicUser(u), vault: generateVault(u) };
 }
 
 function dailyBonus(token) {

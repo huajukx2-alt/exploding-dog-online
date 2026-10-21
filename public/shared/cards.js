@@ -151,10 +151,27 @@
     { id: 'av_ninja_dog', type: 'avatar', icon: '🥷', price: 550, name: { th: 'ตูบนินจา เงาจันทร์', en: 'Shadow Moon Ninja Dog' }, desc: { th: 'หน้ากากนินจา ดาบคาตานะคู่สุดเท่', en: 'Stealth shinobi mask & twin blades' } }
   ];
 
-  // Shop catalog (Avatars, Frames, Card Backs, Stickers)
+  // Purchasable and Limited Titles / Ranks (ยศ & ฉายา)
+  const TITLES = [
+    { id: 'title_rookie', type: 'title', icon: '🐾', price: 0, tag: 'rookie', name: { th: 'ลูกหมาฝึกหัด', en: 'Rookie Pup' }, desc: { th: 'ยศเริ่มต้นของตูบน้อยไร้เดียงสา', en: 'Starting rank of innocent pups' } },
+    { id: 'title_bomb_master', type: 'title', icon: '💣', price: 350, tag: 'bomb', name: { th: 'มือวางระเบิดตัวพ่อ', en: 'Bomb Master' }, desc: { th: 'ผู้เชี่ยวชาญการวางระเบิดยัดไส้กองจั่ว', en: 'Expert at planting bombs in draw pile' } },
+    { id: 'title_nope_king', type: 'title', icon: '🛑', price: 500, tag: 'nope', name: { th: 'ราชาแห่งการ Nope', en: 'Nope King' }, desc: { th: 'มือขัดจังหวะตัวท็อป ปฏิเสธทุกการกระทำ', en: 'Denies everything with lightning nopes' } },
+    { id: 'title_rich_doge', type: 'title', icon: '🪙', price: 600, tag: 'rich', name: { th: 'มหาเศรษฐีตูบ', en: 'Rich Doge' }, desc: { th: 'รวยล้นฟ้า กระดูกทองคำกองพะเนิน', en: 'Wealthy canine swimming in gold coins' } },
+    { id: 'title_diamond_hunter', type: 'title', icon: '💎', price: 800, tag: 'diamond', name: { th: 'นักล่าเพชรแดนเถื่อน', en: 'Diamond Hunter' }, desc: { th: 'ผู้เสพติดการกวาดเพชรเข้าคลัง', en: 'Craving diamonds from every victory' } },
+    { id: 'title_grim_reaper', type: 'title', icon: '☠️', price: 1000, tag: 'reaper', name: { th: 'ยมทูต 4 ขา', en: 'Grim Reaper Dog' }, desc: { th: 'ผู้มากับความตาย ใครเจอเป็นต้องระเบิด', en: 'Bringer of explosions and doom' } },
+    { id: 'title_undefeated', type: 'title', icon: '🏆', price: 1500, tag: 'champion', name: { th: 'จ่าฝูงไร้พ่าย', en: 'Undefeated Alpha' }, desc: { th: 'แชมเปี้ยนผู้ไม่เคยรู้จักคำว่าแพ้', en: 'Undisputed champion of the pack' } },
+    { id: 'title_lucky_star', type: 'title', icon: '🌟', price: 400, tag: 'lucky', name: { th: 'ดวงดีจนหมางง', en: 'Lucky Star' }, desc: { th: 'จั่วการ์ดอะไรก็รอด พกดวงมาเต็มกระเป๋า', en: 'Draws whatever card is needed to survive' } },
+    { id: 'title_fried_chicken', type: 'title', icon: '🍗', price: 300, tag: 'chicken', name: { th: 'คลั่งไก่ทอด', en: 'Fried Chicken Fanatic' }, desc: { th: 'พร้อมสู้ตายเพื่อชิงน่องไก่ทอดกรอบ', en: 'Will risk explosions for crispy drumsticks' } },
+    { id: 'title_cyber_overlord', type: 'title', icon: '🤖', price: 1200, tag: 'cyber', name: { th: 'จอมทัพไซเบอร์', en: 'Cyber Overlord' }, desc: { th: 'คำนวณความน่าจะเป็นระเบิดด้วย AI ขั้นสูง', en: 'Calculates bomb probabilities with AI' } }
+  ];
+
+  // Shop catalog (Avatars, Frames, Titles, Card Backs, Stickers)
   const SHOP = [
     // Avatars
     ...AVATARS,
+
+    // Titles / Ranks (ยศ & ฉายา)
+    ...TITLES.filter(t => t.price > 0),
 
     // Frames (รวมกรอบสุดหรู)
     { id: 'frame_gold', type: 'frame', price: 300, icon: '🥇', name: { th: 'กรอบทองคำ 24K', en: 'Gold VIP Frame' }, desc: { th: 'ประกายทองคำแท้ 24K หรูหรา', en: 'Shining 24K metallic gold border' } },
@@ -189,11 +206,13 @@
   // Gacha Pool (สุ่มของลิมิเต็ดด้วยเพชร 💎)
   const GACHA_POOL = {
     UR: [
+      { id: 'title_god_doge', type: 'title', icon: '👑', name: { th: 'ยศ: เทพสุริยันจ่าฝูง', en: 'Title: Celestial God Doge' }, tier: 'UR', desc: { th: 'ยศเกียรติยศสูงสุดระดับเทพเจ้า ส่องแสงรัศมีรุ้ง', en: 'Supreme celestial rainbow title badge' } },
       { id: 'av_god_shiba', type: 'avatar', icon: '👑', name: { th: 'เทพชิบะ สุริยันเทวะ 24K', en: 'Sun God Doge 24K' }, tier: 'UR', desc: { th: 'รัศมีสุริยันสีทองเจิดจ้า ระดับลิมิเต็ดสูงสุด', en: 'Celestial glowing golden solar aura' } },
       { id: 'frame_celestial_dragon', type: 'frame', icon: '🐉', name: { th: 'กรอบมังกรดาราจักร', en: 'Celestial Dragon Frame' }, tier: 'UR', desc: { th: 'มังกรทองล้อมกรอบพร้อมละอองดาวเรืองแสง', en: 'Golden dragon swirling starry halo' } },
       { id: 'skin_cosmic_void', type: 'skin', icon: '🌌', name: { th: 'หลังไพ่มิติหลุมดำคอสมิก', en: 'Cosmic Void 3D Back' }, tier: 'UR', desc: { th: 'มิติหลุมดำสะท้อนแสงโฮโลแกรมลึกไร้ก้นบึ้ง', en: 'Deep void 3D holographic stars' } }
     ],
     SSR: [
+      { id: 'title_alpha_titan', type: 'title', icon: '⚡', name: { th: 'ยศ: ไททันอัลฟ่า', en: 'Title: Titan Alpha' }, tier: 'SSR', desc: { th: 'ยศสายฟ้าคำรามแห่งกองทัพหุ่นรบ', en: 'Crackling lightning mecha title' } },
       { id: 'av_mecha_alpha', type: 'avatar', icon: '🤖', name: { th: 'เมคาอัลฟ่าไททัน', en: 'Mecha Alpha Titan' }, tier: 'SSR', desc: { th: 'หุ่นรบไซเบอร์สุดแกร่งเกราะไททาเนียม', en: 'Titan mecha robotic combat armor' } },
       { id: 'frame_lightning_god', type: 'frame', icon: '⚡', name: { th: 'กรอบอัสนีบาตราชา', en: 'Thunder God Frame' }, tier: 'SSR', desc: { th: 'ประกายสายฟ้าฟาดต่อเนื่องสีฟ้าคราม', en: 'Crackling electric blue lightning' } },
       { id: 'av_diamond_poodle', type: 'avatar', icon: '🐩', name: { th: 'พุดเดิ้ล ไดมอนด์ควีน', en: 'Diamond Queen Poodle' }, tier: 'SSR' },
@@ -242,5 +261,5 @@
   };
   function rankOf(rp) { let r = RANKS[0]; for (const x of RANKS) if (rp >= x.min) r = x; return r; }
 
-  return { CARDS, VERSIONS, CONFIGURABLE, SHOP, FREE_STICKERS, RANKS, CARD_KINDS, AVATARS, GACHA_POOL, rankOf };
+  return { CARDS, VERSIONS, CONFIGURABLE, SHOP, FREE_STICKERS, RANKS, CARD_KINDS, AVATARS, GACHA_POOL, TITLES, rankOf };
 });

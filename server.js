@@ -34,6 +34,7 @@ app.post('/api/buy', (req, res) => {
         p.frame = r.user.equipped.frame;
         p.skin = r.user.equipped.skin;
         p.avatar = r.user.avatar;
+        p.title = r.user.equipped.title || r.user.title;
         g.sync();
       }
     }
@@ -50,6 +51,7 @@ app.post('/api/equip', (req, res) => {
         if (b.type === 'frame') p.frame = r.user.equipped.frame;
         if (b.type === 'skin') p.skin = r.user.equipped.skin;
         if (b.type === 'avatar') p.avatar = r.user.avatar;
+        if (b.type === 'title') p.title = r.user.equipped.title;
         g.sync();
       }
     }

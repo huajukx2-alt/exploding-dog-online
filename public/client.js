@@ -1,6 +1,6 @@
 /* Exploding Kittens Online — client */
 (() => {
-  const { CARDS, VERSIONS, CONFIGURABLE, SHOP, FREE_STICKERS, CARD_KINDS, rankOf } = window.EK;
+  const { CARDS, VERSIONS, CONFIGURABLE, SHOP, FREE_STICKERS, CARD_KINDS, rankOf, TITLES } = window.EK;
   const $ = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -360,6 +360,35 @@
     </svg>`;
   }
   function dogHeroSVG(themeOrAv) { return renderAvatarSVG(themeOrAv); }
+  function rankBadge(rp) {
+    if (typeof rankOf !== 'function') return '';
+    const r = rankOf(rp || 0);
+    return r ? `<span class="rank-tag" title="${esc(r.name?.[lang] || r.name?.th || '')}">${r.icon}</span>` : '';
+  }
+
+  function titleInfo(id) {
+    if (!id) id = 'title_rookie';
+    if (window.EK?.TITLES) {
+      const f = window.EK.TITLES.find(t => t.id === id);
+      if (f) return f;
+    }
+    if (window.EK?.GACHA_POOL) {
+      for (const tier of Object.keys(window.EK.GACHA_POOL)) {
+        const f = window.EK.GACHA_POOL[tier].find(t => t.id === id);
+        if (f) return f;
+      }
+    }
+    return { id, icon: '🐾', name: { th: 'ลูกหมาฝึกหัด', en: 'Rookie Pup' } };
+  }
+
+  function titleBadgeHTML(titleId, l) {
+    const t = titleInfo(titleId);
+    if (!t) return '';
+    const lg = l || lang || 'th';
+    const nameStr = (t.name && (t.name[lg] || t.name.th || t.name.en)) || t.name || '';
+    return `<span class="title-badge tb-${t.id}" title="${esc(t.desc?.[lg] || nameStr)}">${t.icon || '🎖️'} ${esc(nameStr)}</span>`;
+  }
+
   function avatarHTML(p, size = '') {
     if (!p) p = {};
     const av = p.avatar || '🐶';
@@ -752,6 +781,8 @@
     const av = $('#pAvatar'), lvl = $('#pLevel'), nm = $('#pName'), xp = $('#pXpFill');
     const coins = $('#topCoins'), dia = $('#topDiamonds'), flags = $('#langFlags');
     if (flags) flags.textContent = lang === 'th' ? '🇹🇭 TH / 🇬🇧 EN' : '🇬🇧 EN / 🇹🇭 TH';
+    const tBadge = $('#pTitle');
+    if (tBadge) tBadge.innerHTML = titleBadgeHTML(myTitle(), lang);
     if (user) {
       if (av) av.textContent = user.avatar || '🐶';
       if (lvl) lvl.textContent = 'LV.' + (user.level || Math.min(99, Math.floor((user.rp || 0) / 40) + 1));
@@ -780,6 +811,7 @@
     const myAvatar = () => (user && (user.equipped?.avatar || user.avatar)) || localStorage.getItem('ek_guest_avatar') || '🐶';
   const myFrame = () => (user && user.equipped?.frame) || localStorage.getItem('ek_guest_frame') || '';
   const mySkin = () => (user && user.equipped?.skin) || localStorage.getItem('ek_guest_skin') || '';
+  const myTitle = () => (user && (user.equipped?.title || user.title)) || localStorage.getItem('ek_guest_title') || 'title_rookie';
   const myName = () => {
     if (user && user.displayName) return user.displayName;
     const saved = localStorage.getItem('ek_name');
@@ -829,7 +861,7 @@
         const c = $('#browserCodeInp')?.value.trim();
         if (!c) return toast(lang === 'th' ? 'กรุณาระบุรหัสห้อง 4 หลัก' : 'Enter 4-letter room code', 'err');
         A.sfx('click');
-        socket.emit('joinRoom', { code: c, name: myName(), avatar: myAvatar(), frame: myFrame(), skin: mySkin() });
+        socket.emit('joinRoom', { code: c, name: myName(), avatar: myAvatar(), frame: myFrame(), skin: mySkin(), title: myTitle() });
       };
     }
 
@@ -838,7 +870,7 @@
     if (btnCreate) {
       btnCreate.onclick = () => {
         A.sfx('click');
-        socket.emit('createRoom', { name: myName(), avatar: myAvatar(), frame: myFrame(), skin: mySkin(), settings: { version: homeVersion } });
+        socket.emit('createRoom', { name: myName(), avatar: myAvatar(), frame: myFrame(), skin: mySkin(), title: myTitle(), settings: { version: homeVersion } });
       };
     }
 
@@ -905,7 +937,7 @@
 
     $$('[data-rc]', grid).forEach(b => b.onclick = () => {
       A.sfx('click');
-      socket.emit('joinRoom', { code: b.dataset.rc, name: myName(), avatar: myAvatar(), frame: myFrame(), skin: mySkin() });
+      socket.emit('joinRoom', { code: b.dataset.rc, name: myName(), avatar: myAvatar(), frame: myFrame(), skin: mySkin(), title: myTitle() });
     });
   }
 
@@ -925,7 +957,7 @@
     });
     $('#modalCreateRoom').onclick = () => {
       closeModal();
-      socket.emit('createRoom', { name: myName(), settings: { version: homeVersion } });
+      socket.emit('createRoom', { name: myName(), avatar: myAvatar(), frame: myFrame(), skin: mySkin(), title: myTitle(), settings: { version: homeVersion } });
     };
   }
 
@@ -952,7 +984,7 @@
     $('#modalStartSolo').onclick = () => {
       const bots = +$('#modalSelBots').value;
       closeModal();
-      socket.emit('quickSolo', { name: myName(), avatar: myAvatar(), frame: myFrame(), skin: mySkin(), bots, settings: { version: homeVersion } });
+      socket.emit('quickSolo', { name: myName(), avatar: myAvatar(), frame: myFrame(), skin: mySkin(), title: myTitle(), bots, settings: { version: homeVersion } });
     };
   }
 
@@ -1239,6 +1271,8 @@
           let preview = '';
           if (p.type === 'avatar') {
             preview = `<div class="pull-av-preview">${renderAvatarSVG(p.id)}</div>`;
+          } else if (p.type === 'title') {
+            preview = `<div class="pull-title-preview" style="padding:16px 0;">${titleBadgeHTML(p.id, lang)}</div>`;
           } else if (p.type === 'frame') {
             preview = avatarHTML({ avatar: myAvatar(), frame: p.id }, 'lg');
           } else if (p.type === 'skin') {
@@ -1469,10 +1503,20 @@
     const inv = user.inventory || [];
     const ownedAvatars = window.EK.AVATARS.filter(a => inv.includes(a.id));
     const curAvatar = user.equipped?.avatar || user.avatar || '🐶';
+    const curTitle = user.equipped?.title || user.title || 'title_rookie';
+    const allTitles = [...(window.EK?.TITLES || [])];
+    if (window.EK?.GACHA_POOL) {
+      for (const tier of Object.keys(window.EK.GACHA_POOL)) {
+        for (const it of window.EK.GACHA_POOL[tier]) {
+          if (it.type === 'title' && !allTitles.some(x => x.id === it.id)) allTitles.push(it);
+        }
+      }
+    }
+    const ownedTitles = allTitles.filter(t => t.id === 'title_rookie' || inv.includes(t.id));
 
     openModal(`<h2>👤 ${t('profile')}</h2>
       <div class="profile-head">${avatarHTML({ avatar: curAvatar, frame: user.equipped?.frame }, 'lg')}
-        <div><h3>${esc(user.displayName)} <small>@${esc(user.username)}</small></h3>
+        <div><h3>${esc(user.displayName)} <small>@${esc(user.username)}</small> ${titleBadgeHTML(curTitle, lang)}</h3>
         <div class="rank-line">${r.icon} <b>${r.name[lang]}</b> · ${user.rp} RP ${nextRank ? `<div class="bar"><i style="width:${Math.round((user.rp - r.min) / (nextRank.min - r.min) * 100)}%"></i></div><small>→ ${nextRank.icon} ${nextRank.min} RP</small>` : ''}</div>
         <div class="coins big">🪙 ${user.coins} · 💎 ${user.diamonds ?? 0}</div></div></div>
       <div class="stat-grid"><div><b>${st.games}</b>${t('games')}</div><div><b>${st.wins}</b>${t('wins')}</div><div><b>${st.games ? Math.round(st.wins / st.games * 100) : 0}%</b>${t('winRate')}</div><div><b>${st.explosions}</b>${t('explosions')}</div><div><b>${st.defuses}</b>${t('defusesStat')}</div></div>
@@ -1488,6 +1532,16 @@
           <button class="btn small gold" id="btnExportPasskey" style="flex:1;">📋 ${lang === 'th' ? 'คัดลอกรหัสสำรองบัญชี (Passkey)' : 'Copy Account Passkey'}</button>
         </div>
         <small class="note" style="display:block;margin-top:6px;font-size:0.75rem;">${lang === 'th' ? '💡 หากเซิร์ฟเวอร์รีสตาร์ท ระบบจะกู้คืนข้อมูลให้อัตโนมัติ หรือคัดลอก Passkey ไปกู้คืนในเครื่องอื่นได้' : '💡 Accounts auto-restore after server restarts. You can also paste this passkey on another device.'}</small>
+      </div>
+
+      <h4>🎖️ ${lang === 'th' ? 'ยศและฉายาของคุณ (สวมใส่ไปโชว์ในเกม)' : 'Your Titles & Ranks (Equip to show in game)'}</h4>
+      <div class="owned-titles-grid">
+        ${ownedTitles.map(t => `
+          <button class="btn-owned-title ${curTitle === t.id ? 'on' : ''}" data-title="${t.id}" title="${esc(t.desc?.[lang] || t.desc?.th || '')}">
+            ${titleBadgeHTML(t.id, lang)}
+            <small class="otitle-desc">${esc(t.desc?.[lang] || t.desc?.th || '')}</small>
+          </button>
+        `).join('')}
       </div>
 
       <h4>🎭 ${lang === 'th' ? 'อวตาร 3D & ลิมิเต็ดของคุณ' : 'Your 3D & Limited Avatars'}</h4>
@@ -1515,7 +1569,15 @@
     };
 
     $('#pfSave').onclick = () => save({ displayName: $('#pfName').value });
-    $$('[data-av]').forEach(b => b.onclick = () => save({ avatar: b.dataset.av }));
+    $('[data-av]').forEach(b => b.onclick = () => save({ avatar: b.dataset.av }));
+    $('[data-title]').forEach(b => b.onclick = async () => {
+      const r = await api('/api/equip', { itemId: b.dataset.title, type: 'title' });
+      if (r.user) {
+        setUser(r.user, r.vault);
+        A.sfx('select');
+        openProfile();
+      }
+    });
 
     $('#btnChangePin').onclick = async () => {
       const newPin = prompt(lang === 'th' ? 'กรอก PIN กู้คืนรหัสผ่านใหม่ (4-12 ตัวอักษร):' : 'Enter new Recovery PIN (4-12 chars):', user.recoveryPin || '');
@@ -1564,24 +1626,29 @@
     const eqAv = myAvatar();
     const eqFrame = myFrame();
     const eqSkin = mySkin();
+    const eqTitle = myTitle();
 
     const tabs = [
       ['avatar', '🎭 ' + (t('avatars') || 'อวตาร')],
+      ['title', '🎖️ ' + (lang === 'th' ? 'ยศ/ฉายา' : 'Titles')],
       ['frame', '🖼️ ' + t('frames')],
       ['skin', '🎴 ' + t('skins')],
       ['sticker', '🐶 ' + t('stickers')]
     ];
 
     const items = window.EK.SHOP.filter(i => i.type === shopTab).map(i => {
-      const owned = inv.includes(i.id);
+      const owned = inv.includes(i.id) || (i.id === 'title_rookie');
       const eq = i.type === 'avatar' ? (eqAv === i.id)
         : i.type === 'frame' ? (eqFrame === i.id)
         : i.type === 'skin' ? (eqSkin === i.id)
+        : i.type === 'title' ? (eqTitle === i.id)
         : false;
 
       let preview = '';
       if (i.type === 'avatar') {
         preview = `<div class="shop-avatar-box">${renderAvatarSVG(i.id)}</div>`;
+      } else if (i.type === 'title') {
+        preview = `<div class="shop-title-preview">${titleBadgeHTML(i.id, lang)}<div class="shop-title-desc">${esc(i.desc?.[lang] || i.desc?.th || '')}</div></div>`;
       } else if (i.type === 'frame') {
         preview = avatarHTML({ avatar: eqAv || '🐶', frame: i.id }, 'lg');
       } else if (i.type === 'skin') {
@@ -1596,7 +1663,8 @@
       } else if (i.type === 'sticker') {
         btn = `<span class="tag">${t('owned')}</span>`;
       } else {
-        btn = `<button class="btn small ${eq ? '' : 'green'}" data-equip="${eq ? '' : i.id}" data-type="${i.type}">${eq ? t('unequip') : t('equip')}</button>`;
+        const unequipVal = i.type === 'title' ? 'title_rookie' : '';
+        btn = `<button class="btn small ${eq ? '' : 'green'}" data-equip="${eq ? unequipVal : i.id}" data-type="${i.type}">${eq ? t('unequip') : t('equip')}</button>`;
       }
       return `<div class="shop-item ${owned ? 'owned' : ''}">
         ${preview}
@@ -1638,6 +1706,7 @@
         gInv.push(itemId);
         localStorage.setItem('ek_guest_inventory', JSON.stringify(gInv));
         if (item.type === 'avatar') localStorage.setItem('ek_guest_avatar', itemId);
+        else if (item.type === 'title') localStorage.setItem('ek_guest_title', itemId);
         else if (item.type === 'frame') localStorage.setItem('ek_guest_frame', itemId);
         else if (item.type === 'skin') localStorage.setItem('ek_guest_skin', itemId);
         renderUserChip();
@@ -1655,6 +1724,7 @@
         if (r.user) { setUser(r.user, r.vault); A.sfx('select'); openShop(); }
       } else {
         if (itemId) localStorage.setItem('ek_guest_' + type, itemId);
+        else if (type === 'title') localStorage.setItem('ek_guest_title', 'title_rookie');
         else localStorage.removeItem('ek_guest_' + type);
         renderUserChip();
         A.sfx('select');
@@ -1985,7 +2055,7 @@
           closeModal();
           A.sfx('win');
           toast(lang === 'th' ? '🎮 กำลังเข้าสู่แมตช์ซ้อม 1v1...' : 'Entering 1v1 practice match...', 'good');
-          socket.emit('quickSolo', { name: myName(), bots: 1, settings: { version: homeVersion || 'original' } });
+          socket.emit('quickSolo', { name: myName(), avatar: myAvatar(), frame: myFrame(), skin: mySkin(), title: myTitle(), bots: 1, settings: { version: homeVersion || 'original' } });
         };
 
         $('#btnCloseAcademy').onclick = () => closeModal();
@@ -2037,7 +2107,7 @@
     $('#lobbyCount').textContent = `(${S.players.length}/${S.settings.maxPlayers})`;
     $('#lobbyPlayers').innerHTML = S.players.map(p => `
       <div class="lp ${p.ready ? 'ready' : ''} ${p.id === S.me.id ? 'me' : ''}">
-        ${avatarHTML(p)}<div class="lp-name">${esc(p.name)} ${p.registered ? rankBadge(p.rp) : ''}
+        ${avatarHTML(p)}<div class="lp-name">${esc(p.name)} ${p.registered ? rankBadge(p.rp) : ''} ${titleBadgeHTML(p.title, lang)}
         <small>${p.isHost ? '👑 ' + t('host') : p.isBot ? '🤖 ' + t('bot') : ''}</small></div>
         <span class="lp-status">${p.ready ? '✅ ' + t('ready') : '⏳ ' + t('notReady')}</span>
         ${isHost && p.isBot ? `<button class="x" data-rm="${p.id}">✕</button>` : ''}
@@ -2347,6 +2417,7 @@
             <span class="seat-tag">${THEME_TAG[theme]}</span>
             <div class="seat-dog ${p.frame || ''}">${renderAvatarSVG(p.avatar || '🐶', theme)}</div>
             <div class="seat-stars">⭐⭐⭐⭐⭐</div>
+            <div class="seat-title-row">${titleBadgeHTML(p.title, lang)}</div>
             <div class="seat-plate">${esc(p.name)} ${p.registered ? rankBadge(p.rp) : ''}</div>
             ${isTurn && S.turnsLeft > 1 ? `<span class="turns-badge">x${S.turnsLeft}</span>` : ''}
             ${p.alive ? '' : `<div class="dead-mark">${p.elimReason === 'imploded' ? '🌀' : '💥'}</div>`}
@@ -2364,7 +2435,8 @@
     // my own bottom-left hero seat
     const myTurn = S.state === 'PLAYING' && S.turnId === m.id && m.alive;
     const myTheme = themeForPlayer(m, 3);
-    const heroKey = JSON.stringify([m.id, m.name, m.avatar || myAvatar(), m.frame || myFrame(), m.skin || mySkin(), m.rp, m.alive, myTurn, S.turnsLeft, user?.coins, lang]);
+    const curMyTitle = m.title || myTitle();
+    const heroKey = JSON.stringify([m.id, m.name, m.avatar || myAvatar(), m.frame || myFrame(), m.skin || mySkin(), curMyTitle, m.rp, m.alive, myTurn, S.turnsLeft, user?.coins, lang]);
     if (heroKey !== lastHeroKey) {
       lastHeroKey = heroKey;
       const heroEl = $('#myHeroSeat');
@@ -2375,6 +2447,7 @@
           </div>
           <div class="my-hero-stars">⭐⭐⭐⭐⭐</div>
           <div class="my-hero-plate">
+            <div class="mh-title-row">${titleBadgeHTML(curMyTitle, lang)}</div>
             <div class="mh-name">${esc(m.name)}</div>
             <div class="mh-sub">🪙 ${user ? user.coins : 0} · ${rankBadge(m.rp)} ${m.rp || 0} RP</div>
           </div>
@@ -3501,7 +3574,7 @@
         <div class="res-row place${r.place} ${r.id === S?.me?.id ? 'me' : ''}">
           <b>${['🥇', '🥈', '🥉'][r.place - 1] || '#' + r.place}</b>
           ${avatarHTML(r, 'sm')}
-          <span>${esc(r.name)}</span>
+          <span class="res-name-wrap">${esc(r.name)} ${titleBadgeHTML(r.title, lang)}</span>
           ${rewText}
         </div>`;
     }).join('')}</div>
@@ -3721,7 +3794,7 @@
       const saved = sessionStorage.getItem('ek_room');
       if (!saved) {
         setTimeout(() => {
-          socket.emit('joinRoom', { code, name: myName(), avatar: myAvatar(), frame: myFrame(), skin: mySkin() });
+          socket.emit('joinRoom', { code, name: myName(), avatar: myAvatar(), frame: myFrame(), skin: mySkin(), title: myTitle() });
         }, 350);
       }
     }
