@@ -847,12 +847,15 @@
         gName = 'Doggy_' + Math.floor(1000 + Math.random() * 9000);
         localStorage.setItem('ek_name', gName);
       }
-      if (!localStorage.getItem('ek_guest_coins')) localStorage.setItem('ek_guest_coins', '500');
-      if (!localStorage.getItem('ek_guest_diamonds')) localStorage.setItem('ek_guest_diamonds', '30');
+      const curCoins = parseInt(localStorage.getItem('ek_guest_coins') || '0');
+      const curDia = parseInt(localStorage.getItem('ek_guest_diamonds') || '0');
+      if (curCoins < 500) localStorage.setItem('ek_guest_coins', '1000');
+      if (curDia < 30) localStorage.setItem('ek_guest_diamonds', '100');
       if (!localStorage.getItem('ek_guest_avatar')) localStorage.setItem('ek_guest_avatar', '🐶');
       renderUserChip();
       show('home');
       renderHome();
+      checkMailboxStatus();
       toast(lang === 'th' ? `⚡ เข้าเล่นด่วนในฐานะ ${gName}` : `Quick playing as ${gName}`, 'good');
     }
 
@@ -1654,64 +1657,73 @@
 
   // ------------------------------------------------------------ MAILBOX SYSTEM
   async function checkMailboxStatus() {
-    const dot = $('#btnMail .ti-dot');
-    if (!dot) return;
+    const dots = [$('#btnMail .ti-dot'), $('#btnStageMail .ti-dot')];
+    const today = new Date().toISOString().slice(0, 10);
+    let hasUnclaimed = false;
     if (user) {
-      const r = await api('/api/mailbox');
-      const hasUnclaimed = r.mails && r.mails.some(m => !m.claimed);
-      dot.style.display = hasUnclaimed ? 'block' : 'none';
+      try {
+        const r = await api('/api/mailbox');
+        hasUnclaimed = !!(r.mails && r.mails.some(m => !m.claimed));
+      } catch (_) {}
     } else {
-      const c1 = !!localStorage.getItem('ek_guest_mail_welcome');
-      const c2 = !!localStorage.getItem('ek_guest_mail_gacha_fest');
-      const c3 = !!localStorage.getItem('ek_guest_mail_patch_v2');
-      dot.style.display = (!c1 || !c2 || !c3) ? 'block' : 'none';
+      const c1 = localStorage.getItem('ek_guest_last_daily') === today;
+      const c2 = !!localStorage.getItem('ek_guest_mail_gacha_fest_v2');
+      const c3 = !!localStorage.getItem('ek_guest_mail_patch_v3');
+      hasUnclaimed = (!c1 || !c2 || !c3);
     }
+    dots.forEach(dot => { if (dot) dot.style.display = hasUnclaimed ? 'block' : 'none'; });
   }
 
   async function openMailboxModal() {
     A.sfx('click');
     let mails = [];
+    const today = new Date().toISOString().slice(0, 10);
     if (user) {
       const r = await api('/api/mailbox');
       mails = r.mails || [];
     } else {
+      const guestDailyClaimed = localStorage.getItem('ek_guest_last_daily') === today;
       mails = [
         {
           id: 'mail_welcome',
           icon: '🎁',
           title: { th: 'ของขวัญต้อนรับ & รางวัลประจำวัน', en: 'Welcome & Daily Bonus' },
           body: { th: 'ยินดีต้อนรับสู่หมาระเบิดออนไลน์! ล็อกอินทุกวันเพื่อรับเหรียญและเพชรฟรี', en: 'Welcome to Exploding Puppies Online! Log in daily to get free coins & gems.' },
-          coins: 150,
-          diamonds: 5,
-          claimed: !!localStorage.getItem('ek_guest_mail_welcome')
-        },
-        {
-          id: 'mail_gacha_fest',
-          icon: '🌟',
-          title: { th: 'ฉลองเปิดตู้สุ่มกาชาจ่าฝูงลิมิเต็ด!', en: 'Celestial Alpha Gacha Launch!' },
-          body: { th: 'รับเพชรฟรี 20 เม็ดสำหรับทดลองสุ่มตู้กาชาจ่าฝูงลุ้นรับของระดับ UR ลิมิเต็ด!', en: '20 free diamonds to summon from the limited Celestial Alpha Gacha!' },
-          coins: 300,
+          coins: 500,
           diamonds: 20,
-          claimed: !!localStorage.getItem('ek_guest_mail_gacha_fest')
+          claimed: guestDailyClaimed
         },
         {
-          id: 'mail_patch_v2',
+          id: 'mail_gacha_fest_v2',
+          icon: '🌟',
+          title: { th: 'ฉลองเปิดตู้สุ่มกาชาจ่าฝูงลิมิเต็ด (แจกเพชรฟรี 100 เม็ด!)', en: 'Celestial Alpha Gacha Launch (Free 100 💎!)' },
+          body: { th: 'รับเพชรฟรี 100 เม็ดสำหรับทดลองสุ่มตู้กาชาจ่าฝูง 10 ครั้งทันที! ลุ้นรับของระดับ UR ลิมิเต็ด!', en: '100 free diamonds to summon 10x immediately from the limited Celestial Alpha Gacha!' },
+          coins: 1500,
+          diamonds: 100,
+          claimed: !!localStorage.getItem('ek_guest_mail_gacha_fest_v2')
+        },
+        {
+          id: 'mail_patch_v3',
           icon: '📜',
-          title: { th: 'จดหมายจากทีมพัฒนา: อัปเดตใหญ่จัดเต็ม', en: 'Developer Letter: Massive Update' },
-          body: { th: 'อัปเดตระบบอวตาร 3D หน้าตรงกับในเกม, กรอบและหลังไพ่แสดงผลในเกมจริง, และแก้ไขกล่องจดหมาย!', en: '3D avatars matching in-game, real in-game frames and card backs, plus Gacha!' },
-          coins: 100,
-          diamonds: 5,
-          claimed: !!localStorage.getItem('ek_guest_mail_patch_v2')
+          title: { th: 'จดหมายขอบคุณจากทีมพัฒนา: อัปเดตใหญ่แจกหนัก', en: 'Developer Appreciation Gift: Massive Update' },
+          body: { th: 'ขอบคุณผู้เล่นทุกท่านที่ร่วมสนุก! แจกเหรียญและเพชรพิเศษเพื่อความมันส์แบบจัดเต็ม', en: 'Thank you for playing! Special coin & diamond bonus for the massive update.' },
+          coins: 1000,
+          diamonds: 50,
+          claimed: !!localStorage.getItem('ek_guest_mail_patch_v3')
         }
       ];
     }
 
-    const hasUnclaimed = mails.some(m => !m.claimed);
+    const unclaimedCount = mails.filter(m => !m.claimed).length;
+    const hasUnclaimed = unclaimedCount > 0;
 
     openModal(`<div class="mailbox-wrap">
       <div class="mailbox-header">
-        <h2>📬 ${lang === 'th' ? 'กล่องจดหมาย' : 'Mailbox'}</h2>
-        <p class="note" style="margin:2px 0 10px">${lang === 'th' ? 'ของรางวัลและประกาศข่าวสารสำคัญจากทีมพัฒนา' : 'Rewards and announcements from developers'}</p>
+        <div class="mh-title-box">
+          <h2>📬 ${lang === 'th' ? 'กล่องจดหมาย & ของรางวัล' : 'Mailbox & Rewards'}</h2>
+          <span class="mailbox-count-pill">${hasUnclaimed ? (lang === 'th' ? `มีรางวัลรอรับ ${unclaimedCount} กล่อง` : `${unclaimedCount} unclaimed`) : (lang === 'th' ? '✓ รับครบแล้ว' : 'All claimed')}</span>
+        </div>
+        <p class="note" style="margin:4px 0 10px">${lang === 'th' ? 'รับเหรียญทองและเพชรฟรีเพื่อนำไปสุ่มตู้กาชาหรือซื้อไอเทมในร้านค้า' : 'Claim free coins & diamonds to summon from Gacha or purchase items!'}</p>
       </div>
       <div class="mailbox-list">
         ${mails.map(m => {
@@ -1719,68 +1731,105 @@
           const tText = m.title[lang] || m.title.en || m.title;
           const bText = m.body[lang] || m.body.en || m.body;
           const rewards = [];
-          if (m.coins) rewards.push(`🪙 +${m.coins}`);
-          if (m.diamonds) rewards.push(`💎 +${m.diamonds}`);
+          if (m.coins) rewards.push(`🪙 +${m.coins.toLocaleString()}`);
+          if (m.diamonds) rewards.push(`<b style="color:#7dd3fc">💎 +${m.diamonds}</b>`);
           return `
             <div class="mail-item ${isClaimed ? 'claimed' : 'unread'}">
-              <div class="mail-icon">${m.icon || '✉️'}</div>
+              <div class="mail-icon-box">${m.icon || '✉️'}</div>
               <div class="mail-info">
                 <div class="mail-title-row">
                   <b class="mail-title">${esc(tText)}</b>
-                  ${rewards.length ? `<span class="mail-reward-tag">${rewards.join(' ')}</span>` : ''}
+                  ${rewards.length ? `<div class="mail-reward-tags">${rewards.map(r => `<span class="reward-tag">${r}</span>`).join('')}</div>` : ''}
                 </div>
                 <div class="mail-desc">${esc(bText)}</div>
               </div>
               <div class="mail-act">
                 ${isClaimed
-                  ? `<span class="tag">${lang === 'th' ? 'รับแล้ว' : 'Claimed'}</span>`
+                  ? `<span class="claimed-badge">✓ ${lang === 'th' ? 'รับแล้ว' : 'Claimed'}</span>`
                   : `<button class="btn small gold btn-claim-single" data-mail="${m.id}">🎁 ${lang === 'th' ? 'กดรับ' : 'Claim'}</button>`}
               </div>
             </div>
           `;
         }).join('')}
       </div>
-      <div class="mailbox-footer" style="margin-top:14px;display:flex;justify-content:space-between;align-items:center;">
-        ${!user ? `<small class="note">${lang === 'th' ? '💡 ล็อกอินเพื่อบันทึกข้อมูลถาวร' : '💡 Log in to save permanently'}</small>` : '<span></span>'}
-        <button class="btn gold" id="btnClaimAllMail" ${hasUnclaimed ? '' : 'disabled'}>✨ ${lang === 'th' ? 'รับทั้งหมด' : 'Claim All'}</button>
+      <div class="mailbox-footer">
+        <div class="mf-left">
+          ${!user ? `<small class="note">${lang === 'th' ? '💡 ล็อกอินบัญชีเพื่อบันทึกข้อมูลถาวร' : '💡 Log in to save permanently'}</small>` : `<button class="btn small" id="btnMailboxToGacha">🎲 ${lang === 'th' ? 'ไปที่ตู้สุ่มกาชา ➔' : 'Go to Gacha ➔'}</button>`}
+        </div>
+        <div class="mf-right">
+          <button class="btn gold pulse-gold" id="btnClaimAllMail" ${hasUnclaimed ? '' : 'disabled'}>
+            ${hasUnclaimed ? `✨ ${lang === 'th' ? `รับทั้งหมด (${unclaimedCount})` : `Claim All (${unclaimedCount})`}` : `✓ ${lang === 'th' ? 'รับครบทุกกล่องแล้ว' : 'All Claimed'}`}
+          </button>
+        </div>
       </div>
     </div>`, { cls: 'wide' });
+
+    const btnGoGacha = $('#btnMailboxToGacha');
+    if (btnGoGacha) btnGoGacha.onclick = () => { closeModal(); openGachaModal(); };
 
     const handleClaim = async (mailId) => {
       A.sfx('coin');
       confetti(true);
+
+      // Disable buttons during claim to prevent spam
+      $$('.btn-claim-single, #btnClaimAllMail').forEach(b => {
+        b.disabled = true;
+        if (b.id === 'btnClaimAllMail') b.textContent = lang === 'th' ? '⏳ กำลังรับรางวัล...' : 'Claiming...';
+      });
+
       if (user) {
-        const r = await api('/api/mailbox/claim', { mailId });
-        if (r.error) return toast('⚠️ ' + terr(r.error), 'err');
-        setUser(r.user, r.vault);
-        toast(lang === 'th' ? `🎉 รับรางวัลสำเร็จ! +🪙${r.coins || 0} +💎${r.diamonds || 0}` : `Claimed +🪙${r.coins || 0} +💎${r.diamonds || 0}!`, 'good');
+        try {
+          const r = await api('/api/mailbox/claim', { mailId });
+          if (r.error) {
+            if (r.error === 'claimed') {
+              toast(lang === 'th' ? '📬 คุณได้รับของรางวัลนี้ไปแล้ว' : 'Already claimed!', 'info');
+            } else {
+              toast('⚠️ ' + terr(r.error), 'err');
+            }
+            return openMailboxModal();
+          }
+          setUser(r.user, r.vault);
+          renderUserChip();
+          toast(lang === 'th' ? `🎉 รับรางวัลสำเร็จ! +🪙${(r.coins || 0).toLocaleString()} +💎${r.diamonds || 0}` : `Claimed +🪙${(r.coins || 0).toLocaleString()} +💎${r.diamonds || 0}!`, 'good');
+        } catch (err) {
+          toast(lang === 'th' ? '⚠️ การเชื่อมต่อขัดข้อง กรุณาลองใหม่' : 'Connection error, please retry', 'err');
+        }
       } else {
         let addCoins = 0, addDia = 0;
         const targets = mailId === 'all' ? mails.filter(m => !m.claimed) : mails.filter(m => m.id === mailId && !m.claimed);
+        if (targets.length === 0) {
+          toast(lang === 'th' ? '📬 คุณได้รับของรางวัลนี้ไปแล้ว' : 'Already claimed!', 'info');
+          return openMailboxModal();
+        }
         targets.forEach(m => {
-          localStorage.setItem('ek_guest_' + m.id, '1');
+          if (m.id === 'mail_welcome') {
+            localStorage.setItem('ek_guest_last_daily', today);
+          } else {
+            localStorage.setItem('ek_guest_' + m.id, '1');
+          }
           addCoins += m.coins || 0;
           addDia += m.diamonds || 0;
         });
-        const curC = parseInt(localStorage.getItem('ek_guest_coins') || '100');
-        const curD = parseInt(localStorage.getItem('ek_guest_diamonds') || '20');
+        const curC = parseInt(localStorage.getItem('ek_guest_coins') || '1000');
+        const curD = parseInt(localStorage.getItem('ek_guest_diamonds') || '100');
         localStorage.setItem('ek_guest_coins', curC + addCoins);
         localStorage.setItem('ek_guest_diamonds', curD + addDia);
         renderUserChip();
-        toast(lang === 'th' ? `🎉 รับรางวัลสำเร็จ! +🪙${addCoins} +💎${addDia}` : `Claimed +🪙${addCoins} +💎${addDia}!`, 'good');
+        toast(lang === 'th' ? `🎉 รับรางวัลสำเร็จ! +🪙${addCoins.toLocaleString()} +💎${addDia}` : `Claimed +🪙${addCoins.toLocaleString()} +💎${addDia}!`, 'good');
       }
+      checkMailboxStatus();
       openMailboxModal();
     };
 
     $$('.btn-claim-single').forEach(b => b.onclick = () => handleClaim(b.dataset.mail));
     const btnAll = $('#btnClaimAllMail');
-    if (btnAll) btnAll.onclick = () => handleClaim('all');
+    if (btnAll && hasUnclaimed) btnAll.onclick = () => handleClaim('all');
   }
 
   // ------------------------------------------------------------ GACHA SYSTEM
   function openGachaModal() {
     A.sfx('click');
-    const myDia = user ? (user.diamonds ?? 0) : parseInt(localStorage.getItem('ek_guest_diamonds') || '20');
+    const myDia = user ? (user.diamonds ?? 0) : parseInt(localStorage.getItem('ek_guest_diamonds') || '100');
     openModal(`<div class="gacha-wrap">
       <div class="gacha-banner">
         <div class="gacha-badge-ur">LIMITED UR</div>
@@ -1805,8 +1854,11 @@
         </div>
       </div>
       <div class="gacha-dia-bar">
-        <span>${lang === 'th' ? 'เพชรของคุณ:' : 'Your Diamonds:'} <b class="dia-val">💎 ${myDia}</b></span>
-        <button class="btn small" id="btnGachaGetDia">📬 ${lang === 'th' ? 'รับเพชรฟรีในกล่องจดหมาย' : 'Get Free Diamonds in Mailbox'}</button>
+        <div class="gdb-left">
+          <span>${lang === 'th' ? 'เพชรของคุณ:' : 'Your Diamonds:'}</span>
+          <b class="dia-val">💎 ${myDia}</b>
+        </div>
+        <button class="btn small gold" id="btnGachaGetDia">📬 ${lang === 'th' ? 'รับเพชรฟรีในกล่องจดหมาย' : 'Get Free Diamonds in Mailbox'}</button>
       </div>
       <div class="gacha-rates-note">
         <span>👑 UR: 5%</span> · <span>🌟 SSR: 20%</span> · <span>⭐ SR: 35%</span> · <span>🪙 R: 40%</span>
@@ -1835,10 +1887,11 @@
 
   async function executeGachaPull(times) {
     const cost = times === 10 ? 90 : 10;
-    const curDia = user ? (user.diamonds ?? 0) : parseInt(localStorage.getItem('ek_guest_diamonds') || '20');
+    const curDia = user ? (user.diamonds ?? 0) : parseInt(localStorage.getItem('ek_guest_diamonds') || '100');
     if (curDia < cost) {
-      toast(lang === 'th' ? '💎 เพชรไม่พอ! สามารถรับเพชรฟรีได้จากกล่องจดหมายและเล่นชนะเกม' : 'Not enough diamonds! Claim free diamonds from Mailbox or win matches.', 'err');
+      toast(lang === 'th' ? `💎 เพชรไม่พอ (ต้องการ 💎 ${cost} แต่มี 💎 ${curDia})! รับเพชรฟรีได้จากกล่องจดหมาย หรือเล่นชนะเกม` : `Not enough diamonds (need 💎 ${cost}, have 💎 ${curDia})! Claim free diamonds from Mailbox or win matches.`, 'err');
       A.sfx('nope');
+      setTimeout(() => openMailboxModal(), 700);
       return;
     }
 
@@ -1858,6 +1911,7 @@
         return toast('⚠️ ' + terr(result.error), 'err');
       }
       setUser(result.user, result.vault);
+      renderUserChip();
     } else {
       localStorage.setItem('ek_guest_diamonds', curDia - cost);
       const pulls = [];
@@ -1879,21 +1933,21 @@
 
         if (won.type === 'coins') {
           addCoins += won.amount;
-          pulls.push({ ...won, isNew: false, amount: won.amount });
+          pulls.push({ ...won, isNew: false, amount: won.amount, rarity: tier, tier });
         } else {
           const isDup = inv.includes(won.id);
           if (isDup) {
             const refund = tier === 'UR' ? 600 : (tier === 'SSR' ? 350 : 180);
             addCoins += refund;
-            pulls.push({ ...won, isDuplicate: true, refundCoins: refund });
+            pulls.push({ ...won, isDuplicate: true, refundCoins: refund, rarity: won.tier || tier, tier });
           } else {
             inv.push(won.id);
-            pulls.push({ ...won, isNew: true });
+            pulls.push({ ...won, isNew: true, rarity: won.tier || tier, tier });
           }
         }
       }
       localStorage.setItem('ek_guest_inventory', JSON.stringify(inv));
-      const curCoins = parseInt(localStorage.getItem('ek_guest_coins') || '100');
+      const curCoins = parseInt(localStorage.getItem('ek_guest_coins') || '1000');
       localStorage.setItem('ek_guest_coins', curCoins + addCoins);
       renderUserChip();
       result = { pulls };
@@ -1905,8 +1959,9 @@
   }
 
   function showGachaResults(pulls, times) {
-    const hasUR = pulls.some(p => p.rarity === 'UR');
-    const hasSSR = pulls.some(p => p.rarity === 'SSR');
+    const tierOf = (p) => p.rarity || p.tier || 'R';
+    const hasUR = pulls.some(p => tierOf(p) === 'UR');
+    const hasSSR = pulls.some(p => tierOf(p) === 'SSR');
     if (hasUR) { A.sfx('win'); confetti(true); }
     else if (hasSSR) { A.sfx('coin'); confetti(true); }
     else { A.sfx('coin'); }
@@ -1925,10 +1980,11 @@
           } else if (p.type === 'skin') {
             preview = backHTML(p.id, 'style="width:68px;height:95px"');
           } else {
-            preview = `<div class="coin-bag-art">🪙 <b style="font-size:1.1rem;color:#fde047">+${p.amount}</b></div>`;
+            preview = `<div class="coin-bag-art">🪙 <b style="font-size:1.1rem;color:#fde047">+${(p.amount || 0).toLocaleString()}</b></div>`;
           }
 
-          const rarityCls = (p.rarity || 'R').toLowerCase();
+          const tier = tierOf(p);
+          const rarityCls = tier.toLowerCase();
           const pName = p.name ? (p.name[lang] || p.name.en || p.name) : `เหรียญทอง ${p.amount}`;
 
           let statusTag = '';
@@ -1937,7 +1993,7 @@
 
           return `
             <div class="pull-card tier-${rarityCls} animate-reveal" style="animation-delay:${idx * 0.08}s">
-              <div class="pull-rarity-pill ${rarityCls}">${p.rarity || 'R'}</div>
+              <div class="pull-rarity-pill ${rarityCls}">${tier}</div>
               ${statusTag}
               ${preview}
               <div class="pull-name">${esc(pName)}</div>
@@ -1947,7 +2003,7 @@
         }).join('')}
       </div>
       <div class="gacha-results-footer">
-        <button class="btn gold" id="btnGachaAgain">🔄 ${lang === 'th' ? 'สุ่มอีกครั้ง' : 'Summon Again'}</button>
+        <button class="btn gold pulse-gold" id="btnGachaAgain">🔄 ${lang === 'th' ? `สุ่มอีกครั้ง (${times === 10 ? '💎 90' : '💎 10'})` : `Summon Again (${times === 10 ? '💎 90' : '💎 10'})`}</button>
         <button class="btn" id="btnGachaDone">${lang === 'th' ? 'ตกลง' : 'OK'}</button>
       </div>
     </div>`, { cls: 'wide' });

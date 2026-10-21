@@ -281,7 +281,7 @@ function register(username, password, displayName, recoveryPin, email) {
   const now = Date.now();
   db.users[key] = {
     username, displayName: cleanDisplay, avatar: '🐶',
-    salt, pw: hash(password, salt), token, coins: 500, diamonds: 30, rp: 0,
+    salt, pw: hash(password, salt), token, coins: 1000, diamonds: 100, rp: 0,
     recoveryPin: pin,
     email: cleanEmail,
     stats: { games: 0, wins: 0, explosions: 0, defuses: 0 },
@@ -422,16 +422,16 @@ function gacha(token, times = 1) {
 
     if (won.type === 'coins') {
       u.coins = (u.coins || 0) + won.amount;
-      pulls.push({ ...won, isNew: false, amount: won.amount });
+      pulls.push({ ...won, isNew: false, amount: won.amount, rarity: tier, tier });
     } else {
       const isDuplicate = u.inventory.includes(won.id);
       if (isDuplicate) {
         const refundCoins = tier === 'UR' ? 600 : (tier === 'SSR' ? 350 : 180);
         u.coins = (u.coins || 0) + refundCoins;
-        pulls.push({ ...won, isDuplicate: true, refundCoins });
+        pulls.push({ ...won, isDuplicate: true, refundCoins, rarity: won.tier || tier, tier });
       } else {
         u.inventory.push(won.id);
-        pulls.push({ ...won, isNew: true });
+        pulls.push({ ...won, isNew: true, rarity: won.tier || tier, tier });
       }
     }
   }
@@ -443,13 +443,19 @@ function gacha(token, times = 1) {
 const SYSTEM_MAILS = [
   { id: 'mail_welcome', icon: '🎁', title: { th: 'ของขวัญต้อนรับ & รางวัลประจำวัน', en: 'Welcome & Daily Bonus' },
     body: { th: 'ยินดีต้อนรับสู่หมาระเบิดออนไลน์! ล็อกอินทุกวันเพื่อรับเหรียญและเพชรฟรี', en: 'Welcome to Exploding Puppies Online! Log in daily to get free coins & gems.' },
-    coins: 150, diamonds: 5 },
-  { id: 'mail_gacha_fest', icon: '🌟', title: { th: 'ฉลองเปิดตู้สุ่มกาชาจ่าฝูงลิมิเต็ด!', en: 'Celestial Alpha Gacha Grand Launch!' },
-    body: { th: 'รับเพชรฟรี 20 เม็ดสำหรับทดลองสุ่มตู้กาชาจ่าฝูงลุ้นรับของระดับ UR ลิมิเต็ด!', en: '20 free diamonds to summon from the limited Celestial Alpha Gacha!' },
+    coins: 500, diamonds: 20 },
+  { id: 'mail_gacha_fest_v2', icon: '🌟', title: { th: 'ฉลองเปิดตู้สุ่มกาชาจ่าฝูงลิมิเต็ด (แจกเพชรฟรี 100 เม็ด!)', en: 'Celestial Alpha Gacha Launch (Free 100 💎!)' },
+    body: { th: 'รับเพชรฟรี 100 เม็ดสำหรับทดลองสุ่มตู้กาชาจ่าฝูง 10 ครั้งทันที! ลุ้นรับของระดับ UR ลิมิเต็ด!', en: '100 free diamonds to summon 10x immediately from the limited Celestial Alpha Gacha!' },
+    coins: 1500, diamonds: 100 },
+  { id: 'mail_patch_v3', icon: '📜', title: { th: 'จดหมายขอบคุณจากทีมพัฒนา: อัปเดตใหญ่แจกหนัก', en: 'Developer Appreciation Gift: Massive Update' },
+    body: { th: 'ขอบคุณผู้เล่นทุกท่านที่ร่วมสนุก! แจกเหรียญและเพชรพิเศษเพื่อความมันส์แบบจัดเต็ม', en: 'Thank you for playing! Special coin & diamond bonus for the massive update.' },
+    coins: 1000, diamonds: 50 },
+  { id: 'mail_gacha_fest', icon: '🌟', title: { th: 'ฉลองเปิดตู้สุ่มกาชาจ่าฝูงลิมิเต็ด (รอบแรก)', en: 'Celestial Alpha Gacha Grand Launch' },
+    body: { th: 'รับเพชรฟรี 20 เม็ดสำหรับทดลองสุ่มตู้กาชาจ่าฝูง!', en: '20 free diamonds for gacha launch!' },
     coins: 300, diamonds: 20 },
-  { id: 'mail_patch_v2', icon: '📜', title: { th: 'จดหมายจากทีมพัฒนา: อัปเดตใหญ่จัดเต็ม', en: 'Developer Letter: Massive Update' },
-    body: { th: 'อัปเดตระบบอวตาร 3D หน้าตรงกับในเกม, กรอบและหลังไพ่แสดงผลในเกมจริง, และแก้ไขกล่องจดหมาย!', en: '3D avatars matching in-game, real in-game frames and card backs, plus Gacha!' },
-    coins: 100, diamonds: 2 }
+  { id: 'mail_patch_v2', icon: '📜', title: { th: 'จดหมายจากทีมพัฒนา: อัปเดต v2.0', en: 'Developer Letter: Update v2.0' },
+    body: { th: 'อัปเดตระบบอวตาร 3D หน้าตรงกับในเกม, กรอบและหลังไพ่แสดงผลในเกมจริง!', en: '3D avatars matching in-game, real in-game frames and card backs!' },
+    coins: 100, diamonds: 10 }
 ];
 
 function getMailbox(token) {
@@ -518,12 +524,14 @@ function recordGame(username, r) {
   // Generous Diamond rewards with High Stakes bonuses:
   let diamonds = 0;
   if (r.won) {
-    diamonds = (r.vsBotsOnly ? 3 : 5) + (r.stakeDiamonds || 0);
+    diamonds = (r.vsBotsOnly ? 5 : 10) + (r.stakeDiamonds || 0);
   } else if (r.place === 2 && r.total >= 3) {
+    diamonds = 3;
+  } else if (r.place === 3 && r.total >= 4) {
     diamonds = 1;
   }
   if ((r.defuses || 0) >= 2 && r.won) {
-    diamonds += 1;
+    diamonds += 2;
   }
 
   u.coins = (u.coins || 0) + coins;

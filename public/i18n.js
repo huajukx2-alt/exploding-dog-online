@@ -48,7 +48,7 @@ window.I18N = {
       username_taken: 'ชื่อนี้ถูกใช้แล้ว', bad_login: 'ชื่อผู้ใช้หรือรหัสผ่านผิด', no_coins: 'เหรียญไม่พอ', owned: 'มีไอเทมนี้แล้ว', claimed: 'วันนี้รับโบนัสไปแล้ว', auth: 'กรุณาเข้าสู่ระบบ',
       bad_recovery_pin: 'PIN กู้คืนไม่ถูกต้อง หรือไม่ตรงกับบัญชีนี้', user_not_found: 'ไม่พบบัญชีผู้ใช้นี้ในระบบ',
       password_mismatch: 'รหัสผ่านใหม่และการยืนยันไม่ตรงกัน', invalid_vault: 'ข้อมูลสำรองบัญชีไม่ถูกต้อง',
-      bad_pin_length: 'PIN ต้องมีความยาว 4-12 ตัวอักษร' }
+      bad_pin_length: 'PIN ต้องมีความยาว 4-12 ตัวอักษร', no_diamonds: 'เพชรไม่พอ สามารถรับเพชรฟรีได้จากกล่องจดหมาย หรือเล่นชนะเกม', already_claimed: 'คุณได้รับของรางวัลกล่องนี้ไปแล้ว', no_mail: 'ไม่พบจดหมายนี้' }
   },
   en: {
     title: 'Exploding Puppies Online', subtitle: 'The chaotic doggo party card game — play with friends or bots! Woof!',
@@ -95,7 +95,7 @@ window.I18N = {
       username_taken: 'Username taken', bad_login: 'Wrong username or password', no_coins: 'Not enough coins', owned: 'Already owned', claimed: 'Already claimed today', auth: 'Please log in',
       bad_recovery_pin: 'Invalid recovery PIN for this account', user_not_found: 'User account not found',
       password_mismatch: 'Passwords do not match', invalid_vault: 'Invalid account backup data',
-      bad_pin_length: 'PIN must be between 4 and 12 characters' }
+      bad_pin_length: 'PIN must be between 4 and 12 characters', no_diamonds: 'Not enough diamonds! Claim free diamonds from Mailbox or win matches.', already_claimed: 'Already claimed today', no_mail: 'Mail not found' }
   }
 };
 
