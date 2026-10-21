@@ -96,15 +96,27 @@ function newCode() {
 function onGameEnd(game, results) {
   const humans = game.players.filter(p => !p.isBot).length;
   const rewards = {};
+  const stakeKey = game.settings.stake || 'casual';
+  const STAKES_CONFIG = {
+    casual: { mult: 1, bonusDiamonds: 0 },
+    standard: { mult: 2, bonusDiamonds: 1 },
+    high: { mult: 5, bonusDiamonds: 8 },
+    vip: { mult: 10, bonusDiamonds: 25 }
+  };
+  const stk = STAKES_CONFIG[stakeKey] || STAKES_CONFIG.casual;
+
   for (const r of results) {
     const p = r.player;
     if (p.isBot || !p.userId) continue;
     const rec = db.recordGame(p.userId, {
       place: r.place, total: results.length, won: r.place === 1, exploded: !!p.elimReason, defuses: p.defuses,
-      vsBotsOnly: humans === 1, version: game.settings.version
+      vsBotsOnly: humans === 1, version: game.settings.version,
+      stake: stakeKey,
+      stakeMultiplier: stk.mult,
+      stakeDiamonds: r.place === 1 ? stk.bonusDiamonds : 0
     });
     if (rec) {
-      rewards[p.id] = { coins: rec.coins, diamonds: rec.diamonds, rp: rec.rp };
+      rewards[p.id] = { coins: rec.coins, diamonds: rec.diamonds, rp: rec.rp, stake: stakeKey };
       p.rp = rec.user.rp; p.inventory = rec.user.inventory;
       if (p.socketId) {
         io.to(p.socketId).emit('profile', rec.user);
@@ -196,6 +208,7 @@ io.on('connection', (socket) => {
           code,
           state: g.state,
           version: g.settings.version,
+          stake: g.settings.stake || 'casual',
           playerCount: g.players.length,
           maxPlayers: g.settings.maxPlayers || 5,
           hostName: host ? host.name : 'Doggo',
@@ -206,6 +219,44 @@ io.on('connection', (socket) => {
       socket.emit('roomsList', list);
     } catch (e) {
       console.error('[listRooms error]', e);
+    }
+  });
+
+  socket.on('joinRandom', (data) => {
+    try {
+      const d = safeObj(data);
+      leave(socket);
+      // Try to find open lobby with space
+      let target = null;
+      for (const [, g] of games.entries()) {
+        if (g.state === 'LOBBY' && g.players.length < (g.settings.maxPlayers || 5)) {
+          if (d.version && g.settings.version === d.version) {
+            target = g;
+            break;
+          }
+          if (!target) target = g;
+        }
+      }
+      if (target) {
+        const r = target.addHuman(socket.id, d.name, user(), d);
+        if (!r.error) {
+          enter(socket, target, r.player);
+          return;
+        }
+      }
+      // If none found, create a new room and add 1 bot so it's lively
+      const g = new Game(newCode(), io, onGameEnd);
+      const r = g.addHuman(socket.id, d.name, user(), d);
+      if (r.error) return err(r.error);
+      games.set(g.code, g);
+      const st = {};
+      if (d.version) st.version = d.version;
+      if (d.stake) st.stake = d.stake;
+      g.updateSettings(socket.id, st);
+      g.addBot();
+      enter(socket, g, r.player);
+    } catch (e) {
+      console.error('[joinRandom error]', e);
     }
   });
 

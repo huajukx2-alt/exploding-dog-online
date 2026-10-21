@@ -251,6 +251,13 @@
     { min: 1000, id: 'diamond', icon: '💎', name: { th: 'ไดมอนด์', en: 'Diamond' } },
     { min: 1600, id: 'master', icon: '🏆', name: { th: 'จ่าฝูงมาสเตอร์', en: 'Alpha Master' } }
   ];
+  const STAKES = {
+    casual:   { id: 'casual',   icon: '🟢', name: { th: 'ฝึกหัด (ชิลล์)', en: 'Casual (Free)' }, coins: 0, diamonds: 0, mult: 1, desc: { th: 'ไม่มีค่าเดิมพัน เล่นชิลล์รับรางวัลปกติ', en: 'No entry fee, standard rewards' } },
+    standard: { id: 'standard', icon: '🟡', name: { th: 'มาตรฐาน (Standard)', en: 'Standard' }, coins: 100, diamonds: 0, mult: 2, desc: { th: 'เดิมพัน 100 🪙 • ผู้ชนะรับรางวัล x2', en: 'Bet 100 coins, winner takes x2' } },
+    high:     { id: 'high',     icon: '🔴', name: { th: 'เซียนไฮโรลเลอร์ (High Stakes)', en: 'High Stakes' }, coins: 300, diamonds: 2, mult: 5, desc: { th: 'เดิมพัน 300 🪙 + 2 💎 • กวาดรางวัลใหญ่ x5!', en: 'Bet 300 coins + 2 gems, win x5 reward!' } },
+    vip:      { id: 'vip',      icon: '👑', name: { th: 'VIP มหาเศรษฐี (High Roller)', en: 'VIP High Roller' }, coins: 1000, diamonds: 10, mult: 10, desc: { th: 'เดิมพัน 1,000 🪙 + 10 💎 • รางวัลมหาศาล x10!', en: 'Bet 1,000 coins + 10 gems, massive x10 pool!' } }
+  };
+
   const CARD_KINDS = {
     bomb:     { id: 'bomb',     icon: '💣', name: { th: 'หมาระเบิด', en: 'Bomb' } },
     defense:  { id: 'defense',  icon: '🛠️', name: { th: 'กู้ระเบิด', en: 'Defuse' } },
@@ -261,5 +268,5 @@
   };
   function rankOf(rp) { let r = RANKS[0]; for (const x of RANKS) if (rp >= x.min) r = x; return r; }
 
-  return { CARDS, VERSIONS, CONFIGURABLE, SHOP, FREE_STICKERS, RANKS, CARD_KINDS, AVATARS, GACHA_POOL, TITLES, rankOf };
+  return { CARDS, VERSIONS, CONFIGURABLE, SHOP, FREE_STICKERS, RANKS, CARD_KINDS, AVATARS, GACHA_POOL, TITLES, STAKES, rankOf };
 });

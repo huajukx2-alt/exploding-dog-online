@@ -186,64 +186,131 @@
     <div id="homeVersions" class="hidden"></div>
   </section>
 
-  <!-- MATCH LOBBY BROWSER (DEDICATED FULL SCREEN) -->
-  <section id="screen-browser" class="screen">
-    <div class="browser-header">
-      <button class="btn small" id="btnBrowserBack">← <span data-i18n="back">ย้อนกลับ</span></button>
-      <div class="browser-title-group">
-        <h2 style="margin:0;font-size:1.6rem;letter-spacing:1px;color:var(--gold);">🎯 <span data-i18n="selectMatch">เลือกล็อบบี้แข่งขัน</span></h2>
-        <small class="browser-subtitle" style="color:var(--muted);letter-spacing:2px;font-weight:700;">MATCH LOBBY & DIRECT JOIN</small>
-      </div>
-      <button class="btn small gold" id="btnBrowserRefresh">🔄 <span data-i18n="refresh">รีเฟรช</span></button>
+  <!-- STAGE & MODE SELECTION SCREEN (ARCADE CASINO STAGES) -->
+  <section id="screen-browser" class="screen stage-select-screen">
+    <!-- Spotlights & Confetti Atmosphere -->
+    <div class="stage-lighting">
+      <div class="spotlight spot-l"></div>
+      <div class="spotlight spot-m"></div>
+      <div class="spotlight spot-r"></div>
+      <div class="floating-confetti"></div>
     </div>
 
-    <div class="browser-container">
-      <!-- Left side: Direct Code Join & Quick Create -->
-      <div class="browser-sidebar">
-        <!-- Direct Join Card -->
-        <div class="browser-card direct-join-card">
-          <div class="bcard-head">
-            <span class="bcard-icon">🔑</span>
-            <div>
-              <h3><span data-i18n="enterRoomCode">ระบุรหัสห้อง</span></h3>
-              <p class="bcard-desc">เข้าร่วมห้องเพื่อนด้วยรหัส 4 หลัก</p>
-            </div>
-          </div>
-          <div class="code-input-container">
-            <input id="browserCodeInp" class="code-box-xl" maxlength="4" placeholder="ABCD" autocomplete="off" autocorrect="off" autocapitalize="characters">
-            <button class="btn big gold pulse" id="btnBrowserJoinCode">🚀 <span data-i18n="join">เข้าห้องแข่งขัน</span></button>
-          </div>
+    <!-- Header matching user's image -->
+    <header class="stage-topbar">
+      <!-- Left: Back Button (Orange 3D Pill) -->
+      <button class="stage-back-btn" id="btnBrowserBack">
+        <span class="sbb-arrow">◀</span>
+        <div class="sbb-labels">
+          <b class="sbb-th" data-i18n="back">กลับ</b>
+          <small class="sbb-en">(BACK)</small>
         </div>
+      </button>
 
-        <!-- Fast Create Room Card -->
-        <div class="browser-card fast-create-card">
-          <div class="bcard-head">
-            <span class="bcard-icon">🎮</span>
-            <div>
-              <h3><span data-i18n="createRoom">สร้างห้องใหม่</span></h3>
-              <p class="bcard-desc">เลือกเวอร์ชันการ์ดที่ต้องการเล่น</p>
-            </div>
-          </div>
-          <div class="browser-version-list" id="browserVersionList"></div>
-          <button class="btn big green pulse" id="btnBrowserCreateSubmit">✨ <span data-i18n="createRoom">สร้างห้องเลย</span></button>
-        </div>
+      <!-- Center: 3D Golden Arcade Title -->
+      <div class="stage-title-wrap">
+        <h1 class="stage-title-th" data-i18n="selectModeStage">เลือกโหมด & ด่าน /</h1>
+        <h2 class="stage-title-en">SELECT GAME MODE & STAGE</h2>
       </div>
 
-      <!-- Right side: Live Room List -->
-      <div class="browser-main">
-        <div class="bmain-head">
-          <div class="bmain-title">
-            <h3 style="margin:0;">🌐 <span data-i18n="activeRooms">ห้องที่เปิดอยู่ขณะนี้</span></h3>
-            <span class="badge" id="browserRoomCount">0 ห้อง</span>
-          </div>
+      <!-- Right: Currency & Actions -->
+      <div class="stage-top-right">
+        <div class="curr-badge gold-coin" id="stageBadgeCoins" data-modal="shop" title="Coins / เหรียญ">
+          <span class="curr-icon">🪙</span>
+          <b id="stageTopCoins">100</b>
         </div>
+        <div class="curr-badge diamond" id="stageBadgeDiamonds" data-modal="gacha" title="Diamonds / เพชร">
+          <span class="curr-icon">💎</span>
+          <b id="stageTopDiamonds">20</b>
+        </div>
+        <button class="top-icon-btn" id="btnStageMail" title="Mailbox / กล่องจดหมาย">
+          <span class="ti-icon">✉️</span>
+          <span class="ti-dot"></span>
+        </button>
+        <button class="lang-toggle-btn" id="btnStageLang" title="Toggle Language">
+          <span id="stageLangFlags">🇹🇭 TH / 🇬🇧 EN</span>
+        </button>
+      </div>
+    </header>
 
-        <!-- Room List Grid -->
-        <div class="room-grid" id="browserRoomGrid">
-          <!-- Dynamically populated or empty state -->
+    <!-- High Stakes Bet Selector Bar (เผื่อใครอยากเดิมพันสูง) -->
+    <div class="stage-stakes-container">
+      <div class="stakes-label">
+        <span class="stakes-fire">🔥</span>
+        <div>
+          <b class="stakes-th">ระดับเดิมพัน / ชิงรางวัล:</b>
+          <small class="stakes-en">BET STAKES &amp; MULTIPLIER</small>
         </div>
+      </div>
+      <div class="stakes-pills" id="stageStakesList">
+        <!-- 4 Stake Tiers: Casual, Standard, High, VIP -->
       </div>
     </div>
+
+    <!-- Stage Cards Carousel / Stage Showcase -->
+    <div class="stages-showcase-wrap">
+      <button class="stage-nav-arrow stage-nav-prev" id="btnStagePrev" title="Previous Stage">◀</button>
+      <div class="stages-carousel" id="stagesCarousel">
+        <!-- Dynamically rendered Stage Cards -->
+      </div>
+      <button class="stage-nav-arrow stage-nav-next" id="btnStageNext" title="Next Stage">▶</button>
+    </div>
+
+    <!-- Bottom Action Bar matching user's image -->
+    <footer class="stage-bottom-bar">
+      <!-- Left: Room Code 4-Box PIN Entry -->
+      <div class="bottom-code-group">
+        <div class="bc-label-col">
+          <b class="bc-label-th" data-i18n="enterRoomCode">สร้าง/เข้าห้องด้วยรหัส</b>
+          <small class="bc-label-en">(ENTER ROOM CODE)</small>
+        </div>
+        <div class="pin-inputs-wrap">
+          <input class="stage-pin-box" id="pin0" maxlength="1" autocomplete="off" autocapitalize="characters" placeholder="·">
+          <input class="stage-pin-box" id="pin1" maxlength="1" autocomplete="off" autocapitalize="characters" placeholder="·">
+          <input class="stage-pin-box" id="pin2" maxlength="1" autocomplete="off" autocapitalize="characters" placeholder="·">
+          <input class="stage-pin-box" id="pin3" maxlength="1" autocomplete="off" autocapitalize="characters" placeholder="·">
+          <button class="btn gold small pin-submit-btn" id="btnPinJoin">🚀 <span data-i18n="join">เข้าห้อง</span></button>
+        </div>
+      </div>
+
+      <!-- Right: Main Match Actions -->
+      <div class="bottom-action-buttons">
+        <!-- View All Rooms / Spectate button -->
+        <button class="btn-stage-action btn-rooms-list" id="btnOpenRoomsModal" title="ดูห้องที่เปิดอยู่ทั้งหมด">
+          <span class="bsa-icon">📋</span>
+          <div class="bsa-labels">
+            <b class="bsa-th">ห้องเปิดอยู่</b>
+            <small class="bsa-en">ALL ROOMS (<span id="browserRoomCount">0</span>)</small>
+          </div>
+        </button>
+
+        <!-- Random Match Button (Red/Coral with red notification dot) -->
+        <button class="btn-stage-action btn-random-match" id="btnStageRandom" title="สุ่มค้นหาห้องที่มีคนเล่นอยู่">
+          <span class="bsa-dot"></span>
+          <div class="bsa-labels">
+            <b class="bsa-th">ค้นหาห้องสุ่ม</b>
+            <small class="bsa-en">RANDOM MATCH</small>
+          </div>
+        </button>
+
+        <!-- Quick Play Button (Golden Glowing) -->
+        <button class="btn-stage-action btn-quick-play pulse-gold" id="btnStageQuick" title="เล่นด่วนกับบอททันที">
+          <span class="bsa-icon">⚡</span>
+          <div class="bsa-labels">
+            <b class="bsa-th">เล่นด่วน</b>
+            <small class="bsa-en">QUICK PLAY</small>
+          </div>
+        </button>
+      </div>
+    </footer>
+
+    <!-- Hidden compatibility hooks -->
+    <input id="browserCodeInp" type="hidden">
+    <button class="hidden" id="btnBrowserJoinCode"></button>
+    <button class="hidden" id="btnBrowserCreateSubmit"></button>
+    <button class="hidden" id="btnBrowserRefresh"></button>
+    <div id="browserVersionList" class="hidden"></div>
+    <div id="browserRoomGrid" class="hidden"></div>
   </section>
 
   <!-- LOBBY -->

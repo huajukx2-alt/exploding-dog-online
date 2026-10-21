@@ -21,7 +21,7 @@ class Game {
   constructor(code, io, onEnd) {
     this.code = code; this.io = io; this.onEnd = onEnd;
     this.players = []; this.spectators = []; this.state = 'LOBBY'; this.phase = 'idle';
-    this.settings = { version: 'original', custom: false, counts: { ...VERSIONS.original.counts }, turnSeconds: 25, nopeSeconds: 4, botLevel: 'normal', maxPlayers: 8 };
+    this.settings = { version: 'original', stake: 'casual', custom: false, counts: { ...VERSIONS.original.counts }, turnSeconds: 25, nopeSeconds: 4, botLevel: 'normal', maxPlayers: 8 };
     this.deck = []; this.discard = []; this.log = [];
     this.timers = {}; this.seq = 1; this.deckRev = 0;
     this.lastResults = null;
@@ -258,6 +258,7 @@ class Game {
     if (+s.nopeSeconds >= 2 && +s.nopeSeconds <= 8) st.nopeSeconds = +s.nopeSeconds;
     if (['easy', 'normal', 'hard'].includes(s.botLevel)) st.botLevel = s.botLevel;
     if (s.imploding !== undefined) st.imploding = !!s.imploding;
+    if (s.stake && ['casual', 'standard', 'high', 'vip'].includes(s.stake)) st.stake = s.stake;
     return { ok: true };
   }
 

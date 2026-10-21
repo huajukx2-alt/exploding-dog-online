@@ -451,20 +451,18 @@ function claimMail(token, mailId) {
   return { user: publicUser(u), coins: totalCoins, diamonds: totalDiamonds, vault: generateVault(u) };
 }
 
-// result: { place, total, won, exploded, defuses, vsBotsOnly, version }
+// result: { place, total, won, exploded, defuses, vsBotsOnly, version, stake, stakeMultiplier, stakeDiamonds }
 function recordGame(username, r) {
   const u = db.users[String(username).toLowerCase()]; if (!u) return null;
-  const mult = r.vsBotsOnly ? 0.6 : 1;
-  const coins = Math.round(((r.won ? 180 : 35) + (r.total - r.place) * 18 + r.defuses * 12) * mult);
-  const rpDelta = Math.round((r.won ? 35 : (r.place <= Math.ceil(r.total / 2) ? 10 : -10)) * mult);
+  const stakeMult = r.stakeMultiplier || 1;
+  const baseMult = (r.vsBotsOnly ? 0.6 : 1);
+  const coins = Math.round(((r.won ? 180 : 35) + (r.total - r.place) * 18 + r.defuses * 12) * baseMult * stakeMult);
+  const rpDelta = Math.round((r.won ? 35 : (r.place <= Math.ceil(r.total / 2) ? 10 : -10)) * baseMult);
 
-  // Generous Diamond rewards:
-  // Winner gets +5 diamonds (or +3 vs bots only)
-  // Runner-up (2nd place) gets +1 diamond
-  // Defuse bonus (2+ defuses in a match) gets +1 extra diamond
+  // Generous Diamond rewards with High Stakes bonuses:
   let diamonds = 0;
   if (r.won) {
-    diamonds = r.vsBotsOnly ? 3 : 5;
+    diamonds = (r.vsBotsOnly ? 3 : 5) + (r.stakeDiamonds || 0);
   } else if (r.place === 2 && r.total >= 3) {
     diamonds = 1;
   }
@@ -479,7 +477,7 @@ function recordGame(username, r) {
   u.stats.games++; if (r.won) u.stats.wins++;
   if (r.exploded) u.stats.explosions++;
   u.stats.defuses += (r.defuses || 0);
-  u.history = [{ t: Date.now(), place: r.place, total: r.total, coins, diamonds, rp: rpDelta, version: r.version }, ...(u.history || [])].slice(0, 20);
+  u.history = [{ t: Date.now(), place: r.place, total: r.total, coins, diamonds, rp: rpDelta, version: r.version, stake: r.stake || 'casual' }, ...(u.history || [])].slice(0, 20);
   u.updatedAt = Date.now(); save();
   return { coins, diamonds, rp: rpDelta, user: publicUser(u), vault: generateVault(u) };
 }

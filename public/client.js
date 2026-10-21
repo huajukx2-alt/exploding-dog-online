@@ -1,6 +1,6 @@
 /* Exploding Kittens Online — client */
 (() => {
-  const { CARDS, VERSIONS, CONFIGURABLE, SHOP, FREE_STICKERS, CARD_KINDS, rankOf, TITLES } = window.EK;
+  const { CARDS, VERSIONS, CONFIGURABLE, SHOP, FREE_STICKERS, CARD_KINDS, rankOf, TITLES, STAKES } = window.EK;
   const $ = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -159,6 +159,54 @@
         <path d="M55,72 C55,83 66,83 65,72 Z" fill="#fb7185" stroke="#1c1208" stroke-width="2"/>
         <circle cx="60" cy="58" r="46" fill="rgba(186,230,253,0.2)" stroke="#bae6fd" stroke-width="3.5"/>
         <path d="M28,36 A38,38 0 0,1 58,18" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" opacity="0.85"/>
+      </svg>`;
+    }
+    if (av === 'custom_bulldog') {
+      return `<svg viewBox="0 0 120 120" class="dog-hero-svg">
+        <defs>
+          <radialGradient id="gBulldogSand" cx="50%" cy="40%" r="60%">
+            <stop offset="0%" stop-color="#fdba74"/>
+            <stop offset="60%" stop-color="#c2410c"/>
+            <stop offset="100%" stop-color="#431407"/>
+          </radialGradient>
+          <linearGradient id="gCrownGold" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#fef08a"/>
+            <stop offset="40%" stop-color="#f59e0b"/>
+            <stop offset="100%" stop-color="#b45309"/>
+          </linearGradient>
+          <linearGradient id="gWrenchSilver" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#f8fafc"/>
+            <stop offset="50%" stop-color="#94a3b8"/>
+            <stop offset="100%" stop-color="#475569"/>
+          </linearGradient>
+        </defs>
+        <circle cx="60" cy="60" r="56" fill="url(#gBulldogSand)"/>
+        <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(251,191,36,0.2)" stroke-width="2" stroke-dasharray="6 4"/>
+        <text x="18" y="34" font-size="12" fill="#fbbf24" opacity="0.7">⚡</text>
+        <text x="96" y="38" font-size="11" fill="#fbbf24" opacity="0.8">✨</text>
+        <ellipse cx="28" cy="46" rx="12" ry="16" fill="#7c2d12" stroke="#1c1208" stroke-width="3" transform="rotate(-20 28 46)"/>
+        <ellipse cx="92" cy="46" rx="12" ry="16" fill="#7c2d12" stroke="#1c1208" stroke-width="3" transform="rotate(20 92 46)"/>
+        <path d="M26,96 Q60,82 94,96 L98,118 L22,118 Z" fill="#9a3412" stroke="#1c1208" stroke-width="3.5"/>
+        <path d="M30,94 Q60,104 90,94" fill="none" stroke="#dc2626" stroke-width="9" stroke-linecap="round"/>
+        <circle cx="60" cy="102" r="5" fill="#fde047" stroke="#b45309" stroke-width="2"/>
+        <ellipse cx="60" cy="64" rx="34" ry="28" fill="#ea580c" stroke="#1c1208" stroke-width="3.5"/>
+        <ellipse cx="44" cy="74" rx="14" ry="12" fill="#fed7aa" stroke="#1c1208" stroke-width="3"/>
+        <ellipse cx="76" cy="74" rx="14" ry="12" fill="#fed7aa" stroke="#1c1208" stroke-width="3"/>
+        <ellipse cx="60" cy="66" rx="10" ry="7" fill="#0f172a"/>
+        <path d="M54,80 C54,92 66,92 66,80 Z" fill="#f43f5e" stroke="#1c1208" stroke-width="2"/>
+        <ellipse cx="45" cy="54" rx="5" ry="6" fill="#0f172a"/>
+        <circle cx="43" cy="52" r="2" fill="#fff"/>
+        <ellipse cx="75" cy="54" rx="5" ry="6" fill="#0f172a"/>
+        <circle cx="73" cy="52" r="2" fill="#fff"/>
+        <path d="M50,44 Q60,40 70,44" fill="none" stroke="#7c2d12" stroke-width="2.5" stroke-linecap="round"/>
+        <polygon points="40,32 46,16 54,26 60,12 66,26 74,16 80,32" fill="url(#gCrownGold)" stroke="#78350f" stroke-width="2.5"/>
+        <circle cx="60" cy="12" r="2" fill="#ef4444"/>
+        <circle cx="46" cy="16" r="1.5" fill="#38bdf8"/>
+        <circle cx="74" cy="16" r="1.5" fill="#10b981"/>
+        <g transform="translate(76, 52) rotate(35)">
+          <path d="M0,0 L24,0 L24,6 L0,6 Z" fill="url(#gWrenchSilver)" stroke="#0f172a" stroke-width="1.5"/>
+          <path d="M22,-4 C26,-4 28,-1 28,3 C28,7 26,10 22,10 L18,8 L20,3 L18,-2 Z" fill="url(#gWrenchSilver)" stroke="#0f172a" stroke-width="1.5"/>
+        </g>
       </svg>`;
     }
     if (av === 'av_blaze_bulldog' || av === 'fire') {
@@ -808,6 +856,8 @@
   function renderUserChip() {
     const av = $('#pAvatar'), lvl = $('#pLevel'), nm = $('#pName'), xp = $('#pXpFill');
     const coins = $('#topCoins'), dia = $('#topDiamonds'), flags = $('#langFlags');
+    const sCoins = $('#stageTopCoins'), sDia = $('#stageTopDiamonds'), sFlags = $('#stageLangFlags');
+    if (sFlags) sFlags.textContent = lang === 'th' ? '🇹🇭 TH / 🇬🇧 EN' : '🇬🇧 EN / 🇹🇭 TH';
     if (flags) flags.textContent = lang === 'th' ? '🇹🇭 TH / 🇬🇧 EN' : '🇬🇧 EN / 🇹🇭 TH';
     const tBadge = $('#pTitle');
     if (tBadge) tBadge.innerHTML = titleBadgeHTML(myTitle(), lang);
@@ -818,14 +868,20 @@
       if (xp) xp.style.width = Math.min(100, Math.max(15, (user.rp || 0) % 100)) + '%';
       if (coins) coins.textContent = user.coins;
       if (dia) dia.textContent = user.diamonds || Math.floor((user.rp || 0) / 25) + 15;
+      if (sCoins) sCoins.textContent = user.coins;
+      if (sDia) sDia.textContent = user.diamonds || Math.floor((user.rp || 0) / 25) + 15;
     } else {
       if (av) av.textContent = '🐶';
       if (lvl) lvl.textContent = 'LV.1';
       const saved = localStorage.getItem('ek_name');
       if (nm) nm.textContent = saved || (lang === 'th' ? 'ผู้เล่นทั่วไป (เข้าสู่ระบบ)' : 'Guest (Log in)');
       if (xp) xp.style.width = '25%';
-      if (coins) coins.textContent = '100';
-      if (dia) dia.textContent = '20';
+      const gC = localStorage.getItem('ek_guest_coins') || '100';
+      const gD = localStorage.getItem('ek_guest_diamonds') || '20';
+      if (coins) coins.textContent = gC;
+      if (dia) dia.textContent = gD;
+      if (sCoins) sCoins.textContent = gC;
+      if (sDia) sDia.textContent = gD;
     }
   }
 
@@ -849,127 +905,494 @@
     return gen;
   };
 
+  let selectedStake = localStorage.getItem('ek_stake') || 'casual';
+  let cachedRooms = [];
+
+  const STAGES_LIST = [
+    {
+      id: 'original',
+      name: { th: 'ตรอกหมาวัด', en: 'Classic Alley' },
+      tag: { th: 'ด่านคลาสสิก', en: 'CLASSIC' },
+      theme: 'emerald',
+      avatar: 'av_golden_shiba',
+      desc: { th: 'การ์ดดั้งเดิม 55 ใบ ระเบิด 4 ใบ ปลดชนวน 6 ใบ เล่นง่าย ไหวพริบล้วนๆ', en: 'Original 55 cards, 4 Bombs, 6 Defuses. Pure wits and fun!' },
+      accent: '#10b981',
+      glow: 'rgba(16, 185, 129, 0.45)',
+      badgeBg: 'rgba(16, 185, 129, 0.18)'
+    },
+    {
+      id: 'party',
+      name: { th: 'ดาราจักรหลุมดำ', en: 'Imploding Cosmos' },
+      tag: { th: 'มหาปาร์ตี้หลุมดำ', en: 'IMPLODING CHAOS' },
+      theme: 'cosmic',
+      avatar: 'av_corgi_astro',
+      desc: { th: 'การ์ดระเบิดหลุมดำหงายหน้าในกองจั่ว! ขโมยเจาะจง สลับทิศทาง ลุ้นสุดขีด', en: 'Face-up Imploding Doge, targeted attacks, reverse, wild chaos!' },
+      accent: '#a855f7',
+      glow: 'rgba(168, 85, 247, 0.45)',
+      badgeBg: 'rgba(168, 85, 247, 0.18)'
+    },
+    {
+      id: 'streaking',
+      name: { th: 'สปายผ้าคลุม', en: 'Streaking Heist' },
+      tag: { th: 'ซ่อนระเบิดมือ', en: 'STREAKING HEIST' },
+      theme: 'cyber',
+      avatar: 'av_cyber_husky',
+      desc: { th: 'หมาซ่อนระเบิดไว้ในมือได้! กองขยะ ตาบอด และคำสาปสลับขั้วชวนระแวง', en: 'Hold bombs secretly in hand! Garbage dump, blind cat & swap-top.' },
+      accent: '#06b6d4',
+      glow: 'rgba(6, 182, 212, 0.45)',
+      badgeBg: 'rgba(6, 182, 212, 0.18)'
+    },
+    {
+      id: 'barking',
+      name: { th: 'อารีน่าหมาเห่า', en: 'Barking Arena' },
+      tag: { th: 'ประจันหน้าดุเดือด', en: 'BARKING DUEL' },
+      theme: 'crimson',
+      avatar: 'av_blaze_bulldog',
+      desc: { th: 'หมาเห่าผสานพลัง บังคับศัตรูต้องหมอบหรือสละปลดชนวน! ดุเดือดขั้นสุด', en: 'Pair barking dogs to force opponents to yield defuse or explode!' },
+      accent: '#ef4444',
+      glow: 'rgba(239, 68, 68, 0.45)',
+      badgeBg: 'rgba(239, 68, 68, 0.18)'
+    },
+    {
+      id: 'zombie',
+      name: { th: 'สุสานหมาซอมบี้', en: 'Zombie Crypt' },
+      tag: { th: 'คืนชีพสยองขวัญ', en: 'UNDEAD RETURN' },
+      theme: 'undead',
+      avatar: 'av_zombie_pup',
+      desc: { th: 'ตายแล้วไม่ตายจริง! กลายเป็นผีและคืนชีพกลับมาเล่นต่อ ล้างแค้นทั้งโต๊ะ', en: 'Dead dogs become ghosts and resurrect to enact sweet vengeance!' },
+      accent: '#14b8a6',
+      glow: 'rgba(20, 184, 166, 0.45)',
+      badgeBg: 'rgba(20, 184, 166, 0.18)'
+    },
+    {
+      id: 'mega',
+      name: { th: 'เมก้าโกลาหล', en: 'Mega Mix (All)' },
+      tag: { th: 'รวมมิตรทุกจักรวาล', en: 'ALL-STAR CHAOS' },
+      theme: 'rainbow',
+      avatar: 'av_sun_god',
+      desc: { th: 'รวมการ์ดทุกภาค ทั้งหลุมดำ ซ่อนระเบิด หมาเห่า ซอมบี้ กว่า 120 ใบ มันส์ทะลุพิกัด', en: 'All expansions merged together: 120+ cards of ultimate explosive frenzy!' },
+      accent: '#f59e0b',
+      glow: 'rgba(245, 158, 11, 0.5)',
+      badgeBg: 'rgba(245, 158, 11, 0.18)'
+    },
+    {
+      id: 'custom',
+      name: { th: 'สนามเด็กเล่น', en: 'Custom Sandbox' },
+      tag: { th: 'ปรับแต่งอิสระ', en: 'CUSTOM RULES' },
+      theme: 'sandbox',
+      avatar: 'custom_bulldog',
+      desc: { th: 'กำหนดจำนวนการ์ด เวลาต่อเทิร์น และกติกาตามใจชอบ เพื่อศึกแห่งศักดิ์ศรี', en: 'Customize exact card counts, turn timer, and rules to your exact style!' },
+      accent: '#eab308',
+      glow: 'rgba(234, 179, 8, 0.45)',
+      badgeBg: 'rgba(234, 179, 8, 0.18)'
+    }
+  ];
+
   function openMatchBrowser() {
     show('browser');
-    setupBrowserScreen();
+    setupStageSelectScreen();
     socket.emit('listRooms');
     A.sfx('click');
   }
 
-  function setupBrowserScreen() {
-    // 1. Populate version selector in sidebar
-    const vlist = $('#browserVersionList');
-    if (vlist) {
-      vlist.innerHTML = Object.entries(VERSIONS).map(([id, v]) => `
-        <div class="bver-pill ${id === homeVersion ? 'active' : ''}" data-bv="${id}">
-          <span style="font-size:1.3rem;">${v.icon}</span>
-          <div style="flex:1;">
-            <div>${esc(v.name[lang])}</div>
-            <small style="font-size:0.75rem;color:var(--muted);font-weight:normal;">${esc(v.desc[lang])}</small>
-          </div>
-        </div>
-      `).join('');
-      $$('#browserVersionList .bver-pill').forEach(b => b.onclick = () => {
-        homeVersion = b.dataset.bv;
-        localStorage.setItem('ek_ver', homeVersion);
-        $$('#browserVersionList .bver-pill').forEach(x => x.classList.toggle('active', x === b));
-        A.sfx('select');
-      });
-    }
+  function setupStageSelectScreen() {
+    renderUserChip();
 
-    // 2. Direct code join input
-    const codeInp = $('#browserCodeInp');
-    if (codeInp) {
-      codeInp.oninput = (e) => e.target.value = e.target.value.toUpperCase();
-      codeInp.onkeydown = (e) => { if (e.key === 'Enter') $('#btnBrowserJoinCode').click(); };
-    }
-    const btnJoinCode = $('#btnBrowserJoinCode');
-    if (btnJoinCode) {
-      btnJoinCode.onclick = () => {
-        const c = $('#browserCodeInp')?.value.trim();
-        if (!c) return toast(lang === 'th' ? 'กรุณาระบุรหัสห้อง 4 หลัก' : 'Enter 4-letter room code', 'err');
-        A.sfx('click');
-        socket.emit('joinRoom', { code: c, name: myName(), avatar: myAvatar(), frame: myFrame(), skin: mySkin(), title: myTitle() });
-      };
-    }
-
-    // 3. Fast Create submit
-    const btnCreate = $('#btnBrowserCreateSubmit');
-    if (btnCreate) {
-      btnCreate.onclick = () => {
-        A.sfx('click');
-        socket.emit('createRoom', { name: myName(), avatar: myAvatar(), frame: myFrame(), skin: mySkin(), title: myTitle(), settings: { version: homeVersion } });
-      };
-    }
-
-    // 4. Back button
+    // 1. Topbar actions
     const btnBack = $('#btnBrowserBack');
-    if (btnBack) {
-      btnBack.onclick = () => {
-        A.sfx('click');
-        show('home');
+    if (btnBack) btnBack.onclick = () => { A.sfx('click'); show('home'); };
+
+    const btnMail = $('#btnStageMail');
+    if (btnMail) btnMail.onclick = () => { A.sfx('click'); openMailboxModal(); };
+
+    const badgeCoins = $('#stageBadgeCoins');
+    if (badgeCoins) badgeCoins.onclick = () => { A.sfx('click'); openShop(); };
+
+    const badgeDia = $('#stageBadgeDiamonds');
+    if (badgeDia) badgeDia.onclick = () => { A.sfx('click'); openGachaModal(); };
+
+    const btnLang = $('#btnStageLang');
+    if (btnLang) {
+      btnLang.onclick = () => {
+        A.sfx('select');
+        lang = lang === 'th' ? 'en' : 'th';
+        localStorage.setItem('ek_lang', lang);
+        renderI18n();
+        renderUserChip();
+        renderStakesPills();
+        renderStageCards();
       };
     }
 
-    // 5. Refresh button
-    const btnRef = $('#btnBrowserRefresh');
-    if (btnRef) {
-      btnRef.onclick = () => {
-        A.sfx('select');
-        socket.emit('listRooms');
-        toast(lang === 'th' ? '🔄 อัปเดตรายการห้องแล้ว' : '🔄 Refreshed rooms list');
+    // 2. High Stakes Selector
+    renderStakesPills();
+
+    // 3. Stage Cards Carousel
+    renderStageCards();
+
+    // 4. Carousel Arrows
+    const btnPrev = $('#btnStagePrev');
+    if (btnPrev) btnPrev.onclick = () => {
+      A.sfx('select');
+      const el = $('#stagesCarousel');
+      if (el) el.scrollBy({ left: -300, behavior: 'smooth' });
+    };
+
+    const btnNext = $('#btnStageNext');
+    if (btnNext) btnNext.onclick = () => {
+      A.sfx('select');
+      const el = $('#stagesCarousel');
+      if (el) el.scrollBy({ left: 300, behavior: 'smooth' });
+    };
+
+    // 5. 4-Box PIN Entry
+    setupPinInputs();
+
+    // 6. Bottom action buttons
+    const btnRooms = $('#btnOpenRoomsModal');
+    if (btnRooms) btnRooms.onclick = () => openAllRoomsModal();
+
+    const btnRandom = $('#btnStageRandom');
+    if (btnRandom) {
+      btnRandom.onclick = () => {
+        A.sfx('click');
+        toast(lang === 'th' ? '🔍 กำลังค้นหาห้องที่เปิดอยู่...' : '🔍 Searching for open rooms...');
+        socket.emit('joinRandom', {
+          name: myName(),
+          avatar: myAvatar(),
+          frame: myFrame(),
+          skin: mySkin(),
+          title: myTitle(),
+          version: homeVersion,
+          stake: selectedStake
+        });
+      };
+    }
+
+    const btnQuick = $('#btnStageQuick');
+    if (btnQuick) {
+      btnQuick.onclick = () => {
+        A.sfx('click');
+        toast(lang === 'th' ? '⚡ กำลังเริ่มเกมด่วนกับบอท...' : '⚡ Starting quick play...');
+        socket.emit('quickSolo', {
+          name: myName(),
+          avatar: myAvatar(),
+          frame: myFrame(),
+          skin: mySkin(),
+          title: myTitle(),
+          settings: {
+            version: homeVersion,
+            stake: selectedStake
+          }
+        });
       };
     }
   }
 
-  function renderRoomBrowser(rooms = []) {
-    const grid = $('#browserRoomGrid');
-    const cnt = $('#browserRoomCount');
-    if (!grid) return;
-    if (cnt) cnt.textContent = `${rooms.length} ${lang === 'th' ? 'ห้อง' : 'rooms'}`;
+  function renderStakesPills() {
+    const wrap = $('#stageStakesList');
+    if (!wrap || !window.EK.STAKES) return;
+    const stakes = window.EK.STAKES;
 
-    if (!rooms.length) {
-      grid.innerHTML = `
-        <div class="rc-empty">
-          <div class="rc-empty-icon">🎪</div>
-          <h3 style="color:#fff;margin:0 0 8px 0;font-size:1.3rem;">${lang === 'th' ? 'ยังไม่มีห้องเปิดอยู่ขณะนี้' : 'No active rooms currently'}</h3>
-          <p style="margin:0 0 20px 0;font-size:0.95rem;">${lang === 'th' ? 'สร้างห้องคนแรก แล้วชวนเพื่อนหรือบอทมาลุยกันเลย!' : 'Be the first to create a match and invite friends!'}</p>
-          <button class="btn big gold pulse" onclick="document.getElementById('btnBrowserCreateSubmit').click()">✨ ${t('createRoom')}</button>
-        </div>
-      `;
-      return;
-    }
-
-    grid.innerHTML = rooms.map(r => {
-      const v = VERSIONS[r.version] || VERSIONS.original;
-      const isLobby = r.state === 'LOBBY';
+    wrap.innerHTML = Object.entries(stakes).map(([id, s]) => {
+      const active = id === selectedStake;
+      let costText = lang === 'th' ? 'ฟรี' : 'Free';
+      if (s.coins > 0 || s.diamonds > 0) {
+        const parts = [];
+        if (s.coins > 0) parts.push(`🪙 ${s.coins.toLocaleString()}`);
+        if (s.diamonds > 0) parts.push(`💎 ${s.diamonds}`);
+        costText = parts.join(' + ');
+      }
       return `
-        <div class="room-card">
-          <div class="rc-top">
-            <span class="rc-code">${esc(r.code)}</span>
-            <span class="rc-state-pill ${isLobby ? 'lobby' : 'playing'}">
-              ${isLobby ? (lang === 'th' ? '🟢 รอในล็อบบี้' : '🟢 In Lobby') : (lang === 'th' ? '🟠 กำลังเล่น' : '🟠 In Game')}
-            </span>
+        <div class="stake-pill ${active ? 'active' : ''} tier-${id}" data-stk="${id}">
+          <span class="sp-icon">${s.icon}</span>
+          <div class="sp-body">
+            <b class="sp-name">${esc(s.name[lang] || s.name.th)}</b>
+            <span class="sp-cost">${costText}</span>
           </div>
-          <div class="rc-info">
-            <div class="rc-host">👑 <b>${esc(r.hostName)}</b></div>
-            <div>${v.icon} ${esc(v.name[lang])}</div>
-            <div>👥 <b>${r.playerCount} / ${r.maxPlayers}</b> ${lang === 'th' ? 'คน' : 'players'}</div>
-          </div>
-          <button class="btn big ${isLobby ? 'gold' : 'blue'}" data-rc="${esc(r.code)}" style="margin-top:auto;">
-            ${isLobby ? '🚀 ' + t('join') : '👁️ ' + (lang === 'th' ? 'เข้าชม' : 'Spectate')}
-          </button>
+          <span class="sp-mult-tag">x${s.mult}</span>
         </div>
       `;
     }).join('');
 
-    $$('[data-rc]', grid).forEach(b => b.onclick = () => {
-      A.sfx('click');
-      socket.emit('joinRoom', { code: b.dataset.rc, name: myName(), avatar: myAvatar(), frame: myFrame(), skin: mySkin(), title: myTitle() });
+    $$('#stageStakesList .stake-pill').forEach(pill => {
+      pill.onclick = () => {
+        const stkId = pill.dataset.stk;
+        selectedStake = stkId;
+        localStorage.setItem('ek_stake', stkId);
+        A.sfx('select');
+        $$('#stageStakesList .stake-pill').forEach(p => p.classList.toggle('active', p === pill));
+        renderStageCards(); // Update payout previews
+      };
     });
   }
 
-  function openPlayFriendsModal() {
+  function renderStageCards() {
+    const wrap = $('#stagesCarousel');
+    if (!wrap) return;
+    const currentStk = (window.EK.STAKES && window.EK.STAKES[selectedStake]) || { mult: 1, coins: 0, diamonds: 0 };
+
+    wrap.innerHTML = STAGES_LIST.map(st => {
+      const active = st.id === homeVersion;
+      const coinWin = Math.round(120 * currentStk.mult);
+      const diaWin = 3 + (currentStk.bonusDiamonds || currentStk.diamonds * 2 || 0);
+
+      return `
+        <div class="stage-card ${active ? 'active' : ''} theme-${st.theme}" data-stage-id="${st.id}" style="--st-accent:${st.accent}; --st-glow:${st.glow};">
+          <div class="stage-card-glow-bg"></div>
+          <div class="stage-card-body">
+            <!-- Stage Tag -->
+            <div class="stage-header-tag" style="background:${st.badgeBg}; color:${st.accent}; border-color:${st.accent};">
+              <span class="sht-dot" style="background:${st.accent};"></span>
+              <span>${esc(st.tag[lang] || st.tag.th)}</span>
+            </div>
+
+            <!-- Mascot Hero -->
+            <div class="stage-mascot-box">
+              <div class="mascot-halo" style="background:radial-gradient(circle, ${st.glow} 0%, transparent 70%);"></div>
+              <div class="mascot-svg-wrap">
+                ${renderAvatarSVG(st.avatar)}
+              </div>
+            </div>
+
+            <!-- Titles & Description -->
+            <div class="stage-card-meta">
+              <h3 class="stage-card-title">${esc(st.name[lang] || st.name.th)}</h3>
+              <p class="stage-card-desc">${esc(st.desc[lang] || st.desc.th)}</p>
+            </div>
+
+            <!-- High Stakes Prize Pool Preview -->
+            <div class="stage-prize-preview">
+              <div class="spp-head">
+                <span>🏆 ${lang === 'th' ? 'รางวัลผู้ชนะ' : 'Winner Pool'}</span>
+                <b class="spp-mult">x${currentStk.mult}</b>
+              </div>
+              <div class="spp-values">
+                <span class="spp-coin">🪙 +${coinWin.toLocaleString()}</span>
+                <span class="spp-dia">💎 +${diaWin}</span>
+              </div>
+            </div>
+
+            <!-- Action Button -->
+            <button class="stage-start-btn" data-stage-btn="${st.id}">
+              <span class="ssb-icon">${st.id === 'custom' ? '⚙️' : '🚀'}</span>
+              <span class="ssb-text">${st.id === 'custom' ? (lang === 'th' ? 'ปรับแต่งกติกา' : 'Custom Rules') : (lang === 'th' ? 'ลุยเลย! (START)' : 'PLAY NOW')}</span>
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // Stage card click selection
+    $$('#stagesCarousel .stage-card').forEach(card => {
+      card.onclick = (e) => {
+        if (e.target.closest('.stage-start-btn')) return; // Handled by button
+        const sid = card.dataset.stageId;
+        homeVersion = sid;
+        localStorage.setItem('ek_ver', homeVersion);
+        A.sfx('select');
+        $$('#stagesCarousel .stage-card').forEach(c => c.classList.toggle('active', c === card));
+      };
+    });
+
+    // Stage start button click
+    $$('#stagesCarousel .stage-start-btn').forEach(btn => {
+      btn.onclick = (e) => {
+        e.stopPropagation();
+        const sid = btn.dataset.stageBtn;
+        homeVersion = sid;
+        localStorage.setItem('ek_ver', homeVersion);
+        A.sfx('click');
+
+        if (sid === 'custom') {
+          openPlayFriendsModal();
+          return;
+        }
+
+        // Check if user has sufficient stake balance
+        const stk = (window.EK.STAKES && window.EK.STAKES[selectedStake]) || { coins: 0, diamonds: 0 };
+        const myC = user ? user.coins : parseInt(localStorage.getItem('ek_guest_coins') || '100');
+        const myD = user ? (user.diamonds || 0) : parseInt(localStorage.getItem('ek_guest_diamonds') || '20');
+        if (stk.coins > myC || stk.diamonds > myD) {
+          toast(lang === 'th' ? 'เหรียญหรือเพชรไม่พอสำหรับระดับเดิมพันนี้!' : 'Insufficient coins or diamonds for this stake!', 'err');
+          return;
+        }
+
+        socket.emit('createRoom', {
+          name: myName(),
+          avatar: myAvatar(),
+          frame: myFrame(),
+          skin: mySkin(),
+          title: myTitle(),
+          settings: {
+            version: sid,
+            stake: selectedStake
+          }
+        });
+      };
+    });
+  }
+
+  function setupPinInputs() {
+    const pins = [$('#pin0'), $('#pin1'), $('#pin2'), $('#pin3')].filter(Boolean);
+    if (!pins.length) return;
+
+    pins.forEach((inp, idx) => {
+      inp.oninput = () => {
+        inp.value = inp.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+        if (inp.value && idx < pins.length - 1) {
+          pins[idx + 1].focus();
+          pins[idx + 1].select();
+        }
+      };
+      inp.onkeydown = (e) => {
+        if (e.key === 'Backspace' && !inp.value && idx > 0) {
+          pins[idx - 1].focus();
+        }
+        if (e.key === 'Enter') {
+          $('#btnPinJoin')?.click();
+        }
+      };
+      inp.onpaste = (e) => {
+        e.preventDefault();
+        const paste = (e.clipboardData || window.clipboardData).getData('text').toUpperCase().replace(/[^A-Z0-9]/g, '');
+        for (let i = 0; i < 4; i++) {
+          if (pins[i]) pins[i].value = paste[i] || '';
+        }
+        if (paste.length >= 4) {
+          $('#btnPinJoin')?.click();
+        } else if (pins[Math.min(3, paste.length)]) {
+          pins[Math.min(3, paste.length)].focus();
+        }
+      };
+    });
+
+    const btnJoin = $('#btnPinJoin');
+    if (btnJoin) {
+      btnJoin.onclick = () => {
+        const code = pins.map(p => p.value.trim()).join('').toUpperCase();
+        if (code.length < 4) {
+          return toast(lang === 'th' ? 'กรุณาระบุรหัสห้องให้ครบ 4 หลัก' : 'Enter 4-letter room code', 'err');
+        }
+        A.sfx('click');
+        socket.emit('joinRoom', {
+          code,
+          name: myName(),
+          avatar: myAvatar(),
+          frame: myFrame(),
+          skin: mySkin(),
+          title: myTitle()
+        });
+      };
+    }
+  }
+
+  function openAllRoomsModal() {
+    socket.emit('listRooms');
+    A.sfx('click');
+    renderRoomsModalContent(cachedRooms);
+  }
+
+  function renderRoomsModalContent(rooms = []) {
+    const stkConfig = window.EK.STAKES || {};
+    const contentHtml = `
+      <div class="rooms-modal-head">
+        <h2>📋 ${lang === 'th' ? 'ห้องที่กำลังเปิดอยู่' : 'Active Game Rooms'} (${rooms.length})</h2>
+        <button class="btn small gold" id="btnRefreshRoomsModal">🔄 ${lang === 'th' ? 'รีเฟรช' : 'Refresh'}</button>
+      </div>
+      <div class="rooms-modal-list">
+        ${!rooms.length ? `
+          <div class="rc-empty" style="padding:30px 20px;text-align:center;">
+            <div style="font-size:3rem;margin-bottom:10px;">🎪</div>
+            <h3 style="color:#fff;margin:0 0 6px 0;">${lang === 'th' ? 'ยังไม่มีห้องเปิดอยู่ขณะนี้' : 'No active rooms'}</h3>
+            <p style="color:var(--muted);margin:0 0 16px 0;font-size:0.9rem;">${lang === 'th' ? 'สร้างห้องใหม่ในด่านที่คุณเลือก แล้วชวนเพื่อนหรือบอทมาลุยเลย!' : 'Create a room in your favorite stage and invite friends!'}</p>
+            <button class="btn gold pulse" id="btnRoomsModalCreate">${lang === 'th' ? '✨ สร้างห้องในด่านนี้' : '✨ Create Room'}</button>
+          </div>
+        ` : rooms.map(r => {
+          const v = VERSIONS[r.version] || VERSIONS.original;
+          const stk = stkConfig[r.stake] || stkConfig.casual || { icon: '🟢', mult: 1 };
+          const isLobby = r.state === 'LOBBY';
+          return `
+            <div class="room-modal-card">
+              <div class="rmc-left">
+                <span class="rmc-code">${esc(r.code)}</span>
+                <span class="rmc-state ${isLobby ? 'lobby' : 'playing'}">
+                  ${isLobby ? (lang === 'th' ? '🟢 รอในล็อบบี้' : '🟢 Lobby') : (lang === 'th' ? '🟠 กำลังเล่น' : '🟠 Playing')}
+                </span>
+                <span class="rmc-stake-tag">${stk.icon} x${stk.mult}</span>
+              </div>
+              <div class="rmc-center">
+                <div class="rmc-host">👑 <b>${esc(r.hostName)}</b></div>
+                <div class="rmc-info">${v.icon} ${esc(v.name[lang] || v.name.th)} • 👥 ${r.playerCount}/${r.maxPlayers}</div>
+              </div>
+              <div class="rmc-action">
+                <button class="btn ${isLobby ? 'gold' : 'blue'}" data-modal-join="${esc(r.code)}">
+                  ${isLobby ? '🚀 ' + (lang === 'th' ? 'เข้าห้อง' : 'Join') : '👀 ' + (lang === 'th' ? 'รับชม' : 'Spectate')}
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+
+    openModal(contentHtml, { cls: 'wide' });
+
+    const btnRef = $('#btnRefreshRoomsModal');
+    if (btnRef) {
+      btnRef.onclick = () => {
+        A.sfx('select');
+        socket.emit('listRooms');
+      };
+    }
+
+    const btnCreate = $('#btnRoomsModalCreate');
+    if (btnCreate) {
+      btnCreate.onclick = () => {
+        closeModal();
+        socket.emit('createRoom', {
+          name: myName(),
+          avatar: myAvatar(),
+          frame: myFrame(),
+          skin: mySkin(),
+          title: myTitle(),
+          settings: { version: homeVersion, stake: selectedStake }
+        });
+      };
+    }
+
+    $$('[data-modal-join]').forEach(b => {
+      b.onclick = () => {
+        closeModal();
+        A.sfx('click');
+        socket.emit('joinRoom', {
+          code: b.dataset.modalJoin,
+          name: myName(),
+          avatar: myAvatar(),
+          frame: myFrame(),
+          skin: mySkin(),
+          title: myTitle()
+        });
+      };
+    });
+  }
+
+  function setupBrowserScreen() {
+    setupStageSelectScreen();
+  }
+
+  function renderRoomBrowser(rooms = []) {
+    cachedRooms = rooms;
+    const cnt = $('#browserRoomCount');
+    if (cnt) cnt.textContent = String(rooms.length);
+
+    // If modal is currently showing rooms, refresh its view
+    if ($('#btnRefreshRoomsModal')) {
+      renderRoomsModalContent(rooms);
+    }
+  }
+
+    function openPlayFriendsModal() {
     openModal(`<h2>🏠 ${t('playWithFriends')}</h2>
       <div class="panel">
         <label>${t('version')}</label>
@@ -3607,20 +4030,24 @@
     const isHost = me()?.isHost;
     const mine = results.find(r => r.id === S?.me?.id);
 
-    // If guest, award guest coins & diamonds locally
+    // If guest, award guest coins & diamonds locally with stake multiplier
+    const stakeKey = S?.settings?.stake || 'casual';
+    const stkConfig = (window.EK.STAKES && window.EK.STAKES[stakeKey]) || { mult: 1, bonusDiamonds: 0 };
     if (!user && mine) {
       const gWon = mine.place === 1;
-      const gCoins = (gWon ? 120 : 30) + (results.length - mine.place) * 15;
-      const gDia = gWon ? 3 : (mine.place === 2 ? 1 : 0);
+      const baseCoins = (gWon ? 120 : 30) + (results.length - mine.place) * 15;
+      const gCoins = Math.round(baseCoins * stkConfig.mult);
+      const gDia = (gWon ? 3 : (mine.place === 2 ? 1 : 0)) + (gWon ? (stkConfig.bonusDiamonds || (stkConfig.diamonds ? stkConfig.diamonds * 2 : 0)) : 0);
       const curC = parseInt(localStorage.getItem('ek_guest_coins') || '100');
       const curD = parseInt(localStorage.getItem('ek_guest_diamonds') || '20');
       localStorage.setItem('ek_guest_coins', curC + gCoins);
       localStorage.setItem('ek_guest_diamonds', curD + gDia);
       renderUserChip();
-      mine.reward = { coins: gCoins, diamonds: gDia, rp: gWon ? 25 : 5 };
+      mine.reward = { coins: gCoins, diamonds: gDia, rp: gWon ? 25 : 5, stake: stakeKey };
     }
 
-    openModal(`<h2>🏁 ${t('gameOver')}</h2><div class="results">${results.map(r => {
+    const stakeBadgeHtml = stkConfig && stkConfig.mult > 1 ? `<div class="result-stake-ribbon">${stkConfig.icon} <b>${stkConfig.name[lang] || stkConfig.name.th}</b> <span class="rsr-mult">x${stkConfig.mult} REWARDS</span></div>` : '';
+    openModal(`<h2>🏁 ${t('gameOver')}</h2>${stakeBadgeHtml}<div class="results">${results.map(r => {
       let rewText = '<span></span>';
       if (r.reward) {
         const parts = [`🪙 +${r.reward.coins}`];
