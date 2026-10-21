@@ -177,7 +177,7 @@ label { font-size: 0.85rem; color: #cbd5e1; display: block; margin-top: 4px; }
 }
 
 .stage-fx { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 1; }
-.spotlight { position: absolute; top: -140px; width: 340px; height: 850px; opacity: 0.35; filter: blur(36px); }
+.spotlight { position: absolute; top: -140px; width: 340px; height: 850px; opacity: 0.35; filter: blur(8px); transform: translateZ(0); }
 .spot-center {
   left: 50%; transform: translateX(-50%);
   background: conic-gradient(from 180deg at 50% 0%, transparent 40%, rgba(254,240,138,0.55) 50%, transparent 60%);
@@ -3892,7 +3892,7 @@ body.shake-heavy {
   width: 380px;
   height: 650px;
   opacity: 0.18;
-  filter: blur(55px);
+  filter: blur(8px); transform: translateZ(0);
   transform-origin: top center;
   animation: spotPulse 7s ease-in-out infinite alternate;
 }
@@ -5038,11 +5038,10 @@ html, body {
 }
 .auth-sunburst {
   position: absolute;
-  inset: -50%;
-  background: radial-gradient(circle at 50% 38%, rgba(251, 146, 60, 0.95) 0%, rgba(236, 72, 153, 0.75) 30%, rgba(134, 25, 143, 0.85) 60%, rgba(46, 8, 84, 0.98) 100%);
-  background-image: repeating-conic-gradient(from 0deg, rgba(255, 247, 237, 0.08) 0deg 9deg, transparent 9deg 18deg);
-  animation: authSunburstSpin 180s linear infinite;
-  transform-origin: center center;
+  inset: 0;
+  background: radial-gradient(circle at 50% 35%, rgba(251, 146, 60, 0.5) 0%, rgba(236, 72, 153, 0.3) 35%, rgba(134, 25, 143, 0.4) 65%, rgba(46, 8, 84, 0.98) 100%);
+  pointer-events: none !important;
+  transform: translateZ(0);
 }
 @keyframes authSunburstSpin {
   from { transform: rotate(0deg); }
@@ -6915,5 +6914,68 @@ html, body {
   .tut-toggle-btn {
     font-size: 0.7rem !important;
     padding: 2px 8px !important;
+  }
+}
+
+
+/* ============================================================
+   ANTI-LAG PERFORMANCE & GUARANTEED CLICKABILITY
+   ============================================================ */
+
+/* GPU Layer Promotion & Hardware Acceleration */
+.screen, .auth-card, #boardArena, #hand, .stage-card, .modal-box, .coach-container, #table {
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Ensure Auth Card & Forms ALWAYS receive clicks without obstruction */
+#screen-auth {
+  pointer-events: auto !important;
+  z-index: 10 !important;
+}
+
+.auth-bg-fx, .auth-sunburst, .auth-ambient-particles, .auth-floating-cards {
+  pointer-events: none !important;
+}
+
+.auth-stage-container {
+  pointer-events: auto !important;
+  position: relative !important;
+  z-index: 20 !important;
+}
+
+.auth-card {
+  pointer-events: auto !important;
+  position: relative !important;
+  z-index: 30 !important;
+}
+
+.auth-tabs, .auth-tab, .auth-form, .auth-input-row, .auth-input-row input, .auth-btn-submit, .btn-auth-guest, .btn-auth-social, #linkAuthForgot, #linkSwitchToLogin, #linkSwitchToRegister {
+  pointer-events: auto !important;
+  cursor: pointer;
+  position: relative;
+  z-index: 35 !important;
+}
+
+.auth-input-row input {
+  cursor: text !important;
+}
+
+/* Mobile & Low-End Device Lag Annihilator (<768px) */
+@media (max-width: 768px) {
+  .spotlight, .floating-confetti, .confetti-layer, .auth-ambient-particles, .auth-floating-cards {
+    display: none !important;
+  }
+  .auth-sunburst {
+    animation: none !important;
+  }
+  * {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  .stage-mascot {
+    animation: none !important;
   }
 }

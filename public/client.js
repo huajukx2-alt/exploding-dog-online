@@ -771,7 +771,7 @@
       name = 'auth';
     }
     screen = name;
-    $('.screen').forEach(s => {
+    $$('.screen').forEach(s => {
       const isActive = s.id === 'screen-' + name;
       s.classList.toggle('active', isActive);
       if (!isActive) {
@@ -3811,7 +3811,7 @@
         A.sfx('click');
         const target = btn.dataset.tab;
         tabBtns.forEach(b => b.classList.toggle('active', b === btn));
-        $('.lobby-grid .panel').forEach(p => {
+        $$('.lobby-grid .panel').forEach(p => {
           p.classList.toggle('active-mobile-panel', p.dataset.panel === target);
         });
       };
