@@ -7788,9 +7788,22 @@ body.perf-mode .logo-bomb-icon {
    and non-fullscreen windows at all times without clipping.
    ============================================================ */
 
-#screen-browser,
-#screen-browser.stage-select-screen,
-.stage-select-screen {
+#screen-browser:not(.active),
+#screen-browser.stage-select-screen:not(.active),
+.stage-select-screen:not(.active) {
+  display: none !important;
+}
+
+#screen-browser.active,
+#screen-browser.stage-select-screen.active,
+.stage-select-screen.active {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  width: 100% !important;
   height: 100vh !important;
   height: 100dvh !important;
   max-height: 100dvh !important;
@@ -7798,6 +7811,9 @@ body.perf-mode .logo-bomb-icon {
   display: flex !important;
   flex-direction: column !important;
   justify-content: space-between !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
 }
 
 /* Fluid stage showcase container */
@@ -7815,9 +7831,9 @@ body.perf-mode .logo-bomb-icon {
 
 /* Fluid scaling for stage cards */
 .stage-card {
-  height: min(430px, calc(100% - 10px)) !important;
-  max-height: calc(100dvh - 165px) !important;
-  min-height: 0 !important;
+  height: clamp(240px, calc(100dvh - 165px), 430px) !important;
+  max-height: calc(100% - 10px) !important;
+  min-height: 220px !important;
 }
 
 /* Bottom Bar: permanently pinned, never pushed off screen */
@@ -7958,7 +7974,8 @@ body.perf-mode .logo-bomb-icon {
     font-size: 0.68rem !important;
   }
   .stage-card {
-    height: min(250px, calc(100dvh - 98px)) !important;
+    height: clamp(210px, calc(100dvh - 96px), 255px) !important;
+    min-height: 190px !important;
     flex: 0 0 190px !important;
     max-width: 190px !important;
   }

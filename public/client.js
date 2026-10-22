@@ -938,6 +938,7 @@
     });
     document.body.dataset.screen = name;
     if (name === 'home') { renderHome(); }
+    if (name === 'browser') { setupStageSelectScreen(); }
     if (name === 'lobby') { initLobbyTabs(); }
   }
 
@@ -6000,7 +6001,7 @@
         socket.emit('leaveRoom');
         setTimeout(() => {
           show('browser');
-          renderStageBrowser();
+          setupStageSelectScreen();
         }, 150);
       };
     }
