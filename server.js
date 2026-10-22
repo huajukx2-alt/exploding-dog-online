@@ -323,9 +323,8 @@ io.on('connection', (socket) => {
       const g = ctx(socket); if (!g) return;
       const d = safeObj(data);
       const r = fn(g, d) || {};
-      if (r.error) err(r.error);
-      // g.sync() is already executed by each method in Game when state changes.
-      // Skipping redundant sync saves 50% CPU and socket traffic.
+      if (r.error) return err(r.error);
+      g.sync();
     } catch (e) {
       console.error(`[socket act error: ${event}]`, e);
     }

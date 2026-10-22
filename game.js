@@ -1078,6 +1078,7 @@ class Game {
         frame: me.frame,
         skin: me.skin,
         title: me.title || 'title_rookie',
+        ready: !!me.ready,
         alive: !!me.alive,
         elimReason: me.elimReason,
         hand: me.hand || [],
