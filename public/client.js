@@ -715,13 +715,18 @@
   function floatAt(id, html, cls = '', duration = (cls === 'chat' ? 5500 : 3000)) {
     const anchor = seatEl(id) || document.body;
     if (cls === 'chat') {
-      $(`.floater.chat[data-player-id="${id}"]`).forEach(oldEl => oldEl.remove());
+      try {
+        const oldFloaters = document.querySelectorAll('.floater.chat[data-player-id="' + id + '"]');
+        oldFloaters.forEach(oldEl => oldEl.remove());
+      } catch (_) {}
     }
     const r = anchor.getBoundingClientRect();
-    const el = document.createElement('div'); el.className = 'floater ' + cls;
+    const el = document.createElement('div');
+    el.className = 'floater ' + cls;
     if (cls === 'chat') el.dataset.playerId = id;
     el.innerHTML = html;
-    el.style.left = (r.left + r.width / 2) + 'px'; el.style.top = (r.top + Math.min(r.height / 2, 50)) + 'px';
+    el.style.left = Math.max(30, Math.min(window.innerWidth - 30, (r.left + r.width / 2))) + 'px';
+    el.style.top = Math.max(30, (r.top + Math.min(r.height / 2, 50))) + 'px';
     document.body.appendChild(el);
     setTimeout(() => { if (el.parentNode) el.remove(); }, duration);
   }
@@ -885,8 +890,28 @@
   socket.on('profile', (u) => setUser(u));
   socket.on('chat', (m) => {
     const html = `<div class="msg"><b>${esc(m.avatar)} ${esc(m.name)}:</b> ${esc(m.text)}</div>`;
-    $$('.chat-box').forEach(b => { b.insertAdjacentHTML('beforeend', html); b.scrollTop = b.scrollHeight; });
-    if (screen === 'game') floatAt(m.playerId, `<div class="bubble">${esc(m.text)}</div>`, 'chat', 5500);
+    $$('.chat-box').forEach(b => {
+      b.insertAdjacentHTML('beforeend', html);
+      b.scrollTop = b.scrollHeight;
+    });
+
+    if (screen === 'game') {
+      try {
+        floatAt(m.playerId, `<div class="bubble">${esc(m.text)}</div>`, 'chat', 5500);
+      } catch (err) {
+        console.error('[chat bubble error]', err);
+      }
+      try {
+        pushCombatTicker(`<span>💬 <b>${esc(m.name)}:</b></span> ${esc(m.text)}`, 'chat');
+      } catch (_) {}
+    } else if (screen === 'lobby') {
+      const chatTab = $('[data-tab="chat"]');
+      if (chatTab && !chatTab.classList.contains('active')) {
+        chatTab.classList.add('pulse');
+      }
+      toast(`💬 ${esc(m.name)}: ${esc(m.text)}`, 'info');
+    }
+
     A.sfx('click');
   });
   socket.on('sticker', ({ playerId, id }) => {
@@ -4678,7 +4703,17 @@
   $('#btnAddBot').onclick = () => { A.sfx('click'); socket.emit('addBot'); };
   $('#btnLeave').onclick = () => { socket.emit('leaveRoom'); };
   $('#btnCopy').onclick = () => { navigator.clipboard?.writeText(location.origin + '/?room=' + S.code); toast('📋 ' + t('copied')); };
-  $$('[data-chat]').forEach(f => f.onsubmit = (e) => { e.preventDefault(); const i = $('input', f); if (i.value.trim()) socket.emit('chat', { text: i.value }); i.value = ''; });
+  $$('[data-chat]').forEach(f => {
+    f.onsubmit = (e) => {
+      e.preventDefault();
+      const i = $('input', f);
+      if (i && i.value && i.value.trim()) {
+        const text = i.value.trim();
+        socket.emit('chat', { text });
+        i.value = '';
+      }
+    };
+  });
 
   // ------------------------------------------------------------ GAME render
   let lastDiscardKey = '';
