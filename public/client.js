@@ -826,7 +826,12 @@
   });
   socket.on('err', (e) => { toast('⚠️ ' + esc(terr(e)), 'err'); A.sfx('nope'); });
   socket.on('vault', (v) => { try { localStorage.setItem('ek_account_vault', JSON.stringify(v)); } catch (_) {} });
-  socket.on('joined', ({ code, playerId, key }) => { sessionStorage.setItem('ek_room', JSON.stringify({ code, playerId, key })); history.replaceState(null, '', '?room=' + code); });
+  socket.on('joined', ({ code, playerId, key }) => {
+    exitTutorialGame(true);
+    closeModal(true);
+    sessionStorage.setItem('ek_room', JSON.stringify({ code, playerId, key }));
+    history.replaceState(null, '', '?room=' + code);
+  });
   socket.on('rejoinFailed', () => { sessionStorage.removeItem('ek_room'); });
   socket.on('left', () => {
     sessionStorage.removeItem('ek_room');
@@ -846,11 +851,28 @@
     show('home');
   });
   socket.on('state', (st) => {
+    // Purge tutorial immediately if any real multiplayer state arrives from server
+    if (st && st.code !== 'TUTORIAL') {
+      if (tutorialActive) {
+        exitTutorialGame(true);
+      }
+      const overlay = $('#tutorialCoachOverlay');
+      if (overlay) {
+        overlay.classList.add('hidden');
+        overlay.classList.remove('collapsed');
+      }
+      if (typeof tutorialEngine !== 'undefined' && tutorialEngine.clearHighlights) {
+        tutorialEngine.clearHighlights();
+      }
+    }
     const prev = S; S = st; timeOffset = st.serverNow - Date.now();
     if (st.phase === 'turn' || st.state !== 'PLAYING' || st.turnId !== prev?.turnId) {
       drawActionLock = false;
     }
     if (st.me) { const hand = st.me.hand.map(c => c.uid); sel = sel.filter(u => hand.includes(u)); }
+    if (st.state === 'PLAYING') {
+      closeModal(true);
+    }
     if (prev && ((prev.state === 'LOBBY' && st.state === 'PLAYING') || (prev.state === 'ENDED' && st.state === 'LOBBY'))) {
       closeModal(true);
       if (st.state === 'LOBBY') toast('🔄 ' + (lang === 'th' ? 'กลับสู่ห้องล็อบบี้แล้ว' : 'Returned to Lobby'), 'good');
@@ -4270,7 +4292,7 @@
     tutorialEngine.setStep(1);
   }
 
-  function exitTutorialGame() {
+  function exitTutorialGame(keepState = false) {
     clearTutTimers();
     tutorialActive = false;
     tutorialEngine.collapsed = false;
@@ -4281,17 +4303,25 @@
     }
     const peek = $('#tutPeekOverlay');
     if (peek) peek.remove();
-    tutorialEngine.clearHighlights();
+    if (typeof tutorialEngine !== 'undefined' && tutorialEngine.clearHighlights) {
+      tutorialEngine.clearHighlights();
+    }
     A.stopHeartbeat();
     A.stopFuse();
     document.body.classList.remove('emergency-alarm');
-    S = null;
-    show('home');
-    renderHome();
-    renderUserChip();
+    if (!keepState) {
+      S = null;
+      show('home');
+      renderHome();
+      renderUserChip();
+    }
   }
 
   function showNewAccountTutorialPrompt(u) {
+    // NEVER show tutorial prompt if player is in a room or game or joining via room URL
+    if ((S && S.code && S.code !== 'TUTORIAL') || new URLSearchParams(location.search).get('room')) return;
+    if (localStorage.getItem('ek_tutorial_completed') === 'true' || localStorage.getItem('ek_tutorial_dismissed') === 'true') return;
+
     const isTh = lang === 'th';
     const modalHTML = `
       <div class="tutorial-onboarding-modal">
@@ -4325,7 +4355,12 @@
       </div>
     `;
 
-    openModal(modalHTML, { cls: 'medium' });
+    openModal(modalHTML, {
+      cls: 'medium',
+      onClose: () => {
+        localStorage.setItem('ek_tutorial_dismissed', 'true');
+      }
+    });
 
     $('#btnStartTutorialAction').onclick = () => {
       closeModal(true);
@@ -4333,6 +4368,7 @@
     };
 
     $('#btnSkipTutorialAction').onclick = () => {
+      localStorage.setItem('ek_tutorial_dismissed', 'true');
       closeModal(true);
       show('home');
     };
@@ -4660,6 +4696,13 @@
   }
 
   function renderGame() {
+    if (S && S.code !== 'TUTORIAL') {
+      tutorialActive = false;
+      const overlay = $('#tutorialCoachOverlay');
+      if (overlay && !overlay.classList.contains('hidden')) {
+        overlay.classList.add('hidden');
+      }
+    }
     const m = me(); if (!m) return;
     const isSpectator = !!m.isSpectator;
     const others = isSpectator ? S.players : S.players.filter(p => p.id !== m.id);
@@ -4896,7 +4939,7 @@
     const btnPlayAction = $('#btnPlayAction');
     if (btnPlayAction) {
       btnPlayAction.classList.toggle('hidden', !canPlay);
-      if (tutorialActive && canPlay) btnPlayAction.classList.add('pulse-card-guide');
+      if (tutorialActive && S?.code === 'TUTORIAL' && canPlay) btnPlayAction.classList.add('pulse-card-guide');
       btnPlayAction.onclick = () => doPlay();
     }
 
@@ -5092,7 +5135,7 @@
       if (!wasMode) {
         // Clean tap / click: toggle selection instantly without erratic sliding
         const u = el.dataset.uid;
-        if (tutorialActive && typeof tutorialEngine !== 'undefined' && !tutorialEngine.onCardSelect(u, el)) {
+        if (tutorialActive && S?.code === 'TUTORIAL' && typeof tutorialEngine !== 'undefined' && !tutorialEngine.onCardSelect(u, el)) {
           return;
         }
         sel = sel.includes(u) ? sel.filter(x => x !== u) : [...sel, u];
@@ -5206,7 +5249,7 @@
   });
 
   function canNopeNow() {
-    if (tutorialActive && typeof tutorialEngine !== 'undefined') return tutorialEngine.canNope();
+    if (tutorialActive && S?.code === 'TUTORIAL' && typeof tutorialEngine !== 'undefined') return tutorialEngine.canNope();
     if (!S || !S.pending || S.phase !== 'nope') return false;
     const m = me();
     if (!m || !m.alive) return false;
@@ -5220,14 +5263,14 @@
 
   let drawActionLock = false;
   function canDrawNow() {
-    if (tutorialActive && typeof tutorialEngine !== 'undefined') return tutorialEngine.canDraw();
+    if (tutorialActive && S?.code === 'TUTORIAL' && typeof tutorialEngine !== 'undefined') return tutorialEngine.canDraw();
     if (!S || !S.me || drawActionLock) return false;
     const m = me();
     return S.state === 'PLAYING' && S.turnId === m?.id && m?.alive && S.phase === 'turn';
   }
 
   function doDraw() {
-    if (tutorialActive && typeof tutorialEngine !== 'undefined') return tutorialEngine.onDraw();
+    if (tutorialActive && S?.code === 'TUTORIAL' && typeof tutorialEngine !== 'undefined') return tutorialEngine.onDraw();
     if (!canDrawNow() || drawActionLock) return;
     drawActionLock = true;
     setTimeout(() => { drawActionLock = false; }, 2500);
@@ -5237,7 +5280,7 @@
   }
 
   function doQuickNope() {
-    if (tutorialActive && typeof tutorialEngine !== 'undefined') return tutorialEngine.onNope();
+    if (tutorialActive && S?.code === 'TUTORIAL' && typeof tutorialEngine !== 'undefined') return tutorialEngine.onNope();
     if (!canNopeNow()) return;
     const c = S?.me?.hand?.find(x => x.id === 'nope');
     if (c) {
@@ -5248,7 +5291,7 @@
   }
 
   function doPlay() {
-    if (tutorialActive && typeof tutorialEngine !== 'undefined') return tutorialEngine.onPlay();
+    if (tutorialActive && S?.code === 'TUTORIAL' && typeof tutorialEngine !== 'undefined') return tutorialEngine.onPlay();
     if (!S || !S.me) return;
     const m = me();
     const canAct = S.state === 'PLAYING' && S.turnId === m?.id && m?.alive && S.phase === 'turn';
