@@ -706,12 +706,14 @@
     if (id === S?.me?.id) {
       const hero = $('#myHeroSeat');
       if (hero && hero.offsetParent !== null) return hero;
-      return $('#hand') || $('#handArea');
+      return $('#hand') || $('#handArea') || document.body;
     }
-    return $(`.seat[data-id="${id}"]`);
+    const s = $(`.seat[data-id="${id}"]`);
+    if (s && s.offsetParent !== null) return s;
+    return $('#tableArea') || $('#screen-game') || document.body;
   }
   function floatAt(id, html, cls = '', duration = (cls === 'chat' ? 5500 : 3000)) {
-    const anchor = seatEl(id); if (!anchor) return;
+    const anchor = seatEl(id) || document.body;
     if (cls === 'chat') {
       $(`.floater.chat[data-player-id="${id}"]`).forEach(oldEl => oldEl.remove());
     }
@@ -1631,7 +1633,7 @@
       btnRandom.onclick = () => {
         A.sfx('click');
         toast(lang === 'th' ? '🔍 กำลังค้นหาห้องที่เปิดอยู่...' : '🔍 Searching for open rooms...');
-        socket.emit('joinRandom', {
+        socket.emit('joinRandom', { token: token || '',
           name: myName(),
           avatar: myAvatar(),
           frame: myFrame(),
@@ -1648,7 +1650,7 @@
       btnQuick.onclick = () => {
         A.sfx('click');
         toast(lang === 'th' ? '⚡ กำลังเริ่มเกมด่วนกับบอท...' : '⚡ Starting quick play...');
-        socket.emit('quickSolo', {
+        socket.emit('quickSolo', { token: token || '',
           name: myName(),
           avatar: myAvatar(),
           frame: myFrame(),
@@ -1792,7 +1794,7 @@
           return;
         }
 
-        socket.emit('createRoom', {
+        socket.emit('createRoom', { token: token || '',
           name: myName(),
           avatar: myAvatar(),
           frame: myFrame(),
@@ -1871,7 +1873,7 @@
         }
         A.sfx('click');
         closeModal();
-        socket.emit('joinRoom', {
+        socket.emit('joinRoom', { token: token || '',
           code,
           name: myName(),
           avatar: myAvatar(),
@@ -1931,7 +1933,7 @@
           return toast(lang === 'th' ? 'กรุณาระบุรหัสห้องให้ครบ 4 หลัก' : 'Enter 4-letter room code', 'err');
         }
         A.sfx('click');
-        socket.emit('joinRoom', {
+        socket.emit('joinRoom', { token: token || '',
           code,
           name: myName(),
           avatar: myAvatar(),
@@ -2006,7 +2008,7 @@
     if (btnCreate) {
       btnCreate.onclick = () => {
         closeModal();
-        socket.emit('createRoom', {
+        socket.emit('createRoom', { token: token || '',
           name: myName(),
           avatar: myAvatar(),
           frame: myFrame(),
@@ -2021,7 +2023,7 @@
       b.onclick = () => {
         closeModal();
         A.sfx('click');
-        socket.emit('joinRoom', {
+        socket.emit('joinRoom', { token: token || '',
           code: b.dataset.modalJoin,
           name: myName(),
           avatar: myAvatar(),
@@ -2064,7 +2066,7 @@
     });
     $('#modalCreateRoom').onclick = () => {
       closeModal();
-      socket.emit('createRoom', { name: myName(), avatar: myAvatar(), frame: myFrame(), skin: mySkin(), title: myTitle(), settings: { version: homeVersion } });
+      socket.emit('createRoom', { token: token || '', name: myName(), avatar: myAvatar(), frame: myFrame(), skin: mySkin(), title: myTitle(), settings: { version: homeVersion } });
     };
   }
 
@@ -2091,7 +2093,7 @@
     $('#modalStartSolo').onclick = () => {
       const bots = +$('#modalSelBots').value;
       closeModal();
-      socket.emit('quickSolo', { name: myName(), avatar: myAvatar(), frame: myFrame(), skin: mySkin(), title: myTitle(), bots, settings: { version: homeVersion } });
+      socket.emit('quickSolo', { token: token || '', name: myName(), avatar: myAvatar(), frame: myFrame(), skin: mySkin(), title: myTitle(), bots, settings: { version: homeVersion } });
     };
   }
 
@@ -3404,7 +3406,7 @@
           closeModal();
           A.sfx('win');
           toast(lang === 'th' ? '🎮 กำลังเข้าสู่แมตช์ซ้อม 1v1...' : 'Entering 1v1 practice match...', 'good');
-          socket.emit('quickSolo', { name: myName(), avatar: myAvatar(), frame: myFrame(), skin: mySkin(), title: myTitle(), bots: 1, settings: { version: homeVersion || 'original' } });
+          socket.emit('quickSolo', { token: token || '', name: myName(), avatar: myAvatar(), frame: myFrame(), skin: mySkin(), title: myTitle(), bots: 1, settings: { version: homeVersion || 'original' } });
         };
 
         $('#btnCloseAcademy').onclick = () => closeModal();
@@ -4009,7 +4011,7 @@
         exitTutorialGame();
         setTimeout(() => {
           toast(lang === 'th' ? '🎮 กำลังเข้าสู่แมตช์ 1v1...' : 'Entering 1v1 match...', 'good');
-          socket.emit('quickSolo', { name: myName(), avatar: myAvatar(), frame: myFrame(), skin: mySkin(), title: myTitle(), bots: 1, settings: { version: homeVersion || 'original' } });
+          socket.emit('quickSolo', { token: token || '', name: myName(), avatar: myAvatar(), frame: myFrame(), skin: mySkin(), title: myTitle(), bots: 1, settings: { version: homeVersion || 'original' } });
         }, 300);
       };
     },
@@ -5853,15 +5855,25 @@
     const isHost = me()?.isHost;
     const mine = results.find(r => r.id === S?.me?.id);
 
-    // If guest, award guest coins & diamonds locally with stake multiplier
     const stakeKey = S?.settings?.stake || 'casual';
     const stkConfig = (window.EK.STAKES && window.EK.STAKES[stakeKey]) || { mult: 1, bonusDiamonds: 0 };
-    if (!user && mine) {
-      const gWon = mine.place === 1;
-      const baseCoins = (gWon ? 120 : 30) + (results.length - mine.place) * 15;
-      const gCoins = Math.round(baseCoins * stkConfig.mult);
-      const gDia = (gWon ? 3 : (mine.place === 2 ? 1 : 0)) + (gWon ? (stkConfig.bonusDiamonds || (stkConfig.diamonds ? stkConfig.diamonds * 2 : 0)) : 0);
-      const gXp = gWon ? 50 : 20;
+
+    // Ensure all human players display their earned rewards on the podium
+    results.forEach(r => {
+      if (!r.isBot && !r.reward) {
+        const won = r.place === 1;
+        const baseCoins = (won ? 180 : 35) + (results.length - r.place) * 18;
+        const coins = Math.round(baseCoins * (stkConfig.mult || 1));
+        const dia = (won ? 5 : (r.place === 2 ? 3 : (r.place === 3 ? 1 : 0))) + (won ? (stkConfig.bonusDiamonds || 0) : 0);
+        r.reward = { coins, diamonds: dia, xp: won ? 50 : 20, rp: won ? 35 : 10, stake: stakeKey };
+      }
+    });
+
+    // If guest, award guest coins & diamonds locally with stake multiplier
+    if (!user && mine && mine.reward) {
+      const gCoins = mine.reward.coins || 0;
+      const gDia = mine.reward.diamonds || 0;
+      const gXp = mine.reward.xp || Math.max(20, (mine.reward.rp || 10) * 2);
       const curC = parseInt(localStorage.getItem('ek_guest_coins') || '100');
       const curD = parseInt(localStorage.getItem('ek_guest_diamonds') || '20');
       const curXp = parseInt(localStorage.getItem('ek_guest_xp') || '0');
@@ -5869,7 +5881,6 @@
       localStorage.setItem('ek_guest_diamonds', curD + gDia);
       localStorage.setItem('ek_guest_xp', curXp + gXp);
       renderUserChip();
-      mine.reward = { coins: gCoins, diamonds: gDia, xp: gXp, rp: gWon ? 25 : 5, stake: stakeKey };
     }
 
     const stakeBadgeHtml = stkConfig && stkConfig.mult > 1 ? `<div class="result-stake-ribbon">${stkConfig.icon} <b>${stkConfig.name[lang] || stkConfig.name.th}</b> <span class="rsr-mult">x${stkConfig.mult} REWARDS</span></div>` : '';
@@ -6164,7 +6175,7 @@
       const saved = sessionStorage.getItem('ek_room');
       if (!saved) {
         setTimeout(() => {
-          socket.emit('joinRoom', { code, name: myName(), avatar: myAvatar(), frame: myFrame(), skin: mySkin(), title: myTitle() });
+          socket.emit('joinRoom', { token: token || '', code, name: myName(), avatar: myAvatar(), frame: myFrame(), skin: mySkin(), title: myTitle() });
         }, 350);
       }
     }

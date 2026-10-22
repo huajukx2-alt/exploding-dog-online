@@ -491,6 +491,7 @@ class Game {
   }
 
   eliminate(p, reason) {
+    if (!p.alive) return;
     p.alive = false; p.elimReason = reason;
     const heldBombs = p.hand.filter(c => c.id === 'exploding_kitten');
     const regularCards = p.hand.filter(c => c.id !== 'exploding_kitten');
@@ -1013,7 +1014,35 @@ class Game {
     this.clearAll();
     this.state = 'ENDED'; this.phase = 'idle'; this.pending = null; this.prompt = null;
     this.winnerId = winner ? winner.id : null;
-    const order = [winner, ...[...this.elimOrder].reverse().map(id => this.byId(id))].filter(Boolean);
+    const seen = new Set();
+    const order = [];
+    if (winner && this.byId(winner.id)) {
+      order.push(winner);
+      seen.add(winner.id);
+    }
+    // Alive players not yet in order (e.g. if winner was null or multiple survived)
+    for (const p of this.players) {
+      if (p.alive && !seen.has(p.id)) {
+        order.push(p);
+        seen.add(p.id);
+      }
+    }
+    // Eliminated players in reverse order of elimination
+    const revElim = [...this.elimOrder].reverse();
+    for (const id of revElim) {
+      const p = this.byId(id);
+      if (p && !seen.has(p.id)) {
+        order.push(p);
+        seen.add(p.id);
+      }
+    }
+    // Any remaining players in the room who weren't captured
+    for (const p of this.players) {
+      if (!seen.has(p.id)) {
+        order.push(p);
+        seen.add(p.id);
+      }
+    }
     const results = order.map((p, i) => ({ player: p, place: i + 1 }));
     const rewards = this.onEnd ? this.onEnd(this, results) : {};
     this.lastResults = results.map(r => ({ id: r.player.id, name: r.player.name, avatar: r.player.avatar, frame: r.player.frame, title: r.player.title || 'title_rookie', place: r.place, isBot: r.player.isBot, reward: rewards[r.player.id] || null }));

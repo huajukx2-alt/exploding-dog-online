@@ -113,21 +113,38 @@ function onGameEnd(game, results) {
 
   for (const r of results) {
     const p = r.player;
-    if (p.isBot || !p.userId) continue;
-    const rec = db.recordGame(p.userId, {
-      place: r.place, total: results.length, won: r.place === 1, exploded: !!p.elimReason, defuses: p.defuses,
-      vsBotsOnly: humans === 1, version: game.settings.version,
-      stake: stakeKey,
-      stakeMultiplier: stk.mult,
-      stakeDiamonds: r.place === 1 ? stk.bonusDiamonds : 0
-    });
-    if (rec) {
-      rewards[p.id] = { coins: rec.coins, diamonds: rec.diamonds, rp: rec.rp, stake: stakeKey };
-      p.rp = rec.user.rp; p.inventory = rec.user.inventory;
-      if (p.socketId) {
-        io.to(p.socketId).emit('profile', rec.user);
-        if (rec.vault) io.to(p.socketId).emit('vault', rec.vault);
+    if (p.isBot) continue;
+
+    let rec = null;
+    if (p.userId) {
+      rec = db.recordGame(p.userId, {
+        place: r.place, total: results.length, won: r.place === 1, exploded: !!p.elimReason, defuses: p.defuses,
+        vsBotsOnly: humans === 1, version: game.settings.version,
+        stake: stakeKey,
+        stakeMultiplier: stk.mult,
+        stakeDiamonds: r.place === 1 ? stk.bonusDiamonds : 0
+      });
+      if (rec) {
+        rewards[p.id] = { coins: rec.coins, diamonds: rec.diamonds, rp: rec.rp, stake: stakeKey };
+        p.rp = rec.user.rp; p.inventory = rec.user.inventory;
+        if (p.socketId) {
+          io.to(p.socketId).emit('profile', rec.user);
+          if (rec.vault) io.to(p.socketId).emit('vault', rec.vault);
+        }
       }
+    }
+    // For guest players or players not yet cached in db, calculate full fair game rewards
+    if (!rec) {
+      const gWon = r.place === 1;
+      const baseMult = (humans === 1 ? 0.6 : 1);
+      const coins = Math.round(((gWon ? 180 : 35) + (results.length - r.place) * 18 + (p.defuses || 0) * 12) * baseMult * stk.mult);
+      const rpDelta = Math.round((gWon ? 35 : (r.place <= Math.ceil(results.length / 2) ? 10 : -10)) * baseMult);
+      let diamonds = 0;
+      if (gWon) diamonds = (humans === 1 ? 5 : 10) + (stk.bonusDiamonds || 0);
+      else if (r.place === 2 && results.length >= 3) diamonds = 3;
+      else if (r.place === 3 && results.length >= 4) diamonds = 1;
+      if ((p.defuses || 0) >= 2 && gWon) diamonds += 2;
+      rewards[p.id] = { coins, diamonds, rp: rpDelta, stake: stakeKey, isGuest: !p.userId };
     }
   }
   return rewards;
@@ -155,7 +172,11 @@ function enter(socket, g, player) {
 
 io.on('connection', (socket) => {
   const err = (e) => socket.emit('err', e);
-  const user = () => db.byToken(socket.handshake.auth?.token || socket.data.token || '');
+  const user = (d) => {
+    const tok = d?.token || socket.handshake.auth?.token || socket.data.token || '';
+    if (tok && !socket.data.token) socket.data.token = tok;
+    return db.byToken(tok);
+  };
   const safeObj = (d) => (d && typeof d === 'object') ? d : {};
 
   socket.on('auth', (token) => {
@@ -178,7 +199,7 @@ io.on('connection', (socket) => {
       const d = safeObj(data);
       leave(socket);
       const g = new Game(newCode(), io, onGameEnd);
-      const r = g.addHuman(socket.id, d.name, user(), d); if (r.error) return err(r.error);
+      const r = g.addHuman(socket.id, d.name, user(d), d); if (r.error) return err(r.error);
       games.set(g.code, g);
       if (d.settings) g.updateSettings(socket.id, d.settings);
       for (let i = 0; i < Math.min(7, d.bots || 0); i++) g.addBot();
@@ -193,7 +214,7 @@ io.on('connection', (socket) => {
       const d = safeObj(data);
       leave(socket);
       const g = new Game(newCode(), io, onGameEnd);
-      const r = g.addHuman(socket.id, d.name, user(), d); if (r.error) return err(r.error);
+      const r = g.addHuman(socket.id, d.name, user(d), d); if (r.error) return err(r.error);
       games.set(g.code, g);
       if (d.settings) g.updateSettings(socket.id, d.settings);
       for (let i = 0; i < Math.max(1, Math.min(7, d.bots ?? 3)); i++) g.addBot();
@@ -244,7 +265,7 @@ io.on('connection', (socket) => {
         }
       }
       if (target) {
-        const r = target.addHuman(socket.id, d.name, user(), d);
+        const r = target.addHuman(socket.id, d.name, user(d), d);
         if (!r.error) {
           enter(socket, target, r.player);
           return;
@@ -252,7 +273,7 @@ io.on('connection', (socket) => {
       }
       // If none found, create a new room and add 1 bot so it's lively
       const g = new Game(newCode(), io, onGameEnd);
-      const r = g.addHuman(socket.id, d.name, user(), d);
+      const r = g.addHuman(socket.id, d.name, user(d), d);
       if (r.error) return err(r.error);
       games.set(g.code, g);
       const st = {};
@@ -274,10 +295,10 @@ io.on('connection', (socket) => {
       leave(socket);
       let r;
       if (g.state === 'LOBBY') {
-        r = g.addHuman(socket.id, d.name, user(), d);
+        r = g.addHuman(socket.id, d.name, user(d), d);
       } else {
         // Room is currently playing/ended: join as spectator
-        r = g.addSpectator(socket.id, d.name, user(), d);
+        r = g.addSpectator(socket.id, d.name, user(d), d);
       }
       if (r.error) return err(r.error);
       enter(socket, g, r.player);
