@@ -2,7 +2,7 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
-const { SHOP, GACHA_POOL, AVATARS } = require('./public/shared/cards');
+const { SHOP, GACHA_POOL, AVATARS, TITLES, STAKES } = require('./public/shared/cards');
 let firebaseDb = null;
 try {
   firebaseDb = require('./firebase-db');
@@ -10,7 +10,7 @@ try {
   console.warn('[db] firebase-db module not loaded:', e.message);
 }
 
-const DATA_DIR = path.join(__dirname, 'data');
+const DATA_DIR = process.env.APP_DATA_DIR || path.join(__dirname, 'data');
 const FILE = path.join(DATA_DIR, 'users.json');
 let db = { users: {} };          // username(lowercase) -> user
 const sessions = new Map();      // token -> username
@@ -92,27 +92,39 @@ const hash = (pw, salt) => {
 
 const FORBIDDEN_KEYS = new Set(['__proto__', 'constructor', 'prototype', 'tostring', 'valueof']);
 
-const VAULT_SECRET = process.env.APP_SECRET || 'ek_alpha_vault_salt_secure_2026';
+// Keep the signing key private and stable across restarts. Hosted deployments
+// should supply APP_SECRET so backups survive replacement of the local disk.
+const VAULT_SECRET = (() => {
+  if (process.env.APP_SECRET) return process.env.APP_SECRET;
+  const secretFile = path.join(DATA_DIR, 'vault-secret');
+  try { return fs.readFileSync(secretFile, 'utf8'); } catch (e) {
+    if (e.code !== 'ENOENT') throw e;
+  }
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+  const secret = crypto.randomBytes(32).toString('hex');
+  fs.writeFileSync(secretFile, secret, { flag: 'wx', mode: 0o600 });
+  return secret;
+})();
+
+function canonicalJSON(value) {
+  if (Array.isArray(value)) return '[' + value.map(canonicalJSON).join(',') + ']';
+  if (value && typeof value === 'object') {
+    return '{' + Object.keys(value).sort().map(k => JSON.stringify(k) + ':' + canonicalJSON(value[k])).join(',') + '}';
+  }
+  return JSON.stringify(value);
+}
 
 function computeVaultSignature(data) {
   if (!data) return '';
-  const content = [
-    String(data.username || '').toLowerCase(),
-    String(data.salt || ''),
-    String(data.pw || ''),
-    String(data.recoveryPin || ''),
-    Number(data.coins || 0),
-    Number(data.diamonds || 0),
-    Number(data.rp || 0),
-    JSON.stringify(data.inventory || []),
-    JSON.stringify(data.equipped || {})
-  ].join('::');
+  const { sig, ...payload } = data;
+  const content = canonicalJSON(JSON.parse(JSON.stringify(payload)));
   return crypto.createHmac('sha256', VAULT_SECRET).update(content).digest('hex');
 }
 
 function generateVault(u) {
   if (!u) return null;
   const raw = {
+    version: 2,
     username: u.username,
     displayName: u.displayName,
     avatar: u.avatar || '🐶',
@@ -131,8 +143,8 @@ function generateVault(u) {
     lastDailyStreak: u.lastDailyStreak || '',
     lastDaily: u.lastDaily || '',
     claimedMail: u.claimedMail || [],
-    recoveryPin: u.recoveryPin || '1234',
     history: (u.history || []).slice(0, 10),
+    tutorialCompleted: !!u.tutorialCompleted,
     createdAt: u.createdAt || Date.now(),
     updatedAt: u.updatedAt || Date.now()
   };
@@ -143,11 +155,11 @@ function generateVault(u) {
 }
 
 function restoreFromVault(vault) {
-  if (!vault || !vault.username || !vault.pw || !vault.salt || !vault.sig) {
+  if (!vault || vault.version !== 2 || !vault.username || !vault.pw || !vault.salt || typeof vault.sig !== 'string') {
     return { error: 'invalid_vault' };
   }
   const expectedSig = computeVaultSignature(vault);
-  if (vault.sig !== expectedSig) {
+  if (!/^[a-f0-9]{64}$/.test(vault.sig) || !crypto.timingSafeEqual(Buffer.from(vault.sig, 'hex'), Buffer.from(expectedSig, 'hex'))) {
     console.warn('[db] Tampered vault signature for user:', vault.username);
     return { error: 'bad_signature' };
   }
@@ -174,6 +186,10 @@ function restoreFromVault(vault) {
       equipped: vault.equipped || { frame: null, skin: null, avatar: null, title: vault.title || 'title_rookie' },
       title: vault.title || vault.equipped?.title || 'title_rookie',
       claimedMail: vault.claimedMail || [],
+      dailyStreak: vault.dailyStreak || 0,
+      lastDailyStreak: vault.lastDailyStreak || '',
+      lastDaily: vault.lastDaily || '',
+      tutorialCompleted: !!vault.tutorialCompleted,
       history: vault.history || [],
       createdAt: vault.createdAt || Date.now(),
       updatedAt: vault.updatedAt || Date.now()
@@ -181,19 +197,12 @@ function restoreFromVault(vault) {
     db.users[key] = u;
     console.log(`[db] Resurrected user @${vault.username} from client vault into memory and disk!`);
   } else {
-    // User exists; update if vault has higher or newer progress
-    if ((vault.updatedAt || 0) >= (u.updatedAt || 0)) {
-      u.coins = Math.max(u.coins ?? 0, vault.coins ?? 0);
-      u.diamonds = Math.max(u.diamonds ?? 0, vault.diamonds ?? 0);
-      u.rp = Math.max(u.rp ?? 0, vault.rp ?? 0);
-      u.inventory = Array.from(new Set([...(u.inventory || []), ...(vault.inventory || [])]));
-      if (vault.equipped) u.equipped = vault.equipped;
-      if (vault.avatar) u.avatar = vault.avatar;
-      if (vault.recoveryPin) u.recoveryPin = vault.recoveryPin;
-      u.updatedAt = Date.now();
-    }
+    // An existing server account is authoritative. A backup authenticates only
+    // while its credentials still match; it cannot roll back balances or PINs.
+    if (vault.pw !== u.pw || vault.salt !== u.salt || vault.recoveryPin !== u.recoveryPin) return { error: 'invalid_vault' };
   }
 
+  revokeSessions(key);
   const token = crypto.randomBytes(24).toString('hex');
   u.token = token;
   sessions.set(token, key);
@@ -212,12 +221,7 @@ function resetPassword(username, recoveryPin, newPassword) {
 
   const pin = String(recoveryPin || '').trim();
   const storedPin = String(u.recoveryPin || '').trim();
-  const storedDisplay = String(u.displayName || '').trim();
-
-  // Allow match if PIN matches, OR if PIN matches displayName (for legacy accounts), OR if no pin was set and pin is '1234'
-  const isPinValid = (storedPin && pin === storedPin) ||
-                     (!storedPin && (pin === '1234' || pin === storedDisplay)) ||
-                     (pin === storedDisplay);
+  const isPinValid = storedPin && pin === storedPin;
 
   if (!isPinValid) {
     return { error: 'bad_recovery_pin' };
@@ -226,10 +230,10 @@ function resetPassword(username, recoveryPin, newPassword) {
   // Update password
   const newSalt = crypto.randomBytes(16).toString('hex');
   u.salt = newSalt;
-  u.pw = hash(newPassword, newSalt);
-  if (!u.recoveryPin) u.recoveryPin = pin === '1234' ? '1234' : pin;
+  u.pw = hash(String(newPassword), newSalt);
   u.updatedAt = Date.now();
 
+  revokeSessions(key);
   const token = crypto.randomBytes(24).toString('hex');
   u.token = token;
   sessions.set(token, key);
@@ -287,7 +291,7 @@ function register(username, password, displayName, recoveryPin, email) {
   const now = Date.now();
   db.users[key] = {
     username, displayName: cleanDisplay, avatar: '🐶',
-    salt, pw: hash(password, salt), token, coins: 1000, diamonds: 100, rp: 0,
+    salt, pw: hash(String(password), salt), token, coins: 1000, diamonds: 100, rp: 0,
     recoveryPin: pin,
     email: cleanEmail,
     stats: { games: 0, wins: 0, explosions: 0, defuses: 0 },
@@ -331,6 +335,34 @@ function login(username, password) {
 
 function byToken(token) { const k = sessions.get(token); return k ? db.users[k] : null; }
 
+function revokeSessions(key) {
+  for (const [token, username] of sessions) if (username === key) sessions.delete(token);
+}
+
+function chargeStake(players, stakeId) {
+  const stake = STAKES[stakeId];
+  if (!stake) return { error: 'bad_stake' };
+  if (!stake.coins && !stake.diamonds) return { users: [] };
+  const accounts = [];
+  const seen = new Set();
+  for (const p of players.filter(p => !p.isBot)) {
+    const key = String(p.userId || '').toLowerCase();
+    const u = db.users[key];
+    if (!u || seen.has(key)) return { error: 'auth' };
+    if ((u.coins || 0) < stake.coins) return { error: 'no_coins' };
+    if ((u.diamonds || 0) < stake.diamonds) return { error: 'no_diamonds' };
+    seen.add(key); accounts.push(u);
+  }
+  // Validate every seat first so a failed start never charges part of the room.
+  for (const u of accounts) {
+    u.coins -= stake.coins;
+    u.diamonds -= stake.diamonds;
+    u.updatedAt = Date.now();
+  }
+  save();
+  return { users: accounts };
+}
+
 function logout(token) { const u = byToken(token); if (u) { sessions.delete(token); u.token = null; save(); } }
 
 function updateProfile(token, body) {
@@ -342,8 +374,8 @@ function updateProfile(token, body) {
   }
   if (avatar) {
     // If it is an owned inventory avatar or default avatar list or emoji
-    const isAvItem = (u.inventory || []).includes(avatar) || (AVATARS || []).some(a => a.id === avatar);
-    if (isAvItem || [...String(avatar)].length <= 4) {
+    const isAvItem = (u.inventory || []).includes(avatar) && AVATARS.some(a => a.id === avatar);
+    if (typeof avatar === 'string' && (isAvItem || [...avatar].length <= 4)) {
       u.avatar = avatar;
       u.equipped = u.equipped || {};
       u.equipped.avatar = avatar;
@@ -391,6 +423,10 @@ function equip(token, itemId, type) {
   u.equipped = u.equipped || { frame: null, skin: null, avatar: null };
 
   if (itemId && !u.inventory.includes(itemId)) return { error: 'not_owned' };
+  if (itemId) {
+    const item = SHOP.find(i => i.id === itemId) || TITLES.find(i => i.id === itemId);
+    if (!item || item.type !== type) return { error: 'bad_type' };
+  }
 
   if (type === 'avatar') {
     u.avatar = itemId || '🐶';
@@ -585,7 +621,7 @@ function leaderboard() {
     .map(u => ({ displayName: u.displayName, avatar: u.avatar, rp: u.rp, wins: u.stats?.wins || 0, games: u.stats?.games || 0, frame: u.equipped?.frame }));
 }
 
-load();
+const ready = load();
 
 function completeTutorial(token) {
   const u = byToken(token);
@@ -615,8 +651,8 @@ async function syncToCloud() {
 }
 
 module.exports = {
-  load, save, register, login, logout, byToken, publicUser, updateProfile,
+  ready, load, save, register, login, logout, byToken, publicUser, updateProfile,
   buy, equip, dailyBonus, gacha, getMailbox, claimMail, completeTutorial, recordGame, leaderboard,
-  generateVault, restoreFromVault, resetPassword, updateRecoveryPin, db,
+  generateVault, restoreFromVault, resetPassword, updateRecoveryPin, chargeStake, db,
   firebaseDb, syncToCloud
 };

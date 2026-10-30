@@ -1,6 +1,7 @@
 // UI strings + announcer templates (TH / EN) — Exploding Puppies (หมาระเบิด) theme
 window.I18N = {
   th: {
+    back: 'กลับ', gacha: 'กาชา',
     title: 'หมาระเบิด ออนไลน์', subtitle: 'ปาร์ตี้การ์ดเกมมะหมาสุดป่วน เล่นกับเพื่อนหรือบอทก็ได้ โฮ่ง!',
     yourName: 'ชื่อของคุณ', guest: 'ผู้เยี่ยมชม', login: 'เข้าสู่ระบบ', register: 'สมัครสมาชิก', logout: 'ออกจากระบบ',
     username: 'ชื่อผู้ใช้ (a-z 0-9 _)', password: 'รหัสผ่าน', displayName: 'ชื่อที่แสดง', noAccount: 'ยังไม่มีบัญชี? สมัครเลย', haveAccount: 'มีบัญชีแล้ว? เข้าสู่ระบบ',
@@ -47,10 +48,13 @@ window.I18N = {
       cannot_play: 'เล่นไม่ได้ตอนนี้', room_not_found: 'ไม่พบห้องนี้', no_prompt: 'หมดเวลาแล้ว', bad_username: 'ชื่อผู้ใช้ต้องเป็น a-z, 0-9, _ ยาว 3-16 ตัว', bad_password: 'รหัสผ่านอย่างน้อย 4 ตัว',
       username_taken: 'ชื่อนี้ถูกใช้แล้ว', bad_login: 'ชื่อผู้ใช้หรือรหัสผ่านผิด', no_coins: 'เหรียญไม่พอ', owned: 'มีไอเทมนี้แล้ว', claimed: 'วันนี้รับโบนัสไปแล้ว', auth: 'กรุณาเข้าสู่ระบบ',
       bad_recovery_pin: 'PIN กู้คืนไม่ถูกต้อง หรือไม่ตรงกับบัญชีนี้', user_not_found: 'ไม่พบบัญชีผู้ใช้นี้ในระบบ',
-      password_mismatch: 'รหัสผ่านใหม่และการยืนยันไม่ตรงกัน', invalid_vault: 'ข้อมูลสำรองบัญชีไม่ถูกต้อง',
+      too_many_attempts: 'ลองรีเซ็ตหลายครั้งเกินไป กรุณารอ 15 นาที',
+      bad_signature: 'ข้อมูลสำรองบัญชีไม่ถูกต้อง กรุณาเข้าสู่ระบบใหม่',
+      password_mismatch: 'รหัสผ่านใหม่และการยืนยันไม่ตรงกัน', invalid_vault: 'ข้อมูลสำรองบัญชีไม่ถูกต้องหรือเป็นรุ่นเก่า กรุณาเข้าสู่ระบบใหม่',
       bad_pin_length: 'PIN ต้องมีความยาว 4-12 ตัวอักษร', no_diamonds: 'เพชรไม่พอ สามารถรับเพชรฟรีได้จากกล่องจดหมาย หรือเล่นชนะเกม', already_claimed: 'คุณได้รับของรางวัลกล่องนี้ไปแล้ว', no_mail: 'ไม่พบจดหมายนี้' }
   },
   en: {
+    back: 'Back', gacha: 'Gacha',
     title: 'Exploding Puppies Online', subtitle: 'The chaotic doggo party card game — play with friends or bots! Woof!',
     yourName: 'Your name', guest: 'Guest', login: 'Log in', register: 'Sign up', logout: 'Log out',
     username: 'Username (a-z 0-9 _)', password: 'Password', displayName: 'Display name', noAccount: 'No account? Sign up', haveAccount: 'Have an account? Log in',
@@ -94,7 +98,9 @@ window.I18N = {
       cannot_play: 'Cannot play now', room_not_found: 'Room not found', no_prompt: 'Too late', bad_username: 'Username: a-z, 0-9, _ (3-16 chars)', bad_password: 'Password must be 4+ chars',
       username_taken: 'Username taken', bad_login: 'Wrong username or password', no_coins: 'Not enough coins', owned: 'Already owned', claimed: 'Already claimed today', auth: 'Please log in',
       bad_recovery_pin: 'Invalid recovery PIN for this account', user_not_found: 'User account not found',
-      password_mismatch: 'Passwords do not match', invalid_vault: 'Invalid account backup data',
+      too_many_attempts: 'Too many reset attempts. Please wait 15 minutes.',
+      bad_signature: 'Invalid account backup. Please log in again.',
+      password_mismatch: 'Passwords do not match', invalid_vault: 'Invalid or outdated account backup. Please log in again.',
       bad_pin_length: 'PIN must be between 4 and 12 characters', no_diamonds: 'Not enough diamonds! Claim free diamonds from Mailbox or win matches.', already_claimed: 'Already claimed today', no_mail: 'Mail not found' }
   }
 };

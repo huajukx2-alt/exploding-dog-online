@@ -14,6 +14,7 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
+app.get('/api/health', (req, res) => res.json({ ok: true, version: process.env.RENDER_GIT_COMMIT || 'local' }));
 
 // ------------------------------------------------------------------ REST: auth / profile / shop
 const auth = (req) => db.byToken(req.headers['x-token'] || '');
@@ -21,8 +22,22 @@ const reply = (res, r) => res.status(r.error ? 400 : 200).json(r);
 
 app.post('/api/register', (req, res) => { const b = req.body || {}; reply(res, db.register(b.username, b.password, b.displayName, b.recoveryPin, b.email)); });
 app.post('/api/login', (req, res) => { const b = req.body || {}; reply(res, db.login(b.username, b.password)); });
+const resetAttempts = new Map();
+app.post('/api/reset-password', (req, res) => {
+  const now = Date.now();
+  const key = req.ip;
+  let attempt = resetAttempts.get(key);
+  if (!attempt || attempt.expires <= now) {
+    attempt = { count: 0, expires: now + 15 * 60 * 1000 };
+    resetAttempts.set(key, attempt);
+  }
+  if (++attempt.count > 5) return res.status(429).json({ error: 'too_many_attempts' });
+  const b = req.body || {};
+  reply(res, db.resetPassword(b.username, b.recoveryPin, b.newPassword));
+});
+app.post('/api/update-pin', (req, res) => reply(res, db.updateRecoveryPin(req.headers['x-token'], req.body?.recoveryPin)));
 app.post('/api/logout', (req, res) => { db.logout(req.headers['x-token']); res.json({ ok: true }); });
-app.get('/api/me', (req, res) => { const u = auth(req); u ? res.json({ user: db.publicUser(u) }) : res.status(401).json({ error: 'auth' }); });
+app.get('/api/me', (req, res) => { const u = auth(req); u ? res.json({ user: db.publicUser(u), vault: db.generateVault(u) }) : res.status(401).json({ error: 'auth' }); });
 app.get('/api/cloud-status', (req, res) => res.json({ isEnabled: !!db.firebaseDb?.isEnabled, provider: db.firebaseDb?.provider || 'none' }));
 app.post('/api/tutorial/complete', (req, res) => reply(res, db.completeTutorial(req.headers['x-token'])));
 app.post('/api/restore-account', (req, res) => reply(res, db.restoreFromVault(req.body?.vault)));
@@ -92,6 +107,19 @@ app.get('/api/card-images', (req, res) => res.json(getCardImagesMap()));
 // ------------------------------------------------------------------ rooms
 const games = new Map();        // code -> Game
 const socketRoom = new Map();   // socketId -> code
+
+function onGameStart(game) {
+  const result = db.chargeStake(game.players, game.settings.stake);
+  if (result.error) return result;
+  for (const u of result.users) {
+    const p = game.players.find(p => p.userId === u.username);
+    if (p?.socketId) {
+      io.to(p.socketId).emit('profile', db.publicUser(u));
+      io.to(p.socketId).emit('vault', db.generateVault(u));
+    }
+  }
+  return { ok: true };
+}
 
 function newCode() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -198,7 +226,7 @@ io.on('connection', (socket) => {
     try {
       const d = safeObj(data);
       leave(socket);
-      const g = new Game(newCode(), io, onGameEnd);
+      const g = new Game(newCode(), io, onGameEnd, onGameStart);
       const r = g.addHuman(socket.id, d.name, user(d), d); if (r.error) return err(r.error);
       games.set(g.code, g);
       if (d.settings) g.updateSettings(socket.id, d.settings);
@@ -213,13 +241,14 @@ io.on('connection', (socket) => {
     try {
       const d = safeObj(data);
       leave(socket);
-      const g = new Game(newCode(), io, onGameEnd);
+      const g = new Game(newCode(), io, onGameEnd, onGameStart);
       const r = g.addHuman(socket.id, d.name, user(d), d); if (r.error) return err(r.error);
       games.set(g.code, g);
       if (d.settings) g.updateSettings(socket.id, d.settings);
       for (let i = 0; i < Math.max(1, Math.min(7, d.bots ?? 3)); i++) g.addBot();
       enter(socket, g, r.player);
-      g.start(socket.id);
+      const started = g.start(socket.id);
+      if (started.error) err(started.error);
     } catch (e) {
       console.error('[quickSolo error]', e);
     }
@@ -272,7 +301,7 @@ io.on('connection', (socket) => {
         }
       }
       // If none found, create a new room and add 1 bot so it's lively
-      const g = new Game(newCode(), io, onGameEnd);
+      const g = new Game(newCode(), io, onGameEnd, onGameStart);
       const r = g.addHuman(socket.id, d.name, user(d), d);
       if (r.error) return err(r.error);
       games.set(g.code, g);
@@ -422,6 +451,7 @@ io.on('connection', (socket) => {
 // Periodic cleanup of empty/stale rooms (prevents background memory accumulation)
 setInterval(() => {
   const now = Date.now();
+  for (const [key, attempt] of resetAttempts) if (attempt.expires <= now) resetAttempts.delete(key);
   for (const [code, g] of games.entries()) {
     const hasHuman = g.players.some(p => !p.isBot && p.connected) || (g.spectators && g.spectators.some(s => s.connected));
     if (!hasHuman) {
@@ -431,9 +461,9 @@ setInterval(() => {
   }
 }, 60000);
 
-server.listen(PORT, '0.0.0.0', () => {
+db.ready.then(() => server.listen(PORT, '0.0.0.0', () => {
   console.log('===============================================');
   console.log('🐱💣 Exploding Kittens Online is RUNNING');
   console.log(`🔗 http://localhost:${PORT}`);
   console.log('===============================================');
-});
+}));

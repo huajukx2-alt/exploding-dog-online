@@ -3,9 +3,12 @@ services:
     name: exploding-kittens-online
     env: node
     plan: free
-    buildCommand: npm install
+    buildCommand: npm ci --include=dev && npm test && npm prune --omit=dev
     startCommand: npm start
+    healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
         value: production
+      - key: APP_SECRET
+        generateValue: true
 

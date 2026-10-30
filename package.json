@@ -4,14 +4,19 @@
   "description": "Exploding Kittens Online Game for Friends",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "test": "node --test test/*.test.js"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=24.15.0"
   },
   "dependencies": {
     "express": "^4.21.2",
     "firebase-admin": "^14.5.0",
     "socket.io": "^4.8.1"
+  },
+  "devDependencies": {
+    "jsdom": "^30.1.3",
+    "socket.io-client": "^4.8.4"
   }
 }

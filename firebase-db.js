@@ -43,7 +43,7 @@ function parseServiceAccount() {
 }
 
 try {
-  const serviceAccount = parseServiceAccount();
+  const serviceAccount = process.env.FIREBASE_DISABLED === '1' ? null : parseServiceAccount();
 
   if (serviceAccount) {
     // 1. Initialize via Firebase Admin SDK
@@ -71,7 +71,7 @@ try {
         console.log('[Firebase] 🌐 Connected to Firebase Realtime Database (Admin)');
       }
     }
-  } else if (rtdbUrl) {
+  } else if (rtdbUrl && process.env.FIREBASE_DISABLED !== '1') {
     // 2. Initialize via Firebase Realtime Database REST API (Zero credentials file needed)
     provider = 'rtdb-rest';
     isEnabled = true;

@@ -1,5 +1,7 @@
-node_modules
 .git
+node_modules
+.env
+data
+.test-output
+firebase-key.json
 .agents
-*.log
-

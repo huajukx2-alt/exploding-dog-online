@@ -8,4 +8,7 @@ yarn-error.log*
 .agents/
 data/*.tmp
 data/*.tmp.*
+data/vault-secret
+data/users.json
+.test-output/
 

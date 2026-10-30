@@ -18,8 +18,8 @@ const CARD_VALUE = { defuse: 100, nope: 60, streaking_kitten: 90, tower_of_power
 const valueOf = (c) => CARD_VALUE[c.id] ?? (CARDS[c.id]?.kind === 'cat' ? 5 : 15);
 
 class Game {
-  constructor(code, io, onEnd) {
-    this.code = code; this.io = io; this.onEnd = onEnd;
+  constructor(code, io, onEnd, onStart) {
+    this.code = code; this.io = io; this.onEnd = onEnd; this.onStart = onStart;
     this.players = []; this.spectators = []; this.state = 'LOBBY'; this.phase = 'idle';
     this.settings = { version: 'original', stake: 'casual', custom: false, counts: { ...VERSIONS.original.counts }, turnSeconds: 28, nopeSeconds: 6, botLevel: 'normal', maxPlayers: 8 };
     this.deck = []; this.discard = []; this.log = [];
@@ -32,6 +32,7 @@ class Game {
     this.turnIdx = 0; this.turnsLeft = 1; this.direction = 1;
     this.pending = null; this.prompt = null; this.lastActionId = null;
     this.elimOrder = []; this.winnerId = null; this.turnDeadline = 0; this.turnRemainingMs = 0;
+    this.roundId = crypto.randomBytes(12).toString('hex');
   }
 
   // ---------------------------------------------------------------- helpers
@@ -92,12 +93,7 @@ class Game {
   }
 
   addSpectator(socketId, name, user, guestData = {}) {
-    // If this player was already an active human player in this game and left/disconnected, eliminate them cleanly
-    const existingPlayer = this.players.find(p => !p.isBot && p.alive && ((user && p.userId === user.username) || p.name === name));
-    if (existingPlayer) {
-      this.eliminate(existingPlayer, 'exploded');
-      this.afterElim(existingPlayer, null);
-    }
+    // Watching never changes an active seat. Reclaiming a seat requires rejoin's key.
     const p = {
       id: 'spec_' + (this.seq++),
       key: crypto.randomBytes(8).toString('hex'),
@@ -184,11 +180,11 @@ class Game {
       p.auto = true;
       this.fx('disconnected', { playerId: p.id });
     const hasHuman = this.players.some(x => !x.isBot && x.connected);
-    if (!hasHuman) { this.clear('bot'); this.clear('turn'); }
+    if (!hasHuman) { this.clear('bot'); this.pauseTurnTimer(); }
       if (p.isHost) { const h = this.players.find(x => !x.isBot && x.connected); if (h) { p.isHost = false; h.isHost = true; } }
       // if the disconnected player is acting, let autopilot take over
       if (this.prompt && this.prompt.playerId === p.id) this.later('prompt', 1200, () => this.finishPrompt(null));
-      else if (this.phase === 'turn' && this.cur() === p) this.scheduleBot();
+      else if (hasHuman && this.phase === 'turn' && this.cur() === p) this.scheduleBot();
     }
   }
 
@@ -231,10 +227,13 @@ class Game {
     const p = this.byId(playerId);
     if (!p || p.isBot || p.key !== key) return { error: 'rejoin_failed' };
     this.clear('dc_' + p.id);
-    this.clear('bot');
     p.socketId = socketId; p.connected = true; p.auto = false;
     if (!this.players.some(x => x.isHost && x.connected)) { this.players.forEach(x => x.isHost = false); p.isHost = true; }
     this.fx('reconnected', { playerId: p.id });
+    if (this.state === 'PLAYING' && this.phase === 'turn') {
+      if (!this.timers.turn) this.resumeTurnTimer();
+      else this.scheduleBot();
+    }
     return { player: p };
   }
 
@@ -260,7 +259,10 @@ class Game {
     if (+s.nopeSeconds >= 2 && +s.nopeSeconds <= 8) st.nopeSeconds = +s.nopeSeconds;
     if (['easy', 'normal', 'hard'].includes(s.botLevel)) st.botLevel = s.botLevel;
     if (s.imploding !== undefined) st.imploding = !!s.imploding;
-    if (s.stake && ['casual', 'standard', 'high', 'vip'].includes(s.stake)) st.stake = s.stake;
+    if (s.stake && ['casual', 'standard', 'high', 'vip'].includes(s.stake) && s.stake !== st.stake) {
+      st.stake = s.stake;
+      for (const player of this.humans()) if (!player.isHost) player.ready = false;
+    }
     return { ok: true };
   }
 
@@ -268,9 +270,16 @@ class Game {
   start(socketId) {
     const host = this.bySocket(socketId);
     if (!host || !host.isHost) return { error: 'host_only' };
-    if (this.state === 'PLAYING') return { error: 'in_progress' };
+    if (this.state !== 'LOBBY') return { error: 'in_progress' };
     if (this.players.length < 2) return { error: 'need_players' };
     if (this.players.some(p => !p.isBot && !p.ready)) return { error: 'not_ready' };
+
+    // Charge all human seats atomically before changing the round or dealing cards.
+    if (this.settings.stake !== 'casual') {
+      if (!this.onStart) return { error: 'auth' };
+      const payment = this.onStart(this) || {};
+      if (payment.error) return payment;
+    }
 
     this.resetRound();
     this.state = 'PLAYING'; this.log = []; this.discard = []; this.lastResults = null;
@@ -671,7 +680,7 @@ class Game {
         return this.setPrompt(p, 'alter', { cardIds: top.map(c => c.id), share },
           (pl) => {
             let order = Array.isArray(pl && pl.order) ? pl.order.map(Number) : null;
-            if (!order || order.length !== top.length || new Set(order).size !== top.length || order.some(i => !(i >= 0 && i < top.length))) order = top.map((_, i) => i);
+            if (!order || order.length !== top.length || new Set(order).size !== top.length || order.some(i => !Number.isInteger(i) || !(i >= 0 && i < top.length))) order = top.map((_, i) => i);
             const re = order.map(i => top[i]); this.deck.splice(0, top.length, ...re); this.deckChanged('mut');
             const ids = re.map(c => c.id); this.remember(p, ids);
             this.fx('altered', { playerId: p.id, share });
@@ -693,7 +702,7 @@ class Game {
         if (!this.deck.length) return this.endTurnOnce();
         const card = this.deck.shift(); this.deckChanged('mut');
         return this.setPrompt(p, 'bury', { deckSize: this.deck.length },
-          (pl) => { this.deck.splice(this.clampPos(pl && pl.pos), 0, card); this.fx('buried', { playerId: p.id }); this.endTurnOnce(); },
+          (pl) => { this.deck.splice(this.clampPos(pl && pl.pos), 0, card); this.deckChanged('mut'); this.fx('buried', { playerId: p.id }); this.endTurnOnce(); },
           () => ({ pos: rand(this.deck.length + 1) }),
           22000);
       }
@@ -1011,6 +1020,7 @@ class Game {
 
   // ---------------------------------------------------------------- end
   endGame(winner) {
+    if (this.state !== 'PLAYING') return;
     this.clearAll();
     this.state = 'ENDED'; this.phase = 'idle'; this.pending = null; this.prompt = null;
     this.winnerId = winner ? winner.id : null;
@@ -1086,7 +1096,7 @@ class Game {
   getState(me) {
     const pa = this.pending, pr = this.prompt;
     return {
-      code: this.code, state: this.state, phase: this.phase, settings: this.settings,
+      code: this.code, roundId: this.roundId, state: this.state, phase: this.phase, settings: this.settings,
       players: this.players.map(p => ({ id: p.id, name: p.name, avatar: p.avatar, frame: p.frame, skin: p.skin, title: p.title || 'title_rookie', rp: p.rp,
         isBot: p.isBot, isHost: p.isHost, ready: p.ready, alive: p.alive, connected: p.connected, auto: p.auto,
         handCount: p.hand.length, registered: !!p.userId, elimReason: p.elimReason })),

@@ -2775,7 +2775,7 @@
         <form id="forgotForm" class="form">
           <input name="username" id="fgUsername" placeholder="${t('username')}" value="${esc(localVault?.username || '')}" autocomplete="username" required>
           <div style="position:relative;">
-            <input name="recoveryPin" id="fgPin" placeholder="${lang === 'th' ? 'PIN กู้คืน (หรือชื่อที่แสดงในเกม)' : 'Recovery PIN (or Display Name)'}" value="${esc(localVault?.recoveryPin || '')}" required>
+            <input name="recoveryPin" id="fgPin" placeholder="${lang === 'th' ? 'PIN กู้คืนบัญชี' : 'Recovery PIN'}" value="${esc(localVault?.recoveryPin || '')}" required>
             ${localVault ? `<button type="button" class="btn small" id="btnAutoPin" style="position:absolute;right:4px;top:4px;padding:3px 8px;font-size:0.75rem;">📲 ${lang === 'th' ? 'เติมจากเครื่องนี้' : 'Auto Fill'}</button>` : ''}
           </div>
           <input name="newPassword" type="password" placeholder="${lang === 'th' ? 'รหัสผ่านใหม่ (อย่างน้อย 4 ตัว)' : 'New Password (min 4 chars)'}" autocomplete="new-password" required>
@@ -4820,7 +4820,7 @@
             <div class="my-hero-plate">
               <div class="mh-title-row">${titleBadgeHTML(curMyTitle, lang)}</div>
               <div class="mh-name">${esc(m.name)}</div>
-              <div class="mh-sub">🪙 ${user ? user.coins : 0} · ${rankBadge(m.rp)} ${m.rp || 0} RP</div>
+              <div class="mh-sub">🪙 ${user ? user.coins : Number(localStorage.getItem('ek_guest_coins') || '100')} · ${rankBadge(m.rp)} ${m.rp || 0} RP</div>
             </div>
             ${myTurn ? `<div class="my-turn-ribbon ${S.turnsLeft > 1 ? 'combo-multi' : ''}">⟳ ${t('yourTurn')} ${S.turnsLeft > 1 ? `<b class="turn-multi-tag">🔥 x${S.turnsLeft} ${t('turnsLeft')}</b>` : ''} <span id="myTurnSec"></span></div>` : ''}
           </div>`;
@@ -4943,7 +4943,8 @@
         badge.innerHTML = `⭐ ${t('yourTurn')} ${S.turnsLeft > 1 ? `<span class="badge-turns-alert">🔥 x${S.turnsLeft} ${t('turnsLeft')}</span>` : ''}`;
         badge.className = 'mine';
       } else if (tp) {
-        badge.innerHTML = `${esc(tp.avatar)} ${t('turnOf')} <b>${esc(tp.name)}</b> ${S.turnsLeft > 1 ? `<span class="badge-turns-alert">🔥 x${S.turnsLeft}</span>` : ''}`;
+        const avatarIcon = window.EK.AVATARS.find(a => a.id === tp.avatar)?.icon || (String(tp.avatar || '').startsWith('av_') ? '🐶' : tp.avatar);
+        badge.innerHTML = `${esc(avatarIcon)} ${t('turnOf')} <b>${esc(tp.name)}</b> ${S.turnsLeft > 1 ? `<span class="badge-turns-alert">🔥 x${S.turnsLeft}</span>` : ''}`;
         badge.className = '';
       } else {
         badge.innerHTML = `⏳ ${lang === 'th' ? 'รอตาผู้เล่นคนอื่น...' : 'Waiting for turn...'}`;
@@ -5949,7 +5950,9 @@
     });
 
     // If guest, award guest coins & diamonds locally with stake multiplier
-    if (!user && mine && mine.reward) {
+    const guestRewardKey = `ek_guest_reward_${S?.code}_${S?.roundId}`;
+    if (!user && mine && mine.reward && !localStorage.getItem(guestRewardKey)) {
+      localStorage.setItem(guestRewardKey, '1');
       const gCoins = mine.reward.coins || 0;
       const gDia = mine.reward.diamonds || 0;
       const gXp = mine.reward.xp || Math.max(20, (mine.reward.rp || 10) * 2);
