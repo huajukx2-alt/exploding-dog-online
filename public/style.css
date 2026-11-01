@@ -8031,3 +8031,12 @@ body.perf-mode .logo-bomb-icon {
   }
 }
 
+
+/* Home-screen installation */
+.install-app{position:fixed;right:max(16px,env(safe-area-inset-right));bottom:max(16px,env(safe-area-inset-bottom));z-index:9000;border:1px solid #f9d56b;border-radius:999px;padding:10px 18px;background:#ffdb70;color:#281346;box-shadow:0 4px 24px #0006;font:600 14px 'Mitr',system-ui;cursor:pointer}
+.install-app[hidden]{display:none!important}
+body[data-screen="home"] .install-app{bottom:calc(108px + env(safe-area-inset-bottom))}
+body[data-screen]:not([data-screen="home"]):not([data-screen="auth"]) .install-app{display:none}
+.install-dialog{box-sizing:border-box;width:min(90vw,410px);max-height:85dvh;overflow:auto;border:1px solid #9b74db;border-radius:24px;background:#23113f;color:#fff;padding:30px 24px;text-align:center;font:16px 'Mitr',system-ui;z-index:10000}
+.install-dialog::backdrop{background:#080214cc}
+.install-dialog img{border-radius:20px}.install-dialog h2{font-size:22px;margin:16px 0}.install-dialog p{line-height:1.8}.install-note{font-size:13px;color:#cbb8e8}.install-close{position:absolute;top:10px;right:12px;background:transparent;color:#fff;border:0;padding:8px;font-size:20px;cursor:pointer}.install-confirm{background:#ffdb70;color:#281346;border:0;border-radius:14px;padding:12px 24px;font:600 16px 'Mitr',system-ui;cursor:pointer}
