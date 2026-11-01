@@ -23,7 +23,8 @@ async function client(t, signedIn = false) {
   const account = db.register('ui_tester', 'test-password', 'UI Tester', '7531');
   if (signedIn) { w.localStorage.setItem('ek_token', account.token); w.localStorage.setItem('ek_account_vault', JSON.stringify(account.vault)); }
   for (const key of ['ek_sound', 'ek_voice', 'ek_bgm']) w.localStorage.setItem(key, '0');
-  w.requestAnimationFrame = () => 0;
+  const frames = [];
+  w.requestAnimationFrame = fn => { frames.push(fn); return frames.length; };
   w.scrollTo = () => {};
   w.matchMedia = () => ({ matches: false, addEventListener() {}, removeEventListener() {} });
   w.prompt = () => '9999'; w.confirm = () => true;
@@ -62,7 +63,12 @@ async function client(t, signedIn = false) {
   await flush();
   const $ = selector => w.document.querySelector(selector);
   function click(selector) { const el = $(selector); assert.ok(el, selector + ' exists'); el.click(); }
-  return { w, $, click, sent, requests, db, account, emit: (event, data) => handlers.get(event)(data === undefined ? undefined : clone(data)) };
+  function timerFrame() {
+    const i = frames.findIndex(fn => fn.name === 'tickLoop');
+    assert.ok(i >= 0, 'timer frame scheduled');
+    frames.splice(i, 1)[0]();
+  }
+  return { w, $, click, sent, requests, db, account, timerFrame, emit: (event, data) => handlers.get(event)(data === undefined ? undefined : clone(data)) };
 }
 
 test('guest login, main menus, language and stage selection initialize without errors', async t => {
@@ -121,6 +127,22 @@ test('live lobby/game updates render hand, menus, chat, stickers and private pro
   c.emit('joined', { code: g.code, playerId: g.players[0].id, key: g.players[0].key });
   g.state = 'LOBBY'; c.emit('state', g.getState(g.players[0]));
   assert.ok(c.$('#screen-lobby').classList.contains('active'));
+  c.click('.lobby-tab-btn[data-tab="settings"]');
+  assert.ok(c.$('[data-panel="settings"]').classList.contains('active-mobile-panel'));
+  assert.ok(!c.$('[data-panel="players"]').classList.contains('active-mobile-panel'));
+  const seconds = c.$('[data-s="turnSeconds"]');
+  seconds.value = '45'; seconds.dispatchEvent(new c.w.Event('change'));
+  assert.equal(c.sent.at(-1).event, 'settings');
+  c.click('.lobby-tab-btn[data-tab="chat"]');
+  assert.ok(c.$('[data-panel="chat"]').classList.contains('active-mobile-panel'));
+  const chat = c.$('[data-panel="chat"] input');
+  chat.value = 'hello room';
+  chat.form.dispatchEvent(new c.w.Event('submit', {bubbles:true,cancelable:true}));
+  assert.equal(c.sent.at(-1).event, 'chat');
+  c.emit('state', g.getState(g.players[0]));
+  assert.ok(c.$('[data-panel="chat"]').classList.contains('active-mobile-panel'), 'sync retains selected tab');
+  c.click('.lobby-tab-btn[data-tab="players"]');
+  assert.ok(c.$('[data-panel="players"]').classList.contains('active-mobile-panel'));
   c.click('#btnAddBot'); assert.equal(c.sent.at(-1).event, 'addBot');
   g.state = 'PLAYING'; c.emit('state', g.getState(g.players[0]));
   assert.ok(c.$('#screen-game').classList.contains('active'));
@@ -134,6 +156,32 @@ test('live lobby/game updates render hand, menus, chat, stickers and private pro
   c.click('#gmVoice'); assert.equal(c.w.localStorage.getItem('ek_voice'), '1');
   c.click('#gmLeave'); assert.equal(c.sent.at(-1).event, 'leaveRoom');
   c.emit('left'); assert.ok(c.$('#screen-home').classList.contains('active'));
+});
+
+test('countdowns survive hero replacement, reflect server deadlines, and format a full minute', async t => {
+  const c = await client(t); c.click('#btnAuthGuest');
+  const g = playing();
+  const emitTurn = (turnId, seconds) => {
+    const state = clone(g.getState(g.players[0]));
+    state.phase = 'turn'; state.turnId = turnId; state.pending = null; state.prompt = null;
+    state.turnDeadline = Date.now() + seconds * 1000; state.serverNow = Date.now();
+    c.emit('state', state); c.timerFrame();
+  };
+  emitTurn(g.players[0].id, 25);
+  assert.match(c.$('#myTurnSec').textContent, /00:2[45]/);
+  const old = c.$('#myTurnSec');
+  emitTurn(g.players[1].id, 25);
+  emitTurn(g.players[0].id, 25);
+  assert.notEqual(c.$('#myTurnSec'), old);
+  assert.match(c.$('#myTurnSec').textContent, /00:2[45]/);
+  assert.match(c.$('#turnCountdown').textContent, /00:2[45]/);
+  emitTurn(g.players[0].id, 60);
+  assert.match(c.$('#turnCountdown').textContent, /01:00|00:59/);
+  const pending = clone(g.getState(g.players[0]));
+  pending.phase='nope'; pending.pending={deadline:Date.now()+4000,cardIds:['skip'],playerId:g.players[0].id};
+  pending.serverNow=Date.now();
+  c.emit('state',pending); c.timerFrame();
+  assert.match(c.$('#turnCountdown').textContent,/00:0[34]/);
 });
 
 test('guest game rewards are credited once across repeated results renders', async t => {

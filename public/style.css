@@ -8040,3 +8040,10 @@ body[data-screen]:not([data-screen="home"]):not([data-screen="auth"]) .install-a
 .install-dialog{box-sizing:border-box;width:min(90vw,410px);max-height:85dvh;overflow:auto;border:1px solid #9b74db;border-radius:24px;background:#23113f;color:#fff;padding:30px 24px;text-align:center;font:16px 'Mitr',system-ui;z-index:10000}
 .install-dialog::backdrop{background:#080214cc}
 .install-dialog img{border-radius:20px}.install-dialog h2{font-size:22px;margin:16px 0}.install-dialog p{line-height:1.8}.install-note{font-size:13px;color:#cbb8e8}.install-close{position:absolute;top:10px;right:12px;background:transparent;color:#fff;border:0;padding:8px;font-size:20px;cursor:pointer}.install-confirm{background:#ffdb70;color:#281346;border:0;border-radius:14px;padding:12px 24px;font:600 16px 'Mitr',system-ui;cursor:pointer}
+
+/* Keep countdown numerals above SVG layers, readable on touch displays. */
+#timerText{position:relative;z-index:1;color:#fff;font-variant-numeric:tabular-nums}
+#timerRing svg{pointer-events:none;width:100%;height:100%}
+#myTurnSec{display:inline-block;min-width:4.5em;font-variant-numeric:tabular-nums;color:#fff}
+#turnCountdown{position:relative;margin-top:12px;padding:3px 10px;border-radius:10px;background:#150b29;color:#fff;border:1px solid #ffd65a;font:700 clamp(14px,1.8vw,20px)/1.4 'Mitr',system-ui;white-space:nowrap;font-variant-numeric:tabular-nums;pointer-events:none;z-index:7}
+#turnCountdown.urgent{color:#ffb4b4;border-color:#ff5378}

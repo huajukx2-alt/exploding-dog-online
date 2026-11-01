@@ -4417,13 +4417,16 @@
   // ------------------------------------------------------------ LOBBY
   
   function initLobbyTabs() {
-    const tabBtns = $('.lobby-tab-btn');
+    const tabBtns = $$('.lobby-tab-btn');
     if (!tabBtns || !tabBtns.length) return;
     tabBtns.forEach(btn => {
       btn.onclick = () => {
         A.sfx('click');
         const target = btn.dataset.tab;
-        tabBtns.forEach(b => b.classList.toggle('active', b === btn));
+        tabBtns.forEach(b => {
+          b.classList.toggle('active', b === btn);
+          b.setAttribute('aria-pressed', String(b === btn));
+        });
         $$('.lobby-grid .panel').forEach(p => {
           p.classList.toggle('active-mobile-panel', p.dataset.panel === target);
         });
@@ -6055,7 +6058,7 @@
 
   // ------------------------------------------------------------ timers loop (cached DOM & dirty-check)
   let _elArc = null, _elTxt = null, _elMySec = null, _elRing = null, _elBtnNope = null, _elNopeFill = null;
-  let _lastDash = -99, _lastLabel = '', _lastMySecText = '', _lastNopePct = -99, _lastNopeSec = -99;
+  let _lastDash = -99, _lastLabel = '', _lastNopePct = -99, _lastNopeSec = -99;
   let _lastPromptSec = -99, _lastSnoutSec = -99;
 
   function initTimerDom() {
@@ -6070,42 +6073,53 @@
   function tickLoop() {
     if (S && S.state === 'PLAYING' && screen === 'game') {
       if (!_elArc) initTimerDom();
+      // The hero and its timer are rebuilt on turn/profile changes.
+      _elMySec = $('#myTurnSec');
       let dl = 0, total = 1;
       const isTurnPhase = S.phase === 'turn' && !S.pending && !S.prompt && !!S.turnDeadline;
-      const isPausedBySpotlight = isTurnPhase && spotlightActive;
-      if (isTurnPhase && !isPausedBySpotlight) {
+      // A visual animation must not pause an active server deadline.
+      if (isTurnPhase) {
         dl = S.turnDeadline;
         total = Math.max(1, (S.settings.turnSeconds || 25) * 1000);
       } else if (S.prompt) {
         dl = S.prompt.deadline;
         total = Math.max(1, (S.prompt.data?.timeoutMs || 15000));
+      } else if (S.pending) {
+        dl = S.pending.deadline;
+        total = Math.max(1, (S.settings.nopeSeconds || 5) * 1000);
       }
       const left = dl ? Math.max(0, dl - now()) : 0;
-      const dash = dl ? Math.round(100 - (left / total) * 100) : (isPausedBySpotlight ? 0 : 100);
+      const dash = dl ? Math.round(Math.min(100, Math.max(0, 100 - (left / total) * 100))) : 100;
       if (_elArc && dash !== _lastDash) {
         _lastDash = dash;
         _elArc.style.strokeDashoffset = dash;
       }
       const secs = Math.ceil(left / 1000);
-      const isActionPaused = (!isTurnPhase && (S.pending || S.prompt || S.phase !== 'turn')) || isPausedBySpotlight;
+      const isActionPaused = !isTurnPhase && (S.pending || S.prompt || S.phase !== 'turn');
       const label = dl ? String(secs) : (isActionPaused ? '⏸️' : '∞');
+      const clock = String(Math.floor(secs / 60)).padStart(2, '0') + ':' + String(secs % 60).padStart(2, '0');
+      const countdown = $('#turnCountdown');
+      if (countdown) {
+        const caption = dl ? '⏱ ' + clock : (isActionPaused ? (lang === 'th' ? '⏸ รอดำเนินการ' : '⏸ Waiting') : '⏱ —');
+        if (countdown.textContent !== caption) countdown.textContent = caption;
+        countdown.classList.toggle('urgent', !!dl && secs <= 5);
+      }
       if (_elTxt && label !== _lastLabel) {
         _lastLabel = label;
         _elTxt.textContent = label;
       }
       if (_elMySec) {
-        const mySecText = (isTurnPhase && dl && !isPausedBySpotlight)
-          ? `(00:${String(secs).padStart(2, '0')})`
+        const mySecText = (isTurnPhase && dl)
+          ? `(${clock})`
           : (isActionPaused ? `(⏸️)` : '');
-        if (mySecText !== _lastMySecText) {
-          _lastMySecText = mySecText;
+        if (_elMySec.textContent !== mySecText) {
           _elMySec.textContent = mySecText;
         }
       }
       if (_elRing) {
-        _elRing.classList.toggle('urgent', isTurnPhase && !isPausedBySpotlight && !!dl && left < 5000);
+        _elRing.classList.toggle('urgent', !!dl && left < 5000);
       }
-      const myTurn = S.turnId === S.me?.id && isTurnPhase && !isPausedBySpotlight;
+      const myTurn = S.turnId === S.me?.id && isTurnPhase;
       if (myTurn && dl && secs <= 5 && secs !== lastTick && secs > 0) {
         lastTick = secs;
         A.sfx('tick');
