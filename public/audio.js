@@ -1,4 +1,4 @@
-// Synth sound effects (WebAudio, no files) + speech announcer
+// Synth sound effects + locally hosted, pre-recorded Thai announcer.
 window.Audio2 = (() => {
   let ctx = null;
   const opt = { sound: localStorage.getItem('ek_sound') !== '0', voice: localStorage.getItem('ek_voice') !== '0' };
@@ -223,44 +223,65 @@ window.Audio2 = (() => {
     if (bgmTimer) { clearInterval(bgmTimer); bgmTimer = null; }
   }
 
-  // ---- announcer (speech synthesis) with Chrome GC protection
-  let queue = [], speaking = false, voices = [], activeUtterance = null;
-  const loadVoices = () => { voices = speechSynthesis.getVoices(); };
-  if ('speechSynthesis' in window) { loadVoices(); speechSynthesis.onvoiceschanged = loadVoices; }
-  function pickVoice(lang) {
-    const pre = lang === 'th' ? 'th' : 'en';
-    return voices.find(v => v.lang.toLowerCase().startsWith(pre) && /female|premwadee|google|natural/i.test(v.name)) || voices.find(v => v.lang.toLowerCase().startsWith(pre));
+  // One Thai voice pack for both UI languages. Player names stay in captions.
+  const voiceKeys = new Set(["enabled","game_start","roulette","first","yourTurn","turn","play","nope","nopeNope","cancelled","bomb_drawn","imp_drawn","defused","exploded","imploded","attack_pass","stolen","favor_done","win","revived","barking","catomic","reverse","timeout","prompt_auto","triple_hit","triple_miss","imploding_back","streak_exposed","joined","ready","personal","zombie_drawn","shuffled","discard_picked"]);
+  let queue = [], activeVoice = null, voiceTimer = null;
+  function stopVoice() {
+    queue = [];
+    clearTimeout(voiceTimer);
+    if (activeVoice) {
+      activeVoice.onended = activeVoice.onerror = null;
+      activeVoice.pause();
+      activeVoice = null;
+    }
   }
-  function say(text, lang, { priority = false, rate } = {}) {
-    if (!opt.voice || !('speechSynthesis' in window) || !text) return;
-    if (priority) { queue = []; activeUtterance = null; speechSynthesis.cancel(); speaking = false; }
-    if (queue.length > 2) queue.shift();
-    queue.push({ text, lang, rate }); next();
+  function say(key, lang, { priority = false } = {}) {
+    if (!opt.voice || document.hidden || !voiceKeys.has(key)) return;
+    if (priority) stopVoice();
+    if (activeVoice?.voiceKey === key || queue.some(item => item.key === key)) return;
+    if (queue.length >= 2) queue.shift();
+    queue.push({ key, at: Date.now() }); next();
   }
   function next() {
-    if (speaking || !queue.length) return;
-    const { text, lang, rate } = queue.shift();
-    const u = new SpeechSynthesisUtterance(text);
-    activeUtterance = u; // prevent Chrome GC bug
-    u.lang = lang === 'th' ? 'th-TH' : 'en-US';
-    const v = pickVoice(lang); if (v) u.voice = v;
-    u.rate = rate || (lang === 'th' ? 1.05 : 1.1); u.pitch = 1.15;
-    speaking = true;
-    u.onend = u.onerror = () => {
-      activeUtterance = null;
-      speaking = false;
-      setTimeout(next, 80);
+    if (activeVoice || !opt.voice) return;
+    let item;
+    while ((item = queue.shift()) && Date.now() - item.at > 5000) { /* discard stale commentary */ }
+    if (!item) return;
+    const player = new Audio('/voice/th/' + item.key + '.mp3');
+    player.voiceKey = item.key;
+    player.volume = 0.9;
+    activeVoice = player;
+    const done = () => {
+      if (activeVoice !== player) return;
+      clearTimeout(voiceTimer);
+      player.onended = player.onerror = null;
+      player.pause();
+      activeVoice = null;
+      next();
     };
-    speechSynthesis.speak(u);
+    player.onended = player.onerror = done;
+    voiceTimer = setTimeout(done, 12000);
+    try { Promise.resolve(player.play()).catch(done); } catch (e) { done(); }
   }
+  function announce(ev, isMe = false, priority = false) {
+    let key = ev.type;
+    if (key === 'turn') key = isMe ? 'yourTurn' : 'turn';
+    if (key === 'nope' && ev.nopes > 1) key = 'nopeNope';
+    if (key === 'bomb_drawn' && ev.cardId === 'imploding_kitten') key = 'imp_drawn';
+    if (key === 'eliminated') key = ev.reason === 'imploded' ? 'imploded' : 'exploded';
+    if (key === 'triple') key = ev.hit ? 'triple_hit' : 'triple_miss';
+    say(key, 'th', { priority: priority || ['yourTurn', 'bomb_drawn', 'imp_drawn', 'defused', 'exploded', 'imploded', 'win'].includes(key) });
+  }
+  document.addEventListener('visibilitychange', () => { if (document.hidden) stopVoice(); });
+  window.addEventListener('pagehide', stopVoice);
   function set(key, val) {
     opt[key] = val;
     localStorage.setItem('ek_' + key, val ? '1' : '0');
-    if (key === 'voice' && !val && window.speechSynthesis) { queue = []; activeUtterance = null; speechSynthesis.cancel(); }
+    if (key === 'voice' && !val) stopVoice();
     if (key === 'sound' && !val) { stopHeartbeat(); stopFuse(); stopBGM(); }
   }
   // unlock audio on first interaction (mobile)
   window.addEventListener('pointerdown', () => { try { ac(); } catch (e) { /* ignore */ } }, { once: true });
-  return { sfx, say, set, opt, playHeartbeat, stopHeartbeat, startFuse, stopFuse, startBGM, stopBGM };
+  return { sfx, say, announce, stopVoice, set, opt, playHeartbeat, stopHeartbeat, startFuse, stopFuse, startBGM, stopBGM };
 })();
 

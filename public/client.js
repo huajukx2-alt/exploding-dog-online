@@ -839,6 +839,7 @@
   });
   socket.on('rejoinFailed', () => { sessionStorage.removeItem('ek_room'); });
   socket.on('left', () => {
+    A.stopVoice();
     sessionStorage.removeItem('ek_room');
     S = null;
     lastSeatsKey = '';
@@ -2752,7 +2753,7 @@
     if (v) v.textContent = A.opt.voice ? '🗣️' : '🤐';
   };
   const btnS = $('#btnSound'); if (btnS) btnS.onclick = () => { A.set('sound', !A.opt.sound); syncToggles(); A.sfx('click'); };
-  const btnV = $('#btnVoice'); if (btnV) btnV.onclick = () => { A.set('voice', !A.opt.voice); syncToggles(); if (A.opt.voice) A.say(lang === 'th' ? 'เปิดเสียงพากย์แล้วโฮ่ง' : 'Announcer on, woof', lang); };
+  const btnV = $('#btnVoice'); if (btnV) btnV.onclick = () => { A.set('voice', !A.opt.voice); syncToggles(); if (A.opt.voice) A.say('enabled', lang); };
   const btnL = $('#btnLang'); if (btnL) btnL.onclick = () => { lang = lang === 'th' ? 'en' : 'th'; localStorage.setItem('ek_lang', lang); lastSettingsKey = ''; lastSettingsStructKey = ''; applyI18n(); renderUserChip(); };
 
   // ------------------------------------------------------------ AUTH / PROFILE / SHOP / LEADERBOARD / RULES
@@ -4336,6 +4337,7 @@
     A.stopFuse();
     document.body.classList.remove('emergency-alarm');
     if (!keepState) {
+      A.stopVoice();
       S = null;
       show('home');
       renderHome();
@@ -5814,7 +5816,7 @@
         break;
       case 'joined': case 'ready': if (isMe) speak = ''; A.sfx('click'); break;
     }
-    if (speak) A.say(speak, lang, { priority: prio });
+    if (speak) A.announce(ev, isMe, prio);
   }
 
   function renderSnoutDeckVisual(pos, deckSize) {
@@ -6025,7 +6027,7 @@
     const total = els.length * 3 + target; let i = 0;
     const step = () => {
       els.forEach(e => e.classList.remove('roulette')); els[i % els.length].classList.add('roulette'); A.sfx('roulette');
-      if (i >= total) { setTimeout(() => els.forEach(e => e.classList.remove('roulette')), 900); const p = pl(firstId); A.say(fill(ANN[lang].first, { pn: p?.name }), lang); banner(`${p ? avatarHTML(p, 'lg') : ''}<h2>🎲 ${esc(fill(ANN[lang].first, { pn: p?.name }))}</h2>`, 'win', 1600); return; }
+      if (i >= total) { setTimeout(() => els.forEach(e => e.classList.remove('roulette')), 900); const p = pl(firstId); A.say('first', lang); banner(`${p ? avatarHTML(p, 'lg') : ''}<h2>🎲 ${esc(fill(ANN[lang].first, { pn: p?.name }))}</h2>`, 'win', 1600); return; }
       i++; setTimeout(step, 60 + Math.pow(i / total, 3) * 380);
     };
     step();

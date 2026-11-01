@@ -14,6 +14,10 @@ async function client(t, signedIn = false) {
   vc.on('error', (...args) => errors.push(args.join(' ')));
   const dom = new JSDOM(fs.readFileSync(path.join(root, 'public/index.html'), 'utf8'), { url: 'http://game.test', runScripts: 'outside-only', pretendToBeVisual: true, virtualConsole: vc });
   const w = dom.window;
+  // JSDOM has no media decoder. Exercise playback ordering/failures separately
+  // in audio-voice.test.js; UI tests only need the browser media contract.
+  w.HTMLMediaElement.prototype.play = function () { return Promise.resolve(); };
+  w.HTMLMediaElement.prototype.pause = function () {};
   t.after(() => { w.close(); assert.deepEqual(errors, [], 'no client runtime errors'); });
   const db = database();
   const account = db.register('ui_tester', 'test-password', 'UI Tester', '7531');

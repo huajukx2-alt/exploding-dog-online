@@ -1,0 +1,247 @@
+{
+  "enabled": {
+    "text": "เปิดเสียงพากย์แล้วโฮ่ง!",
+    "file": "/voice/th/enabled.mp3",
+    "duration": 2.657007,
+    "sourceStart": 0,
+    "sourceEnd": 2.657
+  },
+  "game_start": {
+    "text": "ศึกหมาระเบิดเริ่มแล้ว! ใครจะรอดเป็นตัวสุดท้าย!",
+    "file": "/voice/th/game_start.mp3",
+    "duration": 5.453991,
+    "sourceStart": 2.657,
+    "sourceEnd": 8.111
+  },
+  "roulette": {
+    "text": "ลุ้นกันเลย! ใครจะได้เริ่มก่อน!",
+    "file": "/voice/th/roulette.mp3",
+    "duration": 4.399002,
+    "sourceStart": 8.111,
+    "sourceEnd": 12.509999999999998
+  },
+  "first": {
+    "text": "ได้ผู้เริ่มเกมแล้ว! ลุยเลย!",
+    "file": "/voice/th/first.mp3",
+    "duration": 4.002993,
+    "sourceStart": 12.509999999999998,
+    "sourceEnd": 16.512999999999998
+  },
+  "yourTurn": {
+    "text": "ตาคุณแล้ว! ใจถึงก็จั่วเลย!",
+    "file": "/voice/th/yourTurn.mp3",
+    "duration": 4.741995,
+    "sourceStart": 16.512999999999998,
+    "sourceEnd": 21.255
+  },
+  "turn": {
+    "text": "เปลี่ยนตา! ลุ้นกันต่อ!",
+    "file": "/voice/th/turn.mp3",
+    "duration": 4.381995,
+    "sourceStart": 21.255,
+    "sourceEnd": 25.637
+  },
+  "play": {
+    "text": "จัดไป! ลงการ์ดแล้ว!",
+    "file": "/voice/th/play.mp3",
+    "duration": 4.026009,
+    "sourceStart": 25.637,
+    "sourceEnd": 29.663
+  },
+  "nope": {
+    "text": "หยุดเลย! ใบนี้ไม่ให้ผ่าน!",
+    "file": "/voice/th/nope.mp3",
+    "duration": 4.12,
+    "sourceStart": 29.663,
+    "sourceEnd": 33.783
+  },
+  "nopeNope": {
+    "text": "ไม่ซ้อนไม่! สวนกลับทันควัน!",
+    "file": "/voice/th/nopeNope.mp3",
+    "duration": 4.08,
+    "sourceStart": 33.783,
+    "sourceEnd": 37.863
+  },
+  "cancelled": {
+    "text": "โดนสกัด! แผนนี้เป็นหมัน!",
+    "file": "/voice/th/cancelled.mp3",
+    "duration": 4.108005,
+    "sourceStart": 37.863,
+    "sourceEnd": 41.971
+  },
+  "bomb_drawn": {
+    "text": "ระเบิดมาแล้ว! กู้ทันไหม!",
+    "file": "/voice/th/bomb_drawn.mp3",
+    "duration": 5.239002,
+    "sourceStart": 41.971,
+    "sourceEnd": 47.209999999999994
+  },
+  "imp_drawn": {
+    "text": "หมายุบตัวมาแล้ว! ระวังให้ดี!",
+    "file": "/voice/th/imp_drawn.mp3",
+    "duration": 4.887007,
+    "sourceStart": 47.209999999999994,
+    "sourceEnd": 52.096999999999994
+  },
+  "defused": {
+    "text": "รอดหวุดหวิด! ยังอยู่ในเกม!",
+    "file": "/voice/th/defused.mp3",
+    "duration": 4.856009,
+    "sourceStart": 52.096999999999994,
+    "sourceEnd": 56.952999999999996
+  },
+  "exploded": {
+    "text": "ตูม! ตกรอบไปอีกหนึ่ง!",
+    "file": "/voice/th/exploded.mp3",
+    "duration": 4.782993,
+    "sourceStart": 56.952999999999996,
+    "sourceEnd": 61.73599999999999
+  },
+  "imploded": {
+    "text": "โดนดูดเข้าหลุมดำ! ตกรอบแล้ว!",
+    "file": "/voice/th/imploded.mp3",
+    "duration": 4.685011,
+    "sourceStart": 61.73599999999999,
+    "sourceEnd": 66.42099999999999
+  },
+  "attack_pass": {
+    "text": "โดนโจมตี! รับเทิร์นเพิ่มไปเลย!",
+    "file": "/voice/th/attack_pass.mp3",
+    "duration": 4.462993,
+    "sourceStart": 66.42099999999999,
+    "sourceEnd": 70.884
+  },
+  "stolen": {
+    "text": "โดนขโมยการ์ด! เจ็บใจไหมล่ะ!",
+    "file": "/voice/th/stolen.mp3",
+    "duration": 4.586757,
+    "sourceStart": 70.884,
+    "sourceEnd": 75.4707485
+  },
+  "favor_done": {
+    "text": "ส่งการ์ดแล้ว! วัดใจกันต่อ!",
+    "file": "/voice/th/favor_done.mp3",
+    "duration": 4.447211,
+    "sourceStart": 75.4707485,
+    "sourceEnd": 79.9179705
+  },
+  "win": {
+    "text": "ผู้ชนะมาแล้ว! โฮ่ง!",
+    "file": "/voice/th/win.mp3",
+    "duration": 4.34551,
+    "sourceStart": 79.9179705,
+    "sourceEnd": 84.263492
+  },
+  "revived": {
+    "text": "กลับมาแล้ว! คืนสนามอีกครั้ง!",
+    "file": "/voice/th/revived.mp3",
+    "duration": 4.004354,
+    "sourceStart": 84.263492,
+    "sourceEnd": 88.26784549999999
+  },
+  "barking": {
+    "text": "เสียงเห่ามาแล้ว! มีใครจะโดนไหม!",
+    "file": "/voice/th/barking.mp3",
+    "duration": 4.052902,
+    "sourceStart": 88.26784549999999,
+    "sourceEnd": 92.320748
+  },
+  "catomic": {
+    "text": "ระเบิดอยู่บนกอง! จั่วต่อไปวัดใจสุดสุด!",
+    "file": "/voice/th/catomic.mp3",
+    "duration": 5.845646,
+    "sourceStart": 92.320748,
+    "sourceEnd": 98.166395
+  },
+  "reverse": {
+    "text": "กลับทิศ! เปลี่ยนเกมทันที!",
+    "file": "/voice/th/reverse.mp3",
+    "duration": 4.279615,
+    "sourceStart": 98.166395,
+    "sourceEnd": 102.446009
+  },
+  "timeout": {
+    "text": "หมดเวลา! จั่วให้อัตโนมัติ!",
+    "file": "/voice/th/timeout.mp3",
+    "duration": 4.45229,
+    "sourceStart": 102.446009,
+    "sourceEnd": 106.89828800000001
+  },
+  "prompt_auto": {
+    "text": "หมดเวลาตัดสินใจ! ระบบเลือกให้แล้ว!",
+    "file": "/voice/th/prompt_auto.mp3",
+    "duration": 5.189977,
+    "sourceStart": 106.89828800000001,
+    "sourceEnd": 112.0882655
+  },
+  "triple_hit": {
+    "text": "ขอถูกใบ! รับการ์ดไปเลย!",
+    "file": "/voice/th/triple_hit.mp3",
+    "duration": 3.995737,
+    "sourceStart": 112.0882655,
+    "sourceEnd": 116.08399999999997
+  },
+  "triple_miss": {
+    "text": "ไม่มีใบนั้น! อดเลย!",
+    "file": "/voice/th/triple_miss.mp3",
+    "duration": 4.381995,
+    "sourceStart": 116.08399999999997,
+    "sourceEnd": 120.46599999999998
+  },
+  "imploding_back": {
+    "text": "หมายุบตัวกลับเข้ากอง! จำตำแหน่งไว้ให้ดี!",
+    "file": "/voice/th/imploding_back.mp3",
+    "duration": 5.513991,
+    "sourceStart": 120.46599999999998,
+    "sourceEnd": 125.97999999999998
+  },
+  "streak_exposed": {
+    "text": "ระเบิดที่ซ่อนไว้โผล่แล้ว! งานเข้า!",
+    "file": "/voice/th/streak_exposed.mp3",
+    "duration": 5.079002,
+    "sourceStart": 125.97999999999998,
+    "sourceEnd": 131.05899999999997
+  },
+  "joined": {
+    "text": "สมาชิกใหม่มาแล้ว!",
+    "file": "/voice/th/joined.mp3",
+    "duration": 4.402993,
+    "sourceStart": 131.05899999999997,
+    "sourceEnd": 135.462
+  },
+  "ready": {
+    "text": "พร้อมแล้ว! ลุยกันเลย!",
+    "file": "/voice/th/ready.mp3",
+    "duration": 3.670998,
+    "sourceStart": 135.462,
+    "sourceEnd": 139.13299999999998
+  },
+  "personal": {
+    "text": "โดนเทิร์นเพิ่ม! เตรียมรับมือ!",
+    "file": "/voice/th/personal.mp3",
+    "duration": 4.581497,
+    "sourceStart": 139.13299999999998,
+    "sourceEnd": 143.7145
+  },
+  "zombie_drawn": {
+    "text": "หมาซอมบี้มาแล้ว!",
+    "file": "/voice/th/zombie_drawn.mp3",
+    "duration": 5.67449,
+    "sourceStart": 143.7145,
+    "sourceEnd": 149.389
+  },
+  "shuffled": {
+    "text": "สับกองใหม่! อะไรก็เกิดขึ้นได้!",
+    "file": "/voice/th/shuffled.mp3",
+    "duration": 4.551995,
+    "sourceStart": 149.389,
+    "sourceEnd": 153.94100000000003
+  },
+  "discard_picked": {
+    "text": "คอมโบห้าใบ! หยิบการ์ดกลับมาเลย!",
+    "file": "/voice/th/discard_picked.mp3",
+    "duration": 3.990635,
+    "sourceStart": 153.94100000000003,
+    "sourceEnd": 159.13795918367347
+  }
+}
