@@ -1,0 +1,24 @@
+{
+  "name": "hanuman-suek-ching-longka",
+  "version": "4.0.0",
+  "private": true,
+  "type": "module",
+  "description": "เกมแอ็กชัน 2 มิติจากรามเกียรติ์: หนุมาน ศึกชิงลงกา",
+  "scripts": {
+    "dev": "node tools/serve.mjs",
+    "build": "node tools/build.mjs",
+    "preview": "node tools/serve.mjs --dist",
+    "start": "node tools/serve.mjs --dist",
+    "start:rooms": "node tools/room-server.mjs",
+    "test": "node tools/build.mjs && node tools/test.mjs",
+    "test:rooms": "node --test tools/test-rooms.mjs",
+    "audio": "node tools/gen-audio.mjs",
+    "icons": "node tools/gen-icons.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "0.24.0"
+  },
+  "dependencies": {
+    "ws": "^8.23.0"
+  }
+}
