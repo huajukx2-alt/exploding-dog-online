@@ -8,6 +8,8 @@ const VERSION = 1;
 const ID_RE = /^[a-z0-9_]{1,32}$/;
 const SKIN_KINDS = new Set(['default','shop','reward']);
 const U_KEYS = ['hp','dmg','wind','crit','rage','armor'];
+const VS_WEAPONS = new Set(['standard','swift','reach','power']);
+const VS_SKILLS = new Set(['health','agility','focus','armor']);
 
 function sanitizeBoolMap(obj, maxKeys) {
   if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return undefined;
@@ -115,16 +117,19 @@ export function attachRoomServer(server, { resumeWindow = 30000 } = {}) {
       if (!msg || typeof msg.type !== 'string') return;
       if (!room) {
         if (msg.v !== VERSION) { send(ws, {type:'error', reason:'version'}); return; }
+        const mode = msg.mode ?? 'coop';
+        if (mode !== 'coop' && mode !== 'vs') { send(ws, {type:'error', reason:'mode'}); return; }
         const found = typeof msg.code === 'string' && CODE.test(msg.code) ? rooms.get(msg.code) : null;
         if (msg.type === 'create') {
           if (rooms.size >= 128) { send(ws,{type:'error',reason:'capacity'}); return; }
           let code;
           do { code = Array.from({length:6}, () => ALPHABET[randomInt(ALPHABET.length)]).join(''); } while (rooms.has(code));
           slot = 0;
-          room = {code, peers:[null, null]};
+          room = {code, mode, peers:[null, null]};
           rooms.set(code, room);
         } else if (msg.type === 'join') {
           if (!found) { send(ws, {type:'error', reason:'missing'}); return; }
+          if (found.mode !== mode) { send(ws, {type:'error', reason:found.mode}); return; }
           if (found.peers[1]) { send(ws, {type:'error', reason:'full'}); return; }
           slot = 1;
           room = found;
@@ -145,6 +150,7 @@ export function attachRoomServer(server, { resumeWindow = 30000 } = {}) {
         clearTimeout(handshake);
         const peer = room.peers[1 - slot];
         const response = { type: 'room', code: room.code, slot, peer: peer?.socket?.readyState === WebSocket.OPEN };
+        if (room.mode === 'vs') response.mode = room.mode;
         if (member.token) response.token = member.token;
         if (peer?.expiry) response.reconnecting = true;
         send(ws, response);
@@ -158,7 +164,13 @@ export function attachRoomServer(server, { resumeWindow = 30000 } = {}) {
       const peer = room.peers[1 - slot]?.socket;
       if (!peer) return;
       if (slot === 0 && msg.type === 'state' && msg.state && peer.bufferedAmount < 256 * 1024) send(peer, msg);
-      if (slot === 1 && msg.type === 'hero' && typeof msg.id === 'string' && /^[a-z]{3,12}$/.test(msg.id)) send(peer, sanitizeHeroMessage(msg));
+      if (slot === 1 && typeof msg.id === 'string' && /^[a-z]{3,12}$/.test(msg.id)) {
+        if (room.mode === 'coop' && msg.type === 'hero') send(peer, sanitizeHeroMessage(msg));
+        if (room.mode === 'vs' && msg.type === 'loadout' && VS_WEAPONS.has(msg.weapon) &&
+            Array.isArray(msg.skills) && msg.skills.length <= VS_SKILLS.size && msg.skills.every(id => VS_SKILLS.has(id))) {
+          send(peer, {type:'loadout', id:msg.id, weapon:msg.weapon, skills:msg.skills, ready:msg.ready === true});
+        }
+      }
       if (slot === 1 && msg.type === 'input' && ACTIONS.has(msg.key) && ['down','up','tap'].includes(msg.action)) send(peer, msg);
     });
     ws.on('close', code => {
